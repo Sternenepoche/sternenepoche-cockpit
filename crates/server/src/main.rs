@@ -598,6 +598,9 @@ fn lauscher(addr: &str, frist: Duration) -> Result<Server, String> {
     let s = socket2::Socket::new(socket2::Domain::for_address(a), socket2::Type::STREAM, Some(socket2::Protocol::TCP)).map_err(|e| e.to_string())?;
     s.set_read_timeout(Some(frist)).map_err(|e| e.to_string())?;
     s.set_write_timeout(Some(frist)).map_err(|e| e.to_string())?;
+    // Unix must allow an immediate restart while closed connections are in TIME_WAIT.
+    #[cfg(unix)]
+    s.set_reuse_address(true).map_err(|e| e.to_string())?;
     s.bind(&a.into()).map_err(|e| format!("{addr}: {e}"))?;
     s.listen(256).map_err(|e| e.to_string())?;
     Server::from_listener(std::net::TcpListener::from(s), None).map_err(|e| e.to_string())
