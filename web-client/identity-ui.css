@@ -1,0 +1,7 @@
+.identity-panel{margin-top:22px;padding:18px;border:1px solid #345066;border-radius:12px;background:#0b1724}
+.identity-panel summary{cursor:pointer;font-weight:650;color:#edce97}
+.identity-panel form{margin:18px 0;display:grid;gap:12px;max-width:520px}
+.identity-panel p{max-width:72ch;color:#b6c9d8;line-height:1.65}
+.identity-panel pre,.identity-panel code{white-space:pre-wrap;overflow-wrap:anywhere;user-select:all;letter-spacing:.04em}
+#authenticator-qr{display:block;width:auto;max-width:100%;height:auto;image-rendering:pixelated;border:16px solid #fff;background:#fff;border-radius:4px;margin:20px 0}
+.registry-scroll{overflow-x:auto}.registry-meta{color:#a5bacb;font-size:12px}.registry-search{max-width:420px}

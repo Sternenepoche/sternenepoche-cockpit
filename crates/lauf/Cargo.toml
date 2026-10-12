@@ -1,0 +1,15 @@
+[package]
+name = "lauf"
+version.workspace = true
+edition.workspace = true
+description = "Sternenepoche: Skriptbots, Balancing, Replay und Brücke zum Orchestrator"
+
+[[bin]]
+name = "sternenepoche"
+path = "src/main.rs"
+
+[dependencies]
+kern = { path = "../kern" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+bincode = "1.3"

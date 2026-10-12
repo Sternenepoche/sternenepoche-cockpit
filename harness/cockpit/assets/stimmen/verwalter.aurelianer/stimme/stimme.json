@@ -1,0 +1,26 @@
+{
+  "name": "sternenepoche/verwalter-aurelianer",
+  "anzeigename": "Marek Solden",
+  "rolle": "Verwalter · Aurelianer",
+  "beschreibung": "Man in his thirties with a clear, crisp, middle male voice, precise and quick like a meticulous accountant, slightly fussy but friendly, never high-pitched, clearly a man's voice.",
+  "beschreibung_de": "Klar, präzise, flott, etwas pingelig – ein Buchhalter mit Herz.",
+  "referenztext": "Jede Lieferung wird gezählt, jede Gebühr wird geprüft, und jede Ladung kommt pünktlich an. So einfach ist das.",
+  "sprache": "German",
+  "seed": 1005,
+  "gewaehlt": 1,
+  "lage": "mann_mittel",
+  "modelle": {
+    "design": "Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+    "base": "Qwen3-TTS-12Hz-1.7B-Base"
+  },
+  "comfyui_name": "sternenepoche_verwalter-aurelianer",
+  "erstellt": "2026-10-11T01:43:02+02:00",
+  "aktualisiert": "2026-10-11T01:43:02+02:00",
+  "voicebox_name": "Sternenepoche Marek Solden (Verwalter, Aurelianer)",
+  "nutzung": {
+    "loki_stimmen": "stimmen.cmd sprechen sternenepoche/verwalter-aurelianer \"Text\"",
+    "comfyui": "LoadSpeaker -> sternenepoche_verwalter-aurelianer.wav (models/qwen-tts/voices), dann VoiceClone",
+    "voicebox": "Profil importieren: verwalter.aurelianer.voicebox.zip (oder das Cockpit legt es selbst an)",
+    "qwen_tts": "referenz.wav + referenztext als ref_audio/ref_text, oder stimme.qvp als voice_clone_prompt"
+  }
+}

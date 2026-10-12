@@ -1,0 +1,14 @@
+[package]
+name = "kern"
+version.workspace = true
+edition.workspace = true
+description = "Sternenepoche: deterministischer Spielkern ohne Ein- und Ausgabe"
+
+[dependencies]
+serde = { version = "1", features = ["derive", "rc"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+ron = "0.8"
+rand_chacha = "0.3"
+rand_core = "0.6"
+sha2 = "0.10"
+bincode = "1.3"

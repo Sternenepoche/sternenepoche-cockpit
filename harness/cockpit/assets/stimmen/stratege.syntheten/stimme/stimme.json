@@ -1,0 +1,26 @@
+{
+  "name": "sternenepoche/stratege-syntheten",
+  "anzeigename": "Axiom",
+  "rolle": "Stratege · Syntheten",
+  "beschreibung": "Adult male voice, calm, even and precise like an artificial intelligence, low-middle pitch, smooth and controlled with very little emotion, crisp articulation, slightly slow, clearly a man's voice.",
+  "beschreibung_de": "Ruhig, gleichmäßig, präzise, kaum Gefühl – eine strategische KI.",
+  "referenztext": "Jede Entscheidung ist eine Rechnung mit unvollständigen Daten. Meine Aufgabe ist es, trotzdem richtig zu liegen.",
+  "sprache": "German",
+  "seed": 6399,
+  "gewaehlt": 3,
+  "lage": "mann_mittel",
+  "modelle": {
+    "design": "Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+    "base": "Qwen3-TTS-12Hz-1.7B-Base"
+  },
+  "comfyui_name": "sternenepoche_stratege-syntheten",
+  "erstellt": "2026-10-11T01:43:02+02:00",
+  "aktualisiert": "2026-10-11T01:43:02+02:00",
+  "voicebox_name": "Sternenepoche Axiom (Stratege, Syntheten)",
+  "nutzung": {
+    "loki_stimmen": "stimmen.cmd sprechen sternenepoche/stratege-syntheten \"Text\"",
+    "comfyui": "LoadSpeaker -> sternenepoche_stratege-syntheten.wav (models/qwen-tts/voices), dann VoiceClone",
+    "voicebox": "Profil importieren: stratege.syntheten.voicebox.zip (oder das Cockpit legt es selbst an)",
+    "qwen_tts": "referenz.wav + referenztext als ref_audio/ref_text, oder stimme.qvp als voice_clone_prompt"
+  }
+}

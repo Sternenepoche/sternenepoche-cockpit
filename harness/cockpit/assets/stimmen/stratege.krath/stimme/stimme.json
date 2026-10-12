@@ -1,0 +1,26 @@
+{
+  "name": "sternenepoche/stratege-krath",
+  "anzeigename": "Grothak",
+  "rolle": "Stratege · Krath",
+  "beschreibung": "Old man in his seventies with a very deep, gravelly, rough bass voice, slow and heavy, stern and wise like an ancient war chief, clearly a man's low voice.",
+  "beschreibung_de": "Sehr tief, rau, langsam, schwer – ein uralter Kriegshäuptling.",
+  "referenztext": "Stein bricht nicht, weil er stark ist. Stein bricht nicht, weil er Geduld hat. Merk dir das gut.",
+  "sprache": "German",
+  "seed": 4083,
+  "gewaehlt": 1,
+  "lage": "mann_tief",
+  "modelle": {
+    "design": "Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+    "base": "Qwen3-TTS-12Hz-1.7B-Base"
+  },
+  "comfyui_name": "sternenepoche_stratege-krath",
+  "erstellt": "2026-10-11T01:43:02+02:00",
+  "aktualisiert": "2026-10-11T01:43:02+02:00",
+  "voicebox_name": "Sternenepoche Grothak (Stratege, Krath)",
+  "nutzung": {
+    "loki_stimmen": "stimmen.cmd sprechen sternenepoche/stratege-krath \"Text\"",
+    "comfyui": "LoadSpeaker -> sternenepoche_stratege-krath.wav (models/qwen-tts/voices), dann VoiceClone",
+    "voicebox": "Profil importieren: stratege.krath.voicebox.zip (oder das Cockpit legt es selbst an)",
+    "qwen_tts": "referenz.wav + referenztext als ref_audio/ref_text, oder stimme.qvp als voice_clone_prompt"
+  }
+}

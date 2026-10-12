@@ -1,0 +1,20 @@
+[package]
+name = "energiewaechter"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Beispiel-Plugin für die WASM-Sandbox des Sternenepoche-Harness.
+# Bauen: cargo build --release --target wasm32-unknown-unknown
+[lib]
+crate-type = ["cdylib"]
+
+[workspace]
+
+[dependencies]
+serde_json = { version = "1", default-features = false, features = ["alloc"] }
+
+[profile.release]
+opt-level = "s"
+lto = true
+panic = "abort"

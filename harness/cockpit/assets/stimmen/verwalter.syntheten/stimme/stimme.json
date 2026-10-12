@@ -1,0 +1,26 @@
+{
+  "name": "sternenepoche/verwalter-syntheten",
+  "anzeigename": "Ordo",
+  "rolle": "Verwalter · Syntheten",
+  "beschreibung": "Adult male voice, friendly and efficient like a helpful service robot, middle pitch, even rhythm, crisp consonants, slightly mechanical cadence, never high-pitched, clearly a man's voice.",
+  "beschreibung_de": "Freundlich, effizient, gleichmäßig, leicht mechanisch – ein hilfsbereiter Dienstroboter.",
+  "referenztext": "Energiebilanz ausgeglichen, Lager zu achtzig Prozent gefüllt, Bauschleife optimal. Ich liebe Ordnung.",
+  "sprache": "German",
+  "seed": 7785,
+  "gewaehlt": 1,
+  "lage": "mann_mittel",
+  "modelle": {
+    "design": "Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+    "base": "Qwen3-TTS-12Hz-1.7B-Base"
+  },
+  "comfyui_name": "sternenepoche_verwalter-syntheten",
+  "erstellt": "2026-10-11T01:43:02+02:00",
+  "aktualisiert": "2026-10-11T01:43:02+02:00",
+  "voicebox_name": "Sternenepoche Ordo (Verwalter, Syntheten)",
+  "nutzung": {
+    "loki_stimmen": "stimmen.cmd sprechen sternenepoche/verwalter-syntheten \"Text\"",
+    "comfyui": "LoadSpeaker -> sternenepoche_verwalter-syntheten.wav (models/qwen-tts/voices), dann VoiceClone",
+    "voicebox": "Profil importieren: verwalter.syntheten.voicebox.zip (oder das Cockpit legt es selbst an)",
+    "qwen_tts": "referenz.wav + referenztext als ref_audio/ref_text, oder stimme.qvp als voice_clone_prompt"
+  }
+}

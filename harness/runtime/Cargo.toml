@@ -1,0 +1,47 @@
+[package]
+name = "sternenepoche-harness"
+version = "0.1.0"
+edition = "2021"
+description = "Eigener Harness für Sternenepoche: Modelle je Rolle, Gedächtnis, Wachposten, WASM-Plugins, lokale API und MCP"
+publish = false
+
+# Eigenständiger Workspace: wird auch außerhalb dieses Repositorys gebaut.
+[workspace]
+
+[[bin]]
+name = "sternenepoche-harness"
+path = "src/main.rs"
+
+# Der Harness Builder wählt genau diese Bausteine aus und baut den Harness auf dem
+# Rechner des Spielers. Je Kategorie gibt es zwei Optionen.
+[features]
+default = ["ollama", "openrouter", "openai", "sqlite", "lokale-api"]
+ollama = []
+openrouter = []
+openai = []
+sqlite = ["dep:rusqlite"]
+duckdb = ["dep:libloading"]
+wasm = ["dep:wasmi"]
+lokale-api = ["dep:tiny_http"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+getrandom = "0.2"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+rusqlite = { version = "0.32", features = ["bundled"], optional = true }
+libloading = { version = "0.8", optional = true }
+wasmi = { version = "2", optional = true }
+tiny_http = { version = "0.12", optional = true }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_JobObjects", "Win32_System_Threading"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+landlock = "0.4"
+
+[profile.release]
+opt-level = 3
+debug = false
+strip = true

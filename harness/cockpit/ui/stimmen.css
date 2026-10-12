@@ -1,0 +1,74 @@
+/* Ratsstimmen: Untertitel über der Bühne, Funkfenster, Sprechen ohne 3D-Modell, Gesprächsblock. */
+
+/* ---------- Untertitel: liegt über dem unteren Rand der sprechenden Bühne */
+.stimme-untertitel { position: fixed; z-index: 60; transform: translateY(calc(-100% + 6px)); padding: 9px 13px; border-radius: 10px;
+  background: rgba(5, 10, 18, .82); border: 1px solid var(--linie2); border-left: 3px solid var(--rolle, var(--gold));
+  color: var(--text); font: 500 14px/1.45 var(--schrift); text-align: left; pointer-events: none; backdrop-filter: blur(6px);
+  opacity: 0; transition: opacity .25s ease, transform .25s ease; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); }
+.stimme-untertitel.an { opacity: 1; transform: translateY(-100%); }
+
+/* ---------- Bühne, während ihre Figur spricht */
+[data-spricht="stratege"] .buehne[data-rolle="stratege"], [data-spricht="verwalter"] .buehne[data-rolle="verwalter"],
+[data-spricht="diplomat"] .buehne[data-rolle="diplomat"], [data-spricht="feldherr"] .buehne[data-rolle="feldherr"] {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--rolle, var(--cyan)) 60%, transparent), 0 0 calc(18px + var(--pegel, 0) * 40px) color-mix(in srgb, var(--rolle, var(--cyan)) 35%, transparent);
+  transition: box-shadow .08s linear; }
+/* Ohne 3D-Modell: das freigestellte Ganzkörperbild bzw. das Porträt zoomt zum Kopf und lebt mit dem Pegel. */
+.buehne.ganz .ersatz, .buehne.bild .ersatz { transition: scale .9s cubic-bezier(.2, .7, .2, 1), translate .9s cubic-bezier(.2, .7, .2, 1); }
+[data-spricht="stratege"] .buehne.ganz[data-rolle="stratege"] .ersatz, [data-spricht="verwalter"] .buehne.ganz[data-rolle="verwalter"] .ersatz,
+[data-spricht="diplomat"] .buehne.ganz[data-rolle="diplomat"] .ersatz, [data-spricht="feldherr"] .buehne.ganz[data-rolle="feldherr"] .ersatz {
+  transform-origin: 50% 7%; scale: calc(2.5 + var(--pegel, 0) * .04); translate: 0 calc(var(--pegel, 0) * -2px); }
+[data-spricht="stratege"] .buehne.bild[data-rolle="stratege"] .ersatz, [data-spricht="verwalter"] .buehne.bild[data-rolle="verwalter"] .ersatz,
+[data-spricht="diplomat"] .buehne.bild[data-rolle="diplomat"] .ersatz, [data-spricht="feldherr"] .buehne.bild[data-rolle="feldherr"] .ersatz {
+  transform-origin: 50% 30%; scale: calc(1.18 + var(--pegel, 0) * .025); }
+
+/* ---------- Funkfenster rechts unten (mit eigener Persönlichkeit) */
+#funk { position: fixed; z-index: 70; right: 22px; bottom: 22px; width: min(430px, calc(100vw - 44px)); display: none; }
+#funk:has(.funk-box) { display: block; }
+.funk-box { position: relative; display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 0; border-radius: 14px; overflow: hidden;
+  background: linear-gradient(135deg, #0a1421, #060c16); border: 1px solid color-mix(in srgb, var(--rolle, var(--cyan)) 55%, transparent);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .6), 0 0 26px color-mix(in srgb, var(--rolle, var(--cyan)) 18%, transparent);
+  transform: translateX(calc(100% + 40px)); opacity: 0; transition: transform .38s cubic-bezier(.2, .8, .2, 1), opacity .3s ease; }
+#funk.an .funk-box { transform: none; opacity: 1; }
+.funk-kopf { position: relative; height: 132px; background: radial-gradient(ellipse at 50% 35%, color-mix(in srgb, var(--rolle, var(--cyan)) 22%, #0a1626), #050a12); }
+.funk-kopf .buehne { min-height: 0; height: 132px !important; border: 0; border-radius: 0; background: transparent; }
+.funk-kopf .buehne canvas { cursor: pointer; }
+.funk-kopf .buehne.bild .ersatz, .funk-kopf .buehne.ganz .ersatz { background-size: cover; background-position: center 22%; inset: 0; filter: none;
+  animation: kopf-idle 7s ease-in-out infinite; scale: calc(1.08 + var(--pegel, 0) * .035); }
+.funk-kopf .buehne.ganz .ersatz { background-size: 260%; background-position: 50% 3%; }
+.funk-kopf .buehne.bild::after { display: none; }
+.funk-linien { position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .045) 0 1px, transparent 1px 3px);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, .6); animation: funk-flimmern 4s steps(40) infinite; }
+.funk-text { padding: 12px 34px 12px 14px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.funk-name { display: flex; flex-direction: column; line-height: 1.2; }
+.funk-name b { font: 650 15px var(--titel); color: color-mix(in srgb, var(--rolle, var(--gold)) 55%, white); letter-spacing: .02em; }
+.funk-name span { font-size: 11px; color: var(--matt); text-transform: uppercase; letter-spacing: .08em; }
+.funk-satz { font: 500 14px/1.4 var(--schrift); color: var(--text); }
+.funk-pegel { display: flex; align-items: flex-end; gap: 3px; height: 18px; margin-top: auto; }
+.funk-pegel i { width: 4px; border-radius: 2px; background: var(--rolle, var(--cyan)); opacity: .8;
+  height: calc(3px + var(--pegel, 0) * 15px * (.55 + .45 * sin(calc(var(--i) * 1.7rad + 0.4rad)))); transition: height .06s linear; }
+.funk-zu { position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--linie2); background: rgba(6, 12, 22, .6);
+  color: var(--matt); cursor: pointer; font-size: 11px; line-height: 1; }
+.funk-zu:hover { color: var(--text); border-color: var(--rolle, var(--gold)); }
+@keyframes kopf-idle { 0%, 100% { translate: 0 0; rotate: 0deg; } 30% { translate: 1px -2px; rotate: .4deg; } 65% { translate: -1px -1px; rotate: -.3deg; } }
+@keyframes funk-flimmern { 0%, 100% { opacity: .9; } 50% { opacity: .75; } }
+
+/* ---------- Gespräch unter der Figur */
+.karte.gespraech { margin-top: 12px; padding: 12px 14px; border-left: 3px solid var(--rolle, var(--gold)); }
+.gespraech-kopf { display: flex; align-items: center; gap: 8px; }
+.gespraech-kopf b { display: block; font: 650 15px var(--titel); }
+.gespraech-kopf small { color: var(--matt); font-size: 11.5px; }
+.gespraech-verlauf { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 2px; max-height: 260px; overflow: auto; }
+.gespraech-verlauf .paar { display: flex; flex-direction: column; gap: 4px; }
+.gespraech-verlauf .frage { align-self: flex-end; max-width: 88%; padding: 6px 10px; border-radius: 10px 10px 2px 10px; background: rgba(127, 211, 255, .1); font-size: 13px; }
+.gespraech-verlauf .antwort { align-self: flex-start; max-width: 94%; padding: 7px 10px; border-radius: 10px 10px 10px 2px; background: var(--glas2);
+  border: 1px solid color-mix(in srgb, var(--rolle, var(--gold)) 35%, transparent); font-size: 13.5px; line-height: 1.45; display: flex; flex-direction: column; gap: 3px; position: relative; }
+.gespraech-verlauf .antwort small { color: var(--matt); font-size: 11px; }
+.gespraech-verlauf .antwort.fehler { border-color: rgba(255, 140, 140, .5); }
+.gespraech-verlauf .antwort.fehler small { color: var(--rot); }
+.gespraech-verlauf .nochmal { align-self: flex-start; border: 0; background: none; color: var(--rolle, var(--gold)); cursor: pointer; font-size: 12px; padding: 0; }
+.gespraech-eingabe { display: flex; gap: 6px; margin-top: 10px; }
+.gespraech-eingabe .feld { flex: 1; min-width: 0; }
+.gespraech-fuss { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-top: 10px; font-size: 12px; }
+.gespraech-fuss .schalter { font-size: 12px; }
+.gespraech-fuss .laut { display: flex; align-items: center; gap: 4px; color: var(--matt); }
+.gespraech-fuss .laut input { width: 70px; }

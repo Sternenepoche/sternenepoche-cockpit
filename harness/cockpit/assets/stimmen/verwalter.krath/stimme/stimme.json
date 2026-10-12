@@ -1,0 +1,26 @@
+{
+  "name": "sternenepoche/verwalter-krath",
+  "anzeigename": "Murrka Ashgrat",
+  "rolle": "Verwalter · Krath",
+  "beschreibung": "Adult woman in her forties with a low, husky, gravelly alto voice, gruff and practical like a forge master, blunt with dry humor, steady pace, clearly a woman's low voice, not shrill.",
+  "beschreibung_de": "Tiefe, rauchige Altstimme, ruppig, trocken – eine Schmiedemeisterin.",
+  "referenztext": "Erz rein, Stahl raus, und keiner jammert. So läuft eine Schmiede, und so läuft auch ein Reich.",
+  "sprache": "German",
+  "seed": 4673,
+  "gewaehlt": 1,
+  "lage": "frau_tief",
+  "modelle": {
+    "design": "Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+    "base": "Qwen3-TTS-12Hz-1.7B-Base"
+  },
+  "comfyui_name": "sternenepoche_verwalter-krath",
+  "erstellt": "2026-10-11T01:43:02+02:00",
+  "aktualisiert": "2026-10-11T01:43:02+02:00",
+  "voicebox_name": "Sternenepoche Murrka Ashgrat (Verwalter, Krath)",
+  "nutzung": {
+    "loki_stimmen": "stimmen.cmd sprechen sternenepoche/verwalter-krath \"Text\"",
+    "comfyui": "LoadSpeaker -> sternenepoche_verwalter-krath.wav (models/qwen-tts/voices), dann VoiceClone",
+    "voicebox": "Profil importieren: verwalter.krath.voicebox.zip (oder das Cockpit legt es selbst an)",
+    "qwen_tts": "referenz.wav + referenztext als ref_audio/ref_text, oder stimme.qvp als voice_clone_prompt"
+  }
+}

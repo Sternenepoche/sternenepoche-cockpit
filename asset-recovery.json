@@ -1,0 +1,4464 @@
+{
+  "base_url": "https://github.com/Sternenepoche/sternenepoche.github.io/releases/download/cockpit-v0.2.2-20261012/Sternenepoche-Harness-Cockpit-0.2.2-20261012-windows-x64.zip",
+  "base_sha256": "bc203a8a36fe864b15223f38cff1709a2a59b83f3d77856d0c6a6ebd4e0588ac",
+  "assets": [
+    {
+      "path": "web-client/assets/backgrounds.archive.webp",
+      "offset": 141004624,
+      "size": 32222,
+      "sha256": "9a03c168b71f5c1bf0ec0c0cd385ce48fa734947ba3646cc1d70748db70851e2"
+    },
+    {
+      "path": "web-client/assets/backgrounds.command.webp",
+      "offset": 13598610,
+      "size": 29686,
+      "sha256": "e38ceb7782a2ef4f728d1eda4fc9b0adba56c11403175128bac5d5d80bf0b322"
+    },
+    {
+      "path": "web-client/assets/backgrounds.diplomacy.webp",
+      "offset": 13628329,
+      "size": 34238,
+      "sha256": "91d51ec4fc6fcab12ee885e3364330e18abd8212f6379c4af8c25eaeb875b04b"
+    },
+    {
+      "path": "web-client/assets/backgrounds.hangar.webp",
+      "offset": 13662597,
+      "size": 39482,
+      "sha256": "1ad12d54b6436ac0d303df8c4c1c18ef8e46312f69c17b31826ff6b4a091f119"
+    },
+    {
+      "path": "web-client/assets/backgrounds.market.webp",
+      "offset": 13702109,
+      "size": 49186,
+      "sha256": "56133ee03aacb5cffc9a38dbcbb342e78c2056a72d4a793d6786a56d9125970a"
+    },
+    {
+      "path": "web-client/assets/backgrounds.nebula.webp",
+      "offset": 13751325,
+      "size": 4138,
+      "sha256": "a27f2c473e92884d4f624dcf590301e29f050ee026b7d56b0bbcd9d3483f47d0"
+    },
+    {
+      "path": "web-client/assets/backgrounds.ranking.webp",
+      "offset": 13755494,
+      "size": 41402,
+      "sha256": "729b555e220ca56eff516f776e7242a8108d67e3443719e6dd69428c41c1b895"
+    },
+    {
+      "path": "web-client/assets/backgrounds.research.webp",
+      "offset": 13796928,
+      "size": 24114,
+      "sha256": "f5a1b2394dfcd3aabbbf184e95c3d1b7d2c13c4724ac2324b45b9b40e40cd6e3"
+    },
+    {
+      "path": "web-client/assets/backgrounds.shipyard.webp",
+      "offset": 13821074,
+      "size": 38750,
+      "sha256": "3f049cd63243ebfeb2f4972bdd8a38468253c783d67037d3a492d8e1edefd378"
+    },
+    {
+      "path": "web-client/assets/backgrounds.stars.webp",
+      "offset": 13859853,
+      "size": 1390,
+      "sha256": "67d6f3335bbed8a7aac854e36831ad40d8e2beaf58cde20da4aa59ac6148f950"
+    },
+    {
+      "path": "web-client/assets/backgrounds.start.webp",
+      "offset": 13861272,
+      "size": 28748,
+      "sha256": "c81fd694f410c570b7252d2991140af43e4a88af7d32dae405939c681b3b056f"
+    },
+    {
+      "path": "web-client/assets/buildings.akademie.aurelianer.webp",
+      "offset": 13890061,
+      "size": 39406,
+      "sha256": "a28b0b0932c097511474013c231a51bb93cdd3ab5f5c2d856f09d654d19778e4"
+    },
+    {
+      "path": "web-client/assets/buildings.akademie.krath.webp",
+      "offset": 13929503,
+      "size": 19832,
+      "sha256": "2ef1258b1f6e518c4d5864947f9fa4c6878f47858b8b291db61dcd83e1e90c01"
+    },
+    {
+      "path": "web-client/assets/buildings.akademie.syntheten.webp",
+      "offset": 13949375,
+      "size": 33192,
+      "sha256": "a2854d641d401ebfcddf64b713f25a583131d3cde547fc446ecc3dcdcd18e939"
+    },
+    {
+      "path": "web-client/assets/buildings.akademie.veyari.webp",
+      "offset": 13982604,
+      "size": 29006,
+      "sha256": "cf801b52950779eb620a74c643575cab1d3b91fed1041c70423494d8097f76ea"
+    },
+    {
+      "path": "web-client/assets/buildings.akademie.webp",
+      "offset": 14011640,
+      "size": 23390,
+      "sha256": "f8d86e76a3203847a24652bba3d7bc7f479870fae0527e3ab5b13e230564ee29"
+    },
+    {
+      "path": "web-client/assets/buildings.bauhof.aurelianer.webp",
+      "offset": 14035069,
+      "size": 37498,
+      "sha256": "26ea8a0a0fa33d38bd22d32536599731c246d5a9dfc23355e62383fc1a8d98f8"
+    },
+    {
+      "path": "web-client/assets/buildings.bauhof.krath.webp",
+      "offset": 14072601,
+      "size": 33252,
+      "sha256": "6b8a1270688775483fa1877617aa2b79b796410a915a68f8a191d2d2f5572746"
+    },
+    {
+      "path": "web-client/assets/buildings.bauhof.syntheten.webp",
+      "offset": 14105891,
+      "size": 28152,
+      "sha256": "4797953e8c401e928e40c4d55f3edf5b75db8f1846fec5b29123f2b49c1e5f86"
+    },
+    {
+      "path": "web-client/assets/buildings.bauhof.veyari.webp",
+      "offset": 14134078,
+      "size": 29448,
+      "sha256": "23038eec74b69f819bd8adbc8d434033719aa7a6b9a7d4123883f400f3e0ce52"
+    },
+    {
+      "path": "web-client/assets/buildings.bauhof.webp",
+      "offset": 14163554,
+      "size": 22670,
+      "sha256": "cf9d98199636a9a878c1085ec7dcaa888a5af971141367306f99b4843a159679"
+    },
+    {
+      "path": "web-client/assets/buildings.bunker.aurelianer.webp",
+      "offset": 14186263,
+      "size": 26372,
+      "sha256": "b8a89476dab6717611fe97aab5c9c054200c8201ed5b6dd21e3ea2a9d89ac8c1"
+    },
+    {
+      "path": "web-client/assets/buildings.bunker.krath.webp",
+      "offset": 14212669,
+      "size": 25128,
+      "sha256": "9906a1c4119f1ef269a9330ec8e028a541ea7e79fe49c3afff0039bf0cacd222"
+    },
+    {
+      "path": "web-client/assets/buildings.bunker.syntheten.webp",
+      "offset": 14237835,
+      "size": 23276,
+      "sha256": "b4bca45d2047cf35666c2567376b4b9db7aca38298b1ed346674f4a35ba905a3"
+    },
+    {
+      "path": "web-client/assets/buildings.bunker.veyari.webp",
+      "offset": 14261146,
+      "size": 32756,
+      "sha256": "cb5ab39ddd92d45ddf4a6305a3fa73584e0194ffd5af05470ec60271eca8526e"
+    },
+    {
+      "path": "web-client/assets/buildings.bunker.webp",
+      "offset": 14293930,
+      "size": 19446,
+      "sha256": "ec6ed54ce531fc300feea0af58b132b3094e005f0ecbf0767aed9265f1e64875"
+    },
+    {
+      "path": "web-client/assets/buildings.deuteriumsynthesizer.aurelianer.webp",
+      "offset": 14313429,
+      "size": 31634,
+      "sha256": "329ba69330c8fd3dca69284a093524887c157a89ad3980310457d9780b67b0cd"
+    },
+    {
+      "path": "web-client/assets/buildings.deuteriumsynthesizer.krath.webp",
+      "offset": 14345111,
+      "size": 21130,
+      "sha256": "167e5dbfe439bcf9e516957e0054d8cf1350eb04652ad326750c89f3565959e8"
+    },
+    {
+      "path": "web-client/assets/buildings.deuteriumsynthesizer.syntheten.webp",
+      "offset": 14366293,
+      "size": 20036,
+      "sha256": "a58cc22185061b2a99b7649c8f049e80db603e6406416b1f6f39f80f498b04d3"
+    },
+    {
+      "path": "web-client/assets/buildings.deuteriumsynthesizer.veyari.webp",
+      "offset": 14386378,
+      "size": 24768,
+      "sha256": "1d04ff0a040f8f02009ca634965874271a8f3ccc7493a74018861389f7f60976"
+    },
+    {
+      "path": "web-client/assets/buildings.deuteriumsynthesizer.webp",
+      "offset": 14411188,
+      "size": 15536,
+      "sha256": "aec4c299c810fcdd8b678731ada469d2d647be7e77eeb6ff4ba78e783b7e4d66"
+    },
+    {
+      "path": "web-client/assets/buildings.elektronikwerk.aurelianer.webp",
+      "offset": 14426771,
+      "size": 30186,
+      "sha256": "f21875887045697bc16a333ddf2930afa9172ce001f6ab47ef080f722ace6489"
+    },
+    {
+      "path": "web-client/assets/buildings.elektronikwerk.krath.webp",
+      "offset": 14456999,
+      "size": 22062,
+      "sha256": "d2a531cf83506597a94a68210ec961c2253def3b14f1e60c5d5e4bc51b3420e6"
+    },
+    {
+      "path": "web-client/assets/buildings.elektronikwerk.syntheten.webp",
+      "offset": 14479107,
+      "size": 28342,
+      "sha256": "bfffdf187500d8a9a493f20bfc9be57ec8d4766defc200e3c3530013c7413e94"
+    },
+    {
+      "path": "web-client/assets/buildings.elektronikwerk.veyari.webp",
+      "offset": 14507492,
+      "size": 24206,
+      "sha256": "f71e1fe2891639376034c1957451727ca1808335e071fc85027350cff5de99cc"
+    },
+    {
+      "path": "web-client/assets/buildings.elektronikwerk.webp",
+      "offset": 14531734,
+      "size": 23350,
+      "sha256": "4617e2120ac3493b1e66e9f00d1e6e89fef7fab17ac0339175e52c7ee9200614"
+    },
+    {
+      "path": "web-client/assets/buildings.erzmine.aurelianer.webp",
+      "offset": 14555124,
+      "size": 36174,
+      "sha256": "ad25c746b51d2a3ef3704d8811e402d3c75ecdbecdacc9d1801b704399c1daef"
+    },
+    {
+      "path": "web-client/assets/buildings.erzmine.krath.webp",
+      "offset": 14591333,
+      "size": 26652,
+      "sha256": "8941a038bb2d6f2d19cbce8762eead7bd63a2b67e01a02ad5b7114039fd30676"
+    },
+    {
+      "path": "web-client/assets/buildings.erzmine.syntheten.webp",
+      "offset": 14618024,
+      "size": 24722,
+      "sha256": "d6b7b4adb0b9d0a32a99ea9db15e78003b943353a941c14677c59e09ff5011ae"
+    },
+    {
+      "path": "web-client/assets/buildings.erzmine.veyari.webp",
+      "offset": 14642782,
+      "size": 24886,
+      "sha256": "8de5ac8b27f30033d4aa281068677eeecb4173a97c04506c362c828f2e5038be"
+    },
+    {
+      "path": "web-client/assets/buildings.erzmine.webp",
+      "offset": 14667697,
+      "size": 22446,
+      "sha256": "7f86f76654a4e6a2f1c8ecba3d13b498bb1274732694c63f01ea06bd4454457d"
+    },
+    {
+      "path": "web-client/assets/buildings.farm.aurelianer.webp",
+      "offset": 14690180,
+      "size": 41436,
+      "sha256": "446638b30fc3ef2d9285af127f84e6d873d2c1b3fd1d915058f65db6436a5715"
+    },
+    {
+      "path": "web-client/assets/buildings.farm.krath.webp",
+      "offset": 14731648,
+      "size": 35760,
+      "sha256": "1d32e6ba025eea361714f36d4ba7d999171cd15c62f92d11885c80da8fe6a3f8"
+    },
+    {
+      "path": "web-client/assets/buildings.farm.syntheten.webp",
+      "offset": 14767444,
+      "size": 36550,
+      "sha256": "ba5184de7366994e56b0de4fa85ca71cca19721988a0d2f93a253d4416577bf0"
+    },
+    {
+      "path": "web-client/assets/buildings.farm.veyari.webp",
+      "offset": 14804027,
+      "size": 30734,
+      "sha256": "b5bcdedfe29bcfc69d03549b534532c39f78120f236e6053d7725b5c7f213396"
+    },
+    {
+      "path": "web-client/assets/buildings.farm.webp",
+      "offset": 14834787,
+      "size": 28636,
+      "sha256": "08239093652e3a4f6bfba23c3533e8aa2474f39143b4fb58db61c9b6d83fa664"
+    },
+    {
+      "path": "web-client/assets/buildings.forschungsarchiv.aurelianer.webp",
+      "offset": 14863472,
+      "size": 25702,
+      "sha256": "a0e19d792dd9a64b40befd63b51df21f63b9e208d1546b7ec348ad0aaaa28e51"
+    },
+    {
+      "path": "web-client/assets/buildings.forschungsarchiv.krath.webp",
+      "offset": 14889218,
+      "size": 19812,
+      "sha256": "cfd1c56ed52e9402615ced84cebbe43c54efc7bbc3d58d667627df79634eac9d"
+    },
+    {
+      "path": "web-client/assets/buildings.forschungsarchiv.syntheten.webp",
+      "offset": 14909078,
+      "size": 25424,
+      "sha256": "212d6cd7d1478e359547a8591f6cbcc651013ca4c33f2f12ce10d835efcab992"
+    },
+    {
+      "path": "web-client/assets/buildings.forschungsarchiv.veyari.webp",
+      "offset": 14934547,
+      "size": 30688,
+      "sha256": "e809f1a7fd04d66bd329b9287a273795f0aa77e1c761e77ed37f667c2a580ccb"
+    },
+    {
+      "path": "web-client/assets/buildings.forschungsarchiv.webp",
+      "offset": 14965273,
+      "size": 28978,
+      "sha256": "f9420743ded93769e1474f2c3bac2bdebaa7734f6da12feb73ba12eb84799e7b"
+    },
+    {
+      "path": "web-client/assets/buildings.fusionskraftwerk.aurelianer.webp",
+      "offset": 14994300,
+      "size": 21066,
+      "sha256": "055a1575cfe742ff967730056231bbe9726598fc56c189c29fb7d0ba3450a2eb"
+    },
+    {
+      "path": "web-client/assets/buildings.fusionskraftwerk.krath.webp",
+      "offset": 15015410,
+      "size": 21632,
+      "sha256": "fa2b421b4bd6fd1307b43a6ad11c04bac167f55b31d2e2aff9a8e4c0ffc599c1"
+    },
+    {
+      "path": "web-client/assets/buildings.fusionskraftwerk.syntheten.webp",
+      "offset": 15037090,
+      "size": 20724,
+      "sha256": "769daabe4982a265e3d93824015b7686452b931326948f36bfe316e31777c880"
+    },
+    {
+      "path": "web-client/assets/buildings.fusionskraftwerk.veyari.webp",
+      "offset": 15057859,
+      "size": 23176,
+      "sha256": "19ac7c12b0799b103e573c6431732a174fa9bf3269f7a56b500250cb37b9e032"
+    },
+    {
+      "path": "web-client/assets/buildings.fusionskraftwerk.webp",
+      "offset": 15081073,
+      "size": 17026,
+      "sha256": "6432bf020cbfed368410f3f1f3faffe7ed56575e0117ecac08d8587fc676d694"
+    },
+    {
+      "path": "web-client/assets/buildings.giesserei.aurelianer.webp",
+      "offset": 15098141,
+      "size": 32004,
+      "sha256": "1ffe8d62700b3999b0cbdbd0ac0a054a39b87c8a0e7a5d8de84c3b3faa469802"
+    },
+    {
+      "path": "web-client/assets/buildings.giesserei.krath.webp",
+      "offset": 15130182,
+      "size": 23164,
+      "sha256": "fe8e20ea1043a2a750249ddcd9019a6f8b35faeb772372aca029d40a0e8f61ce"
+    },
+    {
+      "path": "web-client/assets/buildings.giesserei.syntheten.webp",
+      "offset": 15153387,
+      "size": 28232,
+      "sha256": "05a89ad080e912ee52215bd775d3b9a00806c52e57c329ffd8dd2bb91ac6082f"
+    },
+    {
+      "path": "web-client/assets/buildings.giesserei.veyari.webp",
+      "offset": 15181657,
+      "size": 20740,
+      "sha256": "3bfc3bd4718e8eb1071eab88dde94edd17af869494e91fa135d72826e43d601c"
+    },
+    {
+      "path": "web-client/assets/buildings.giesserei.webp",
+      "offset": 15202428,
+      "size": 19202,
+      "sha256": "e02f55fb516fb3f609738139a380e4d75e71618f6cdaac1b4eef887f4c3b7af9"
+    },
+    {
+      "path": "web-client/assets/buildings.kaserne.aurelianer.webp",
+      "offset": 15221670,
+      "size": 33130,
+      "sha256": "7936f3447d03866fe977ec8d285ca2353b0f20bcea4e26bdcee7bf1f0b5ad890"
+    },
+    {
+      "path": "web-client/assets/buildings.kaserne.krath.webp",
+      "offset": 15254835,
+      "size": 23722,
+      "sha256": "89445ff449199014436199d339b6c7ef704ce0fafbf7a23db0cc6fd4777e0716"
+    },
+    {
+      "path": "web-client/assets/buildings.kaserne.syntheten.webp",
+      "offset": 15278596,
+      "size": 24182,
+      "sha256": "9ed8c9b539b6761a659fce70e3eb54c04822152a371aec25a6fb3a02b8cb0760"
+    },
+    {
+      "path": "web-client/assets/buildings.kaserne.veyari.webp",
+      "offset": 15302814,
+      "size": 20408,
+      "sha256": "7530f3b2cd907eb8a14ef75e8db601202f59e8936fd5203d37132fbdd631bcac"
+    },
+    {
+      "path": "web-client/assets/buildings.kaserne.webp",
+      "offset": 15323251,
+      "size": 22152,
+      "sha256": "013aac512f2d531f3d7931f8f053f7b5718515b26eb74f2de2b802085b1f665d"
+    },
+    {
+      "path": "web-client/assets/buildings.konsumgueterwerk.aurelianer.webp",
+      "offset": 15345452,
+      "size": 33258,
+      "sha256": "fc7c0c63be0a491acd258d2b3847c80d76a4b73b1bd27dc4a35d6505aa70d196"
+    },
+    {
+      "path": "web-client/assets/buildings.konsumgueterwerk.krath.webp",
+      "offset": 15378754,
+      "size": 22172,
+      "sha256": "e9aab323611061feeb5b2f29230c062c04239958e02960481e3c006d5337afd2"
+    },
+    {
+      "path": "web-client/assets/buildings.konsumgueterwerk.syntheten.webp",
+      "offset": 15400974,
+      "size": 25884,
+      "sha256": "1d77d08c5e2c8cde6bd1186ee5022fc037a1ea3ef022e6db52ad7fbe7d21d26d"
+    },
+    {
+      "path": "web-client/assets/buildings.konsumgueterwerk.veyari.webp",
+      "offset": 15426903,
+      "size": 28800,
+      "sha256": "b88a10666bdd201c84ad15f75e3782040a3bfefb825229251ba6eb67c9076929"
+    },
+    {
+      "path": "web-client/assets/buildings.konsumgueterwerk.webp",
+      "offset": 15455741,
+      "size": 18464,
+      "sha256": "5fb5fabb90683ca5da5632d73fb42cc633984d5ae338d73b84f532a321af753e"
+    },
+    {
+      "path": "web-client/assets/buildings.kristallmine.aurelianer.webp",
+      "offset": 15474250,
+      "size": 39060,
+      "sha256": "c65c2c168789fbca48fed141b202db655c141d9bc3b34d309b1c231fca273fc4"
+    },
+    {
+      "path": "web-client/assets/buildings.kristallmine.krath.webp",
+      "offset": 15513350,
+      "size": 29466,
+      "sha256": "2fcd4e83acc50e4ed3b55ed2c2f7ec133c3c74a1ec31706f2db8d26baaa3755c"
+    },
+    {
+      "path": "web-client/assets/buildings.kristallmine.syntheten.webp",
+      "offset": 15542860,
+      "size": 37264,
+      "sha256": "e2ce875d2d738a467b6858600cc2ab6d1054146448b7bf0a1ecd879122213264"
+    },
+    {
+      "path": "web-client/assets/buildings.kristallmine.veyari.webp",
+      "offset": 15580165,
+      "size": 35282,
+      "sha256": "b77b60a5718bca38b62222af519cadba5fcd68a5e55c8b58b57f41b73c2d2463"
+    },
+    {
+      "path": "web-client/assets/buildings.kristallmine.webp",
+      "offset": 15615481,
+      "size": 34382,
+      "sha256": "c1280b2e7dda13f5af97733f35016565a493a6480bc54ed392e74981beeb456a"
+    },
+    {
+      "path": "web-client/assets/buildings.labor.aurelianer.webp",
+      "offset": 15649901,
+      "size": 28226,
+      "sha256": "db28182361da979d183f8a5f2fa7524c876027347c97a0dbf30a36c03f76c260"
+    },
+    {
+      "path": "web-client/assets/buildings.labor.krath.webp",
+      "offset": 15678160,
+      "size": 24072,
+      "sha256": "38b24720588663a331f6839a56dd5ae7e59c44c6494197d7c5f3f63e8bec5150"
+    },
+    {
+      "path": "web-client/assets/buildings.labor.syntheten.webp",
+      "offset": 15702269,
+      "size": 23692,
+      "sha256": "fb3e343afef6d890487f8df163301609604bc058595642e6a572b1acc3516afc"
+    },
+    {
+      "path": "web-client/assets/buildings.labor.veyari.webp",
+      "offset": 15725995,
+      "size": 26414,
+      "sha256": "f9d0f53a8a5528268effa40a699d97cab1675c80f263792b0968fbf5ad1312f8"
+    },
+    {
+      "path": "web-client/assets/buildings.labor.webp",
+      "offset": 15752436,
+      "size": 23114,
+      "sha256": "753772beaf950d0181f2ddc44dffc1331af522942f1858630cc2f9f448f94064"
+    },
+    {
+      "path": "web-client/assets/buildings.lager.aurelianer.webp",
+      "offset": 15775588,
+      "size": 30008,
+      "sha256": "c2734077bde76bdb0f624762b492f7e690191363974412d06e1577546be6e620"
+    },
+    {
+      "path": "web-client/assets/buildings.lager.krath.webp",
+      "offset": 15805629,
+      "size": 25852,
+      "sha256": "283a0cd04d2f7b922e975a3e96c0bf226eb7c171ef4976858c0401ea409cb337"
+    },
+    {
+      "path": "web-client/assets/buildings.lager.syntheten.webp",
+      "offset": 15831518,
+      "size": 23432,
+      "sha256": "4235bc7b6d865ddd6c6e3c49afb388b5d67497ffc43766518f0b7274a2434137"
+    },
+    {
+      "path": "web-client/assets/buildings.lager.veyari.webp",
+      "offset": 15854984,
+      "size": 31496,
+      "sha256": "f027d445e593fbfe5e6b6f8b6bee2b724d5ecf77d84e5a639f3ce2a4d4396975"
+    },
+    {
+      "path": "web-client/assets/buildings.lager.webp",
+      "offset": 15886507,
+      "size": 20902,
+      "sha256": "c82709d6c9ef236540c9dc896fb136e0a1cb2731f30e385874c15b3de82decef"
+    },
+    {
+      "path": "web-client/assets/buildings.markt.aurelianer.webp",
+      "offset": 15907447,
+      "size": 34268,
+      "sha256": "8b0b4c7c8747f8741fc985c423cb7a0a480d8b93116126a9edcccd06da5cea9f"
+    },
+    {
+      "path": "web-client/assets/buildings.markt.krath.webp",
+      "offset": 15941748,
+      "size": 17326,
+      "sha256": "9518eb0d8410c607f22da1522c728ccbda26413fc8967888f09acec4a049527d"
+    },
+    {
+      "path": "web-client/assets/buildings.markt.syntheten.webp",
+      "offset": 15959111,
+      "size": 25458,
+      "sha256": "6499f3f3be0012d73cea0d31a9d04c07a6fa2523a26b9dea6cd052092d6500fb"
+    },
+    {
+      "path": "web-client/assets/buildings.markt.veyari.webp",
+      "offset": 15984603,
+      "size": 26880,
+      "sha256": "7a857ffeade6df65199ad005ce2d79f57c2e6bbc0312e05ef7669ee091684c00"
+    },
+    {
+      "path": "web-client/assets/buildings.markt.webp",
+      "offset": 16011510,
+      "size": 21568,
+      "sha256": "b81129b0e8a2889f0f0aeb9e8daf3968528117d3097782d615e0c5efb8d49d17"
+    },
+    {
+      "path": "web-client/assets/buildings.nanofabrik.aurelianer.webp",
+      "offset": 16033121,
+      "size": 31044,
+      "sha256": "828d033143f67c399d7aafcf0b4d2b4d54e8aa73ae92dc9c5ad8f2851bdaa640"
+    },
+    {
+      "path": "web-client/assets/buildings.nanofabrik.krath.webp",
+      "offset": 16064203,
+      "size": 22594,
+      "sha256": "176bce0cfa8dffc5f191d6461a4ae04bc9e0ccbeee45dd1e9ace413c4bef9a5d"
+    },
+    {
+      "path": "web-client/assets/buildings.nanofabrik.syntheten.webp",
+      "offset": 16086839,
+      "size": 27672,
+      "sha256": "d1af207119f0f6ffebd575fa6e21d9509d2d8d6a02e3cd139c9088e1c38a2ad2"
+    },
+    {
+      "path": "web-client/assets/buildings.nanofabrik.veyari.webp",
+      "offset": 16114550,
+      "size": 28622,
+      "sha256": "596d3e3cb2bbbb519a03960096ec85b2f99f61b5cccc27ed89298f867ad48735"
+    },
+    {
+      "path": "web-client/assets/buildings.nanofabrik.webp",
+      "offset": 16143204,
+      "size": 24630,
+      "sha256": "bf1f51e5abdf632e4c9c9eb82564a860512d2c6820cd28eb0656b243029c8d06"
+    },
+    {
+      "path": "web-client/assets/buildings.orbitalring.aurelianer.webp",
+      "offset": 16167878,
+      "size": 29808,
+      "sha256": "26f819bff17d615c747c70ac9a937835f295c209fe0f4d09ef6c85ed36779aaa"
+    },
+    {
+      "path": "web-client/assets/buildings.orbitalring.krath.webp",
+      "offset": 16197725,
+      "size": 21154,
+      "sha256": "9a78066d77e0ea54764a062c230322659fe5d2fcbd46b08fd5cee0169022c99f"
+    },
+    {
+      "path": "web-client/assets/buildings.orbitalring.syntheten.webp",
+      "offset": 16218922,
+      "size": 28662,
+      "sha256": "19555ea765d12f6fdbf62763a3eebcc60cc8f58fde70350d5f0dd42fd22b0003"
+    },
+    {
+      "path": "web-client/assets/buildings.orbitalring.veyari.webp",
+      "offset": 16247624,
+      "size": 26270,
+      "sha256": "e7e6bbdce14f56cbcd996b8bed5f2df07b9d4c46c9bfd54abda471a12efc9dba"
+    },
+    {
+      "path": "web-client/assets/buildings.orbitalring.webp",
+      "offset": 16273927,
+      "size": 21716,
+      "sha256": "6cf8b88a9bf8e17246bab2df04dcbdc18164a467ffd16fff327ca24b30dcd455"
+    },
+    {
+      "path": "web-client/assets/buildings.orbitalwerft.aurelianer.webp",
+      "offset": 16295688,
+      "size": 28034,
+      "sha256": "3571ecd0b2630c1f3b7b4784e4663b623a75a9b8d077d2ff481a459222710276"
+    },
+    {
+      "path": "web-client/assets/buildings.orbitalwerft.krath.webp",
+      "offset": 16323762,
+      "size": 21548,
+      "sha256": "2c973776f4b3ee2ff1e7b45ffe418bb72cf53d025c98b850dd85b0344c944192"
+    },
+    {
+      "path": "web-client/assets/buildings.orbitalwerft.syntheten.webp",
+      "offset": 16345354,
+      "size": 22380,
+      "sha256": "d30cefc059034c8ec3012f54b9d24752393f102c6c8dcaf5397663f0d2371447"
+    },
+    {
+      "path": "web-client/assets/buildings.orbitalwerft.veyari.webp",
+      "offset": 16367775,
+      "size": 29528,
+      "sha256": "5cc71b0392c5dc69df211141a3d8e8cfee7fb92586807ac56929cfb6aa461c4e"
+    },
+    {
+      "path": "web-client/assets/buildings.orbitalwerft.webp",
+      "offset": 16397337,
+      "size": 21350,
+      "sha256": "0ae1f49b53573a1fa54e16474da18d6d4754feca63f8ebc51f49347430811500"
+    },
+    {
+      "path": "web-client/assets/buildings.raketensilo.aurelianer.webp",
+      "offset": 16418731,
+      "size": 25424,
+      "sha256": "f1713c3244e0ec4e8e72373175b001f8b1c8c5f810b1ed1dbd66417498c0b1c9"
+    },
+    {
+      "path": "web-client/assets/buildings.raketensilo.krath.webp",
+      "offset": 16444194,
+      "size": 15506,
+      "sha256": "de3ae94299c636feaf3897c2a8051c6b80f2c84dc33e3f9ba7dd67d31de101b7"
+    },
+    {
+      "path": "web-client/assets/buildings.raketensilo.syntheten.webp",
+      "offset": 16459743,
+      "size": 25034,
+      "sha256": "be9b1947a79f6b751796b62a46001866b1d9853a1db1daa48d2477a13322a28f"
+    },
+    {
+      "path": "web-client/assets/buildings.raketensilo.veyari.webp",
+      "offset": 16484817,
+      "size": 23186,
+      "sha256": "abd9d3b35a8fe92108ffbb31d3039b1a2cee49035852628af171bb9e96c07459"
+    },
+    {
+      "path": "web-client/assets/buildings.raketensilo.webp",
+      "offset": 16508036,
+      "size": 17708,
+      "sha256": "f0434d1c3f24a8c7d4b69a21a7b4bb9cba3c42419c47483fe367f1bc9942c2a7"
+    },
+    {
+      "path": "web-client/assets/buildings.raumhafen.aurelianer.webp",
+      "offset": 16525786,
+      "size": 24400,
+      "sha256": "9b07a0e3d2acd965feb94a1a041c45695d716ecf7fd900aff6550e2615be225a"
+    },
+    {
+      "path": "web-client/assets/buildings.raumhafen.krath.webp",
+      "offset": 16550223,
+      "size": 21844,
+      "sha256": "1df131ee39c8da4664f71c0188f27c33c7fca352703076d773f6f336595bc66c"
+    },
+    {
+      "path": "web-client/assets/buildings.raumhafen.syntheten.webp",
+      "offset": 16572108,
+      "size": 22562,
+      "sha256": "f8da735409edefe2f186d59d9c70bb9405b1a15fd1728b864cca0661e8a737ec"
+    },
+    {
+      "path": "web-client/assets/buildings.raumhafen.veyari.webp",
+      "offset": 16594708,
+      "size": 24860,
+      "sha256": "c43f97a2f66805a02414ef0584e57f30dea449ced8a9d7953b9c9eccc26be6d2"
+    },
+    {
+      "path": "web-client/assets/buildings.raumhafen.webp",
+      "offset": 16619599,
+      "size": 18914,
+      "sha256": "f19851e773ea015f6ee76b646681c4648738132ddc6feab9fdb5758dcf532e7e"
+    },
+    {
+      "path": "web-client/assets/buildings.sensorphalanx.aurelianer.webp",
+      "offset": 16638559,
+      "size": 24368,
+      "sha256": "2bb3689f9b7c168aaeb683d4cbf7b4f2a5c47efe27c6dc4b057be539de316aee"
+    },
+    {
+      "path": "web-client/assets/buildings.sensorphalanx.krath.webp",
+      "offset": 16662968,
+      "size": 24394,
+      "sha256": "8e5501ce3d07132a1af0e76289c66e5a425da68d0619c1f8049cc98036423dc4"
+    },
+    {
+      "path": "web-client/assets/buildings.sensorphalanx.syntheten.webp",
+      "offset": 16687407,
+      "size": 17098,
+      "sha256": "aafdbb530cc95723b8a08d57735d3873b32e2c7b22abcfc91cd6da3c0f25f4fd"
+    },
+    {
+      "path": "web-client/assets/buildings.sensorphalanx.veyari.webp",
+      "offset": 16704547,
+      "size": 24156,
+      "sha256": "8b97a5e799b85a204675908b92273190aaf595080087b5c8c15103b3acb307e9"
+    },
+    {
+      "path": "web-client/assets/buildings.sensorphalanx.webp",
+      "offset": 16728738,
+      "size": 12518,
+      "sha256": "6777b4d82e1bf6dd3de541b3ad26feb2c28be97e812ef74a20931675b5039b0f"
+    },
+    {
+      "path": "web-client/assets/buildings.solarkraftwerk.aurelianer.webp",
+      "offset": 16741303,
+      "size": 37296,
+      "sha256": "2b16ec120382432fc77360aa8c7c5b8cbd5a50df026012729d4aa8cc653de759"
+    },
+    {
+      "path": "web-client/assets/buildings.solarkraftwerk.krath.webp",
+      "offset": 16778641,
+      "size": 26324,
+      "sha256": "2c8c028bf6ab1d0270ad0ee1e138288806d74cc2c82f8bf298422441d2057530"
+    },
+    {
+      "path": "web-client/assets/buildings.solarkraftwerk.syntheten.webp",
+      "offset": 16805011,
+      "size": 24172,
+      "sha256": "8bdf869b93891396634ee9fd7f4c095f5f8c46a7a4b20b620ec2c3bd9c829230"
+    },
+    {
+      "path": "web-client/assets/buildings.solarkraftwerk.veyari.webp",
+      "offset": 16829226,
+      "size": 30374,
+      "sha256": "47cdc608125c511054f6287827c5db03ca846fed7d5213e1a5e4c2a047626ac3"
+    },
+    {
+      "path": "web-client/assets/buildings.solarkraftwerk.webp",
+      "offset": 16859636,
+      "size": 24296,
+      "sha256": "f0445a5efdc73a93938e4a8ff37b9274cbc08989d6a516884f05d8973f977665"
+    },
+    {
+      "path": "web-client/assets/buildings.versorgungsnetz.aurelianer.webp",
+      "offset": 16883980,
+      "size": 33126,
+      "sha256": "889ac756052f6a3301b321c5a268104df85d6130d0b354a2bacb1ae5397e8c9c"
+    },
+    {
+      "path": "web-client/assets/buildings.versorgungsnetz.krath.webp",
+      "offset": 16917149,
+      "size": 19662,
+      "sha256": "37b6239c40bcb9424d97896040b407275774adb36e66fd2f9ae0a03511ed9bc7"
+    },
+    {
+      "path": "web-client/assets/buildings.versorgungsnetz.syntheten.webp",
+      "offset": 16936858,
+      "size": 21196,
+      "sha256": "aac6571112829b081db38236dc201fb88d8aafa3cb2f948b5dc07f62affb072a"
+    },
+    {
+      "path": "web-client/assets/buildings.versorgungsnetz.veyari.webp",
+      "offset": 16958098,
+      "size": 26546,
+      "sha256": "ba0d9b731a2b84c726960ea747dc51f4dc2ec1eea2f65c8e7c6d1e499c882550"
+    },
+    {
+      "path": "web-client/assets/buildings.versorgungsnetz.webp",
+      "offset": 16984681,
+      "size": 19800,
+      "sha256": "f39b8c93fc133ca51ee5cfc1745452c3b31c6fb8c2f265846a68d98a21abb3ba"
+    },
+    {
+      "path": "web-client/assets/buildings.verwaltungszentrum.aurelianer.webp",
+      "offset": 17004532,
+      "size": 25364,
+      "sha256": "f3916634dc1e3aeb08da3c14a7c3874d1a63aea5e2974e2850819120abd89728"
+    },
+    {
+      "path": "web-client/assets/buildings.verwaltungszentrum.krath.webp",
+      "offset": 17029942,
+      "size": 14724,
+      "sha256": "88f4c3aa9a32230a53682011a9ac46f6959a1ef3ec096d77c1d02fb3a83458d5"
+    },
+    {
+      "path": "web-client/assets/buildings.verwaltungszentrum.syntheten.webp",
+      "offset": 17044716,
+      "size": 22842,
+      "sha256": "3fc3ad57d16f8e7b9c5f5f492c6430ca794c0b22a90bd3dcc9617737b1a79b00"
+    },
+    {
+      "path": "web-client/assets/buildings.verwaltungszentrum.veyari.webp",
+      "offset": 17067605,
+      "size": 27822,
+      "sha256": "65ed982db3c94e323bcfc9cff3dbf434a7cba222b3de02e1f95681515096a21f"
+    },
+    {
+      "path": "web-client/assets/buildings.verwaltungszentrum.webp",
+      "offset": 17095467,
+      "size": 19782,
+      "sha256": "301ca1f58335283b2acdfe36241b535076a86cf5d1d47c636c22cda0d036724d"
+    },
+    {
+      "path": "web-client/assets/buildings.werft.aurelianer.webp",
+      "offset": 17115287,
+      "size": 23492,
+      "sha256": "f57b51af24f3ecc4eb4eba278654d547fedad77368402d247a2a3bc7d1ca6099"
+    },
+    {
+      "path": "web-client/assets/buildings.werft.krath.webp",
+      "offset": 17138812,
+      "size": 18590,
+      "sha256": "51995e9f595a4343e4bdcd0e2b76584dc0193e4cec459690757506a7531645ef"
+    },
+    {
+      "path": "web-client/assets/buildings.werft.syntheten.webp",
+      "offset": 17157439,
+      "size": 27572,
+      "sha256": "2e8d14640cb56364b82cfd7a03323fc91b82212414c29fc3b23b61c745af360f"
+    },
+    {
+      "path": "web-client/assets/buildings.werft.veyari.webp",
+      "offset": 17185045,
+      "size": 28560,
+      "sha256": "9d42806df4789e299e42f5b050bc130d5bb706bd7fde39adacd21274ea0d42bc"
+    },
+    {
+      "path": "web-client/assets/buildings.werft.webp",
+      "offset": 17213632,
+      "size": 23072,
+      "sha256": "d8e5d580504c73e0f6894460b10d9ec74e0d3a2e582cc51130fe64a9780091df"
+    },
+    {
+      "path": "web-client/assets/buildings.wohnblock.aurelianer.webp",
+      "offset": 17236746,
+      "size": 36448,
+      "sha256": "70c3c3e90193266e775c667f9fd2691feef1cbb327e5750c4ed96f641c6a3ea3"
+    },
+    {
+      "path": "web-client/assets/buildings.wohnblock.krath.webp",
+      "offset": 17273231,
+      "size": 15196,
+      "sha256": "7b0e3e7e30233a56a5b59f78055d9c96512094b76d9ca17841aa69aa669b4a72"
+    },
+    {
+      "path": "web-client/assets/buildings.wohnblock.syntheten.webp",
+      "offset": 17288468,
+      "size": 27244,
+      "sha256": "6da25945ae3684f4f50c64a1f8b9a7160e02562384d9446d088b58d59b7dc12f"
+    },
+    {
+      "path": "web-client/assets/buildings.wohnblock.veyari.webp",
+      "offset": 17315750,
+      "size": 22942,
+      "sha256": "d378f2a97c52cfeebffab618bfc72f8d21b6ba09964fff343189a551165b8894"
+    },
+    {
+      "path": "web-client/assets/buildings.wohnblock.webp",
+      "offset": 17338723,
+      "size": 16646,
+      "sha256": "9f88e33de72456718f8dc937dff456fd81a415d4863c3542704ef9ee7b65e555"
+    },
+    {
+      "path": "web-client/assets/buildings.xenoextraktor.aurelianer.webp",
+      "offset": 17355415,
+      "size": 24932,
+      "sha256": "828a8f80d26817d3ca70c0d61951782afeca97ab14b198cb40102860f901a0e6"
+    },
+    {
+      "path": "web-client/assets/buildings.xenoextraktor.krath.webp",
+      "offset": 17380388,
+      "size": 24798,
+      "sha256": "af3d5f775a4ff6af6beceb3aa9df2e915307b0d8379789f735de97a7575dab27"
+    },
+    {
+      "path": "web-client/assets/buildings.xenoextraktor.syntheten.webp",
+      "offset": 17405231,
+      "size": 29838,
+      "sha256": "7d4b277eb35fd71beacab469c0df05da261b95a9bf1112e17af861093975d167"
+    },
+    {
+      "path": "web-client/assets/buildings.xenoextraktor.veyari.webp",
+      "offset": 17435111,
+      "size": 27362,
+      "sha256": "85ace9434c90a2e2a4a2950a49e928a17e604043041ac2a858e207a5e6853d88"
+    },
+    {
+      "path": "web-client/assets/buildings.xenoextraktor.webp",
+      "offset": 17462508,
+      "size": 24192,
+      "sha256": "27e736764e495860fc940334f87749e4425bd07dd2865de3ce28dcd1c440b1a8"
+    },
+    {
+      "path": "web-client/assets/celestials.asteroidenguertel.webp",
+      "offset": 17486740,
+      "size": 13544,
+      "sha256": "04af4a5b7dd6425db197185993fa9f249387b9de58665a410e7a56205ebad6c0"
+    },
+    {
+      "path": "web-client/assets/celestials.nebelsystem.webp",
+      "offset": 17500318,
+      "size": 3868,
+      "sha256": "9e249a39dac3911ef62c49c0d99a942918b84793474613ed79d2de02a7e2fb3c"
+    },
+    {
+      "path": "web-client/assets/celestials.stern_blau.webp",
+      "offset": 17504219,
+      "size": 2938,
+      "sha256": "a5b078b5301d98a3d5a2fda3381b8fe767958ca26cdab3167454ab6cca81f435"
+    },
+    {
+      "path": "web-client/assets/celestials.stern_gelb.webp",
+      "offset": 17507190,
+      "size": 2990,
+      "sha256": "ab8990b91c8173e1a79e4ba1d401853f9666aa28a1535e8bd3c9463dd370250c"
+    },
+    {
+      "path": "web-client/assets/celestials.stern_rot.webp",
+      "offset": 17510212,
+      "size": 2994,
+      "sha256": "4be915532999709dec6e03b9bc81b09f080fe6a3ec0138ce5c24a44d988cbd28"
+    },
+    {
+      "path": "web-client/assets/celestials.truemmerfeld.webp",
+      "offset": 17513241,
+      "size": 19048,
+      "sha256": "22e20fad324e934cf43e4d15830a7f5e6b7f0bfd926f6e540570b51fb4b7c826"
+    },
+    {
+      "path": "web-client/assets/civilizations.aurelianer.aurelianer.webp",
+      "offset": 17532336,
+      "size": 35626,
+      "sha256": "a56e3b396843a5dad6017ea867de567974a7bd6f9384b9dd2e7f622e2d555d86"
+    },
+    {
+      "path": "web-client/assets/civilizations.krath.krath.webp",
+      "offset": 17567999,
+      "size": 28454,
+      "sha256": "7eae112cc14b38b39b5437110a559cec4b776a366b8767b37ee05ce25eb64deb"
+    },
+    {
+      "path": "web-client/assets/civilizations.syntheten.syntheten.webp",
+      "offset": 17596498,
+      "size": 32608,
+      "sha256": "e2a4f11f93b8abfe9c389aaa4294483e45afc716415150cd6163f57beb1aa3b1"
+    },
+    {
+      "path": "web-client/assets/civilizations.veyari.veyari.webp",
+      "offset": 17629145,
+      "size": 33312,
+      "sha256": "8a4e201f0b87f811eb94acc6f1570ed2de3492289e150747043023b4b83b31ad"
+    },
+    {
+      "path": "web-client/assets/contracts.handelsabkommen.webp",
+      "offset": 17662494,
+      "size": 15888,
+      "sha256": "66634ec6dfcce5a17477f9212bfc04f8b4d95452172432d8e976654a02ac0efa"
+    },
+    {
+      "path": "web-client/assets/contracts.nichtangriffspakt.webp",
+      "offset": 17678421,
+      "size": 17126,
+      "sha256": "40a9b2db1324a55179f9c6004957b5180b73461bebb7c3fe9a41065228bb0fde"
+    },
+    {
+      "path": "web-client/assets/contracts.tribut.webp",
+      "offset": 17695575,
+      "size": 22114,
+      "sha256": "a584b4ddcc898a9c75e5a89869f207a9ea249afa2788c6f6510535894343410b"
+    },
+    {
+      "path": "web-client/assets/contracts.verteidigungsbuendnis.webp",
+      "offset": 17717732,
+      "size": 17736,
+      "sha256": "6c120b6f235088595c15f7ad3c51ca3adc5b8a2fe3fe75fe7a4bf041073a04af"
+    },
+    {
+      "path": "web-client/assets/defenses.gausskanone.aurelianer.webp",
+      "offset": 17735511,
+      "size": 27552,
+      "sha256": "37a62c54a0110c3aa720852751b9a6d73a2ae30f38b224ebaa4c30391b332e81"
+    },
+    {
+      "path": "web-client/assets/defenses.gausskanone.krath.webp",
+      "offset": 17763101,
+      "size": 12968,
+      "sha256": "d8831d092e175e486d147c4e213f6edd600c3c4a3f782d9990597b39139f5378"
+    },
+    {
+      "path": "web-client/assets/defenses.gausskanone.syntheten.webp",
+      "offset": 17776111,
+      "size": 16850,
+      "sha256": "39c6ded09c9f024fa1b0a27113dbfd9859fa1b13c8e8ee72c6addf3322f1db72"
+    },
+    {
+      "path": "web-client/assets/defenses.gausskanone.veyari.webp",
+      "offset": 17793000,
+      "size": 22126,
+      "sha256": "8023e62b9c0e7a35e57a43e6f37bc20cad966421596ef33ca6c71df3204045e8"
+    },
+    {
+      "path": "web-client/assets/defenses.gausskanone.webp",
+      "offset": 17815158,
+      "size": 16652,
+      "sha256": "4a8479838f4cac3e7ea8bbd627edf98b63b466a6c46d888db5bdbff403354710"
+    },
+    {
+      "path": "web-client/assets/defenses.ionengeschuetz.aurelianer.webp",
+      "offset": 17831856,
+      "size": 26100,
+      "sha256": "49de0333c80e35d6ed25a8640bdb8d66431e6b0b94bb326012abbe782fdc7a34"
+    },
+    {
+      "path": "web-client/assets/defenses.ionengeschuetz.krath.webp",
+      "offset": 17857997,
+      "size": 15810,
+      "sha256": "a8f1130e33d6f8f23163b2a72894e060ce89c8337f8246c5b0d312fb620ead7e"
+    },
+    {
+      "path": "web-client/assets/defenses.ionengeschuetz.syntheten.webp",
+      "offset": 17873852,
+      "size": 20764,
+      "sha256": "7fa049250820681b8047a9fcc3a9d74e1979eff3dc283cf9660c45f2ed458743"
+    },
+    {
+      "path": "web-client/assets/defenses.ionengeschuetz.veyari.webp",
+      "offset": 17894658,
+      "size": 21316,
+      "sha256": "49e614943619b161523e14f80a02cfa39d09045e7c152871359b5b880d203c93"
+    },
+    {
+      "path": "web-client/assets/defenses.ionengeschuetz.webp",
+      "offset": 17916009,
+      "size": 10292,
+      "sha256": "2378b9ae3033070a592a189ff9889e000fe4d67ba1d3b95612dcfcdb44a2146c"
+    },
+    {
+      "path": "web-client/assets/defenses.lasergeschuetz.aurelianer.webp",
+      "offset": 17926347,
+      "size": 19594,
+      "sha256": "7450c25e72f8f1ca7d84f2a2d7295722d97391563bca51aa217f4c53d54b7969"
+    },
+    {
+      "path": "web-client/assets/defenses.lasergeschuetz.krath.webp",
+      "offset": 17945982,
+      "size": 21326,
+      "sha256": "f389da3163f600a84e67e0783d427b4a2b162eec7d3af7b8fac4d073634c8773"
+    },
+    {
+      "path": "web-client/assets/defenses.lasergeschuetz.syntheten.webp",
+      "offset": 17967353,
+      "size": 17090,
+      "sha256": "c62a98534ce694a95666298227be32fd54649e5e71ce2e1c5982bc006549559f"
+    },
+    {
+      "path": "web-client/assets/defenses.lasergeschuetz.veyari.webp",
+      "offset": 17984485,
+      "size": 22720,
+      "sha256": "b580a4ed4acd63eb9baa3d172901defa475c7587602bf223a96f2a68d714d035"
+    },
+    {
+      "path": "web-client/assets/defenses.lasergeschuetz.webp",
+      "offset": 18007240,
+      "size": 12920,
+      "sha256": "6c8389aae4255254cdf2146efb9ebf05a1a54693af3ce86f05425a0e1c8a7e02"
+    },
+    {
+      "path": "web-client/assets/defenses.planetenschild.aurelianer.webp",
+      "offset": 18020206,
+      "size": 26342,
+      "sha256": "6cce31c812d84034a0d039f5b7ebd55b53da569bda0ae9ceaaf26cbe0f3574e7"
+    },
+    {
+      "path": "web-client/assets/defenses.planetenschild.krath.webp",
+      "offset": 18046589,
+      "size": 14518,
+      "sha256": "06074722b1d0cf86fb610051bb3753ad39dfc0e960755340ef77d323f0d48b28"
+    },
+    {
+      "path": "web-client/assets/defenses.planetenschild.syntheten.webp",
+      "offset": 18061152,
+      "size": 19112,
+      "sha256": "bd5c50e8126f6d387f887c1a3ca5a3920b74daa5c4088b869a2b429655a2efb2"
+    },
+    {
+      "path": "web-client/assets/defenses.planetenschild.veyari.webp",
+      "offset": 18080306,
+      "size": 23244,
+      "sha256": "026d952a733aa7b3f31661da262495b7e1ab1b1e19e367eeaeda5e21c9af082c"
+    },
+    {
+      "path": "web-client/assets/defenses.planetenschild.webp",
+      "offset": 18103585,
+      "size": 17174,
+      "sha256": "9346a9c94cf5caf91e1fa5cca24f1a8d045a260121cd241c4fe039920323a1dc"
+    },
+    {
+      "path": "web-client/assets/defenses.plasmawerfer.aurelianer.webp",
+      "offset": 18120803,
+      "size": 23108,
+      "sha256": "22b4aacbb949fede3a8e9c5dd6067ec48e00937e2e723d1bd0dfa078de1565c8"
+    },
+    {
+      "path": "web-client/assets/defenses.plasmawerfer.krath.webp",
+      "offset": 18143950,
+      "size": 19730,
+      "sha256": "f86893cf5334055a565f557ed5d4d0be59e1c9ec601d81b61dd7be588c3710be"
+    },
+    {
+      "path": "web-client/assets/defenses.plasmawerfer.syntheten.webp",
+      "offset": 18163723,
+      "size": 19986,
+      "sha256": "8132035dc808b7d7546a57c21e0fd0f057ad72b44a8c18e27997dab9a67e5a15"
+    },
+    {
+      "path": "web-client/assets/defenses.plasmawerfer.veyari.webp",
+      "offset": 18183749,
+      "size": 23466,
+      "sha256": "d2a5c0a14cc1a98f9db99f05bed30a54c7de6445c370e7ca1105103905fe40ca"
+    },
+    {
+      "path": "web-client/assets/defenses.plasmawerfer.webp",
+      "offset": 18207248,
+      "size": 13642,
+      "sha256": "eff8f81aa8464725406f290f2060f2ed943f282b876d35ac230ab29e40dd0e02"
+    },
+    {
+      "path": "web-client/assets/defenses.raketenwerfer.aurelianer.webp",
+      "offset": 18220935,
+      "size": 23876,
+      "sha256": "eaac9c0a8873a1babaa8dd9b5f1effebad3d8274ce9d22faf7d5282a2d2bf6cb"
+    },
+    {
+      "path": "web-client/assets/defenses.raketenwerfer.krath.webp",
+      "offset": 18244851,
+      "size": 18162,
+      "sha256": "b3295ff5f76ca9256673fc6c565033970c24d24e4e9adbeafafd364d2f3d1b91"
+    },
+    {
+      "path": "web-client/assets/defenses.raketenwerfer.syntheten.webp",
+      "offset": 18263057,
+      "size": 22504,
+      "sha256": "57554098945dfd7e1e16d19cabbf475fd595760f8ae07fc28d6d960a3c9f6faa"
+    },
+    {
+      "path": "web-client/assets/defenses.raketenwerfer.veyari.webp",
+      "offset": 18285602,
+      "size": 27810,
+      "sha256": "5daa7e93efb928aebb9647a30e5b3eddef0eb7f086283d254511a0edfe5551ab"
+    },
+    {
+      "path": "web-client/assets/defenses.raketenwerfer.webp",
+      "offset": 18313446,
+      "size": 16670,
+      "sha256": "9be2f311cdc8dcb1b292d796e90cc020db40aa427f35979149a425a904e97f97"
+    },
+    {
+      "path": "web-client/assets/diplomacy.allianz.webp",
+      "offset": 18330145,
+      "size": 18954,
+      "sha256": "b87235497f35a54be0c73c0a370347b6bc6aeb8f954dee026878e86b097319f3"
+    },
+    {
+      "path": "web-client/assets/diplomacy.botschaft.webp",
+      "offset": 18349130,
+      "size": 12270,
+      "sha256": "92a7ca3d6b21a04e0d56cae2523083be3ba12f1bb7483d93f5df021a96afe86e"
+    },
+    {
+      "path": "web-client/assets/diplomacy.kaution.webp",
+      "offset": 18361429,
+      "size": 18168,
+      "sha256": "d8c8019dd463451352af6b36a889cb7bc636726ebde0f02bc89bf54ea4ab63d1"
+    },
+    {
+      "path": "web-client/assets/emblems.aurelianer.aurelianer.webp",
+      "offset": 18379638,
+      "size": 35160,
+      "sha256": "d837185f0e3ccc0ba26783f281b0abf365f8282b3d1939ae611da454704334ca"
+    },
+    {
+      "path": "web-client/assets/emblems.krath.krath.webp",
+      "offset": 18414829,
+      "size": 15244,
+      "sha256": "ff7267bb08734d49a40682487cd5af7997b72c49dd51fabfc8a1997b60d86ab6"
+    },
+    {
+      "path": "web-client/assets/emblems.syntheten.syntheten.webp",
+      "offset": 18430112,
+      "size": 24056,
+      "sha256": "43255e9bdc085ca9c3420c54a9fe9a6331ef7c95fce38515bed52a1054653219"
+    },
+    {
+      "path": "web-client/assets/emblems.veyari.veyari.webp",
+      "offset": 18454201,
+      "size": 22646,
+      "sha256": "b3464d6a1944c216d5bcd2c504842ba7aed22bc792042129c9c867ff42dcc43d"
+    },
+    {
+      "path": "web-client/assets/events.angriff_warnung.webp",
+      "offset": 18476881,
+      "size": 7192,
+      "sha256": "bb73f7ef8b8942ad807b6b604aa69f2d2552c197f633af96e6814f63ba9aa19b"
+    },
+    {
+      "path": "web-client/assets/events.bau_fertig.webp",
+      "offset": 18484102,
+      "size": 9898,
+      "sha256": "ac6a8037058f26959a1ea54bce6509af8fe5e16f61d9d30ff9343b60c71c90ae"
+    },
+    {
+      "path": "web-client/assets/events.belagerung.webp",
+      "offset": 18494029,
+      "size": 8566,
+      "sha256": "b8ac4a81fb8bde4680e85bf35d6a189e1410b3c5abe3df65532fd2a549be7b87"
+    },
+    {
+      "path": "web-client/assets/events.desertion.webp",
+      "offset": 18502623,
+      "size": 17066,
+      "sha256": "e7467ff1a3f8a48511275fd1c9b731030c63a15d04ef3608622f0354c3dfb8aa"
+    },
+    {
+      "path": "web-client/assets/events.energie_mangel.webp",
+      "offset": 18519722,
+      "size": 8014,
+      "sha256": "7293b91a1edec645b5e015a900fde0b1ae4f2dc9694ba602c260f0824f90072f"
+    },
+    {
+      "path": "web-client/assets/events.epoche_ende.webp",
+      "offset": 18527766,
+      "size": 13756,
+      "sha256": "683bcda1d34bb53bfa8c584cc59d3a99d532b6bdcc9e55aaff3165b8cdd542ae"
+    },
+    {
+      "path": "web-client/assets/events.eroberung.webp",
+      "offset": 18541550,
+      "size": 24724,
+      "sha256": "6046a2abffea81c50253b5fb9fe8a035b3b51cbae8914258477ca056558fde32"
+    },
+    {
+      "path": "web-client/assets/events.fertigung_fertig.webp",
+      "offset": 18566309,
+      "size": 10748,
+      "sha256": "4c512f1c369297d79eaf15b57802500b3d740b808bb545e061a810c89ca542d0"
+    },
+    {
+      "path": "web-client/assets/events.flotte_ankunft.webp",
+      "offset": 18577090,
+      "size": 9838,
+      "sha256": "a817af87e64aeea9f26d78c2fe87f67d76f9a142397a3e373092156870da5a07"
+    },
+    {
+      "path": "web-client/assets/events.flotte_rueckkehr.webp",
+      "offset": 18586963,
+      "size": 8952,
+      "sha256": "357774023a58dd280223f32662890c0419d595dd0ffe7c471e53fa73a088359e"
+    },
+    {
+      "path": "web-client/assets/events.forschung_fertig.webp",
+      "offset": 18595950,
+      "size": 10494,
+      "sha256": "4696042119a88fa4df9cb58967514d623d29b335eeae5fbdd0049381f3230451"
+    },
+    {
+      "path": "web-client/assets/events.handel_geliefert.webp",
+      "offset": 18606479,
+      "size": 13636,
+      "sha256": "bb1a05ae42f5c6ac37623254a4234a0b0c582c491ea87e353c853510f596ac8a"
+    },
+    {
+      "path": "web-client/assets/events.hunger.webp",
+      "offset": 18620140,
+      "size": 12594,
+      "sha256": "0abf1f65ae4dc1076833ff2e231b4c8f90a417595ba2affc69a9ab880caf37d4"
+    },
+    {
+      "path": "web-client/assets/events.kampf_niederlage.webp",
+      "offset": 18632769,
+      "size": 7036,
+      "sha256": "7ef6dbda81d1e429fb4a0e7784b20008194e58635760d1b813398753218bc704"
+    },
+    {
+      "path": "web-client/assets/events.kampf_sieg.webp",
+      "offset": 18639834,
+      "size": 10338,
+      "sha256": "5a46a1aaa2c00470a5b435c035c6c36718a3dd3f3f7593404eef7a6ff9268894"
+    },
+    {
+      "path": "web-client/assets/events.kampf_unentschieden.webp",
+      "offset": 18650210,
+      "size": 9720,
+      "sha256": "9c6d14ed7e933253bed130567f6aba9a7a317c5b2b5d5c9a4146c071c477a727"
+    },
+    {
+      "path": "web-client/assets/events.kolonie_gegruendet.webp",
+      "offset": 18659967,
+      "size": 14330,
+      "sha256": "1f30240124aa3e0c17aa19c5459b80d9aa6c218847a2596914d8f23d9b16f26e"
+    },
+    {
+      "path": "web-client/assets/events.lager_voll.webp",
+      "offset": 18674326,
+      "size": 13406,
+      "sha256": "a640daf2150ec983465e479b5abab79664224ededd4069e088b6ced4ca440a78"
+    },
+    {
+      "path": "web-client/assets/events.pluenderung.webp",
+      "offset": 18687762,
+      "size": 12164,
+      "sha256": "3f02f9d3c9211bd455c4f95d7d5ab154e8f6494c43c3266035cd82357a0f57bb"
+    },
+    {
+      "path": "web-client/assets/events.schutz_ende.webp",
+      "offset": 18699956,
+      "size": 21834,
+      "sha256": "1e85df39c3f9853b1583bc7378e8ecb529bb8ecce7fb1b504987743881a76b97"
+    },
+    {
+      "path": "web-client/assets/events.spionage_abgewehrt.webp",
+      "offset": 18721827,
+      "size": 9812,
+      "sha256": "cc203489389380f7b0414df169f76471b01f16e991f48af56f7c6c487f8f19a4"
+    },
+    {
+      "path": "web-client/assets/events.spionage_bericht.webp",
+      "offset": 18731674,
+      "size": 7862,
+      "sha256": "f795694d60f0e8b068dc801ac3fd451bd1f1d87668b3e94add30f97ada58af67"
+    },
+    {
+      "path": "web-client/assets/events.stufe_erreicht.webp",
+      "offset": 18739569,
+      "size": 26378,
+      "sha256": "569c4c34ddbe07be73cae8819b57c189d045fc178ae860f7adb0784670e0ea23"
+    },
+    {
+      "path": "web-client/assets/events.unruhen.webp",
+      "offset": 18765973,
+      "size": 15844,
+      "sha256": "3486017d195c316558583b0a45788e0d4643392c46be5519147d0c28d650170d"
+    },
+    {
+      "path": "web-client/assets/events.vertrag_angebot.webp",
+      "offset": 18781851,
+      "size": 13564,
+      "sha256": "cc403c5554d60d0e2115b558e5c7132c5abd72342aa1a661ae3fe35772fa45a7"
+    },
+    {
+      "path": "web-client/assets/events.vertrag_bruch.webp",
+      "offset": 18795447,
+      "size": 12834,
+      "sha256": "57aed50ee6d7d3d3e9325ee6a10f6b666072e6e2f9b0331e1feebdd64bd4400f"
+    },
+    {
+      "path": "web-client/assets/events.vertrag_ende.webp",
+      "offset": 18808312,
+      "size": 7848,
+      "sha256": "9f19dbecbec733ae7b7d2f566210debece57c94b5bf0c7846d62b8e866b9f372"
+    },
+    {
+      "path": "web-client/assets/ground_units.garnison.aurelianer.webp",
+      "offset": 18816204,
+      "size": 10204,
+      "sha256": "f8f19ce08d183f8d3f15456814caa53b016b6e09e28f44d2fc14ee3ba3cb2f30"
+    },
+    {
+      "path": "web-client/assets/ground_units.garnison.krath.webp",
+      "offset": 18826447,
+      "size": 14556,
+      "sha256": "ae48bd09c7e20064f332b2b813fd06d1f67a14c7448a4b90c58288390b39bbc3"
+    },
+    {
+      "path": "web-client/assets/ground_units.garnison.syntheten.webp",
+      "offset": 18841046,
+      "size": 14588,
+      "sha256": "0c1b90e52055520e1ad1e2e30b33c080345f172baf00c987e1ac941f98636f16"
+    },
+    {
+      "path": "web-client/assets/ground_units.garnison.veyari.webp",
+      "offset": 18855674,
+      "size": 13478,
+      "sha256": "d42631a2ea2ef5b4985ca4d5bda5c43e7432f7c80d258a74877308f602e835ca"
+    },
+    {
+      "path": "web-client/assets/materials.panel_blue.webp",
+      "offset": 18916550,
+      "size": 1074,
+      "sha256": "d6fa9b25d0af9f995dc376f4efb2fabbb206fb7b88115fa95d24bfc8fecf431e"
+    },
+    {
+      "path": "web-client/assets/materials.panel_steel.webp",
+      "offset": 18917657,
+      "size": 776,
+      "sha256": "2ab1fd6ca15fa738a64d242e7b34c9132069a993cc382a1329c20cb838672dff"
+    },
+    {
+      "path": "web-client/assets/materials.surface_basalt.webp",
+      "offset": 18918469,
+      "size": 41572,
+      "sha256": "4a83785cf8dd4896daf4eb338a5b443b9597e5ef2b4359094470db41b99af383"
+    },
+    {
+      "path": "web-client/assets/materials.surface_forest.webp",
+      "offset": 18960077,
+      "size": 77310,
+      "sha256": "64fe2e9c846856544403adeae8d7a2b51920753c16b03f8408ac89ff44b05b51"
+    },
+    {
+      "path": "web-client/assets/materials.surface_ice.webp",
+      "offset": 19037420,
+      "size": 9816,
+      "sha256": "8f9a0732baa2e1674cca3848e2ed639d5bd0d1cd77d8ca4b5684d7b462cb6cf7"
+    },
+    {
+      "path": "web-client/assets/materials.surface_sand.webp",
+      "offset": 19047270,
+      "size": 9348,
+      "sha256": "87684a5de498ddd63214e6f39be67098dc47f71a147ca7c71b700e5c1f563455"
+    },
+    {
+      "path": "web-client/assets/missiles.abfang.webp",
+      "offset": 19056645,
+      "size": 11250,
+      "sha256": "f01031df7bd41cfe4dd70d20075b640843b1dabc926542251ead77f096325413"
+    },
+    {
+      "path": "web-client/assets/missiles.interplanetar.webp",
+      "offset": 19067929,
+      "size": 14996,
+      "sha256": "bc7e6c673861ffbad5aa1fa8c8ae4d6e807de4b614868ce4621e846ce6932fd6"
+    },
+    {
+      "path": "web-client/assets/missions.abbau.webp",
+      "offset": 19082951,
+      "size": 17172,
+      "sha256": "26b62c60fdc4daa4a39eb97f5a90705a280d019fa794c6042e67ae53ee75b290"
+    },
+    {
+      "path": "web-client/assets/missions.angriff.webp",
+      "offset": 19100151,
+      "size": 12452,
+      "sha256": "34d61dfc4d20f54d383fdd5be1b3d32e8fa651b02d7e6e7cc0dcfd5fa84d3b28"
+    },
+    {
+      "path": "web-client/assets/missions.blockade.webp",
+      "offset": 19112632,
+      "size": 12394,
+      "sha256": "249bd6f0a583bcf052815b90f2080205861eac36ffb3db9d34dfceeb58baf746"
+    },
+    {
+      "path": "web-client/assets/missions.bombardieren.webp",
+      "offset": 19125059,
+      "size": 27322,
+      "sha256": "3f2f7484c832ad9f51a3395e9d971a4047d01683b7eaa192028488de4f121eeb"
+    },
+    {
+      "path": "web-client/assets/missions.halten.webp",
+      "offset": 19152408,
+      "size": 17550,
+      "sha256": "8dbf76849a380a5d3488d42a37d9b6e9b00ea8f533817db894b4be1e92bea683"
+    },
+    {
+      "path": "web-client/assets/missions.invasion.webp",
+      "offset": 19169987,
+      "size": 21840,
+      "sha256": "55e363118f5d5438bbc81bd758d754e1176ff427fb9277efce6072bcc1405153"
+    },
+    {
+      "path": "web-client/assets/missions.kampfkolonisieren.webp",
+      "offset": 19191865,
+      "size": 21764,
+      "sha256": "95f9380e6ff7cddc1314378bef35bee3c6615944452bacfdbeac06de7729c12b"
+    },
+    {
+      "path": "web-client/assets/missions.kolonisieren.webp",
+      "offset": 19213662,
+      "size": 21870,
+      "sha256": "ed5ed82276e0d5d1280cca9c691849460e7bccfbaac18f79354662119d15a3d1"
+    },
+    {
+      "path": "web-client/assets/missions.recyceln.webp",
+      "offset": 19235561,
+      "size": 29282,
+      "sha256": "28ee1d8cfeb6c6e474bf4e4bf86b534ddd9f0d072245d0bcff3043bc0a7a5729"
+    },
+    {
+      "path": "web-client/assets/missions.spionage.webp",
+      "offset": 19264872,
+      "size": 16084,
+      "sha256": "a94f2caa2803b9516b4752611701a61abb66d813abf952e0a8a98de3aeb84e5e"
+    },
+    {
+      "path": "web-client/assets/missions.stationieren.webp",
+      "offset": 19280989,
+      "size": 20564,
+      "sha256": "cfa1ce1ce90459e0ecca376670c4867e7450701d0670ded498690ed720e29c5e"
+    },
+    {
+      "path": "web-client/assets/missions.transport.webp",
+      "offset": 19301583,
+      "size": 18548,
+      "sha256": "12a889258a61cf2a9555093a5ce051971fab5b19af44aa70e3f3f44a54f939a9"
+    },
+    {
+      "path": "web-client/assets/planets.asteroid.webp",
+      "offset": 19320159,
+      "size": 27462,
+      "sha256": "18f20741eb742baac2ffb9f25e18b0e9197b55094a73ae9ca3421075efb0baac"
+    },
+    {
+      "path": "web-client/assets/planets.frost_eis.webp",
+      "offset": 19347650,
+      "size": 31420,
+      "sha256": "ab4b176c2b30d37d0e8e2d8d0a978edccc9e45474edf8679b297ee91a78be84b"
+    },
+    {
+      "path": "web-client/assets/planets.frost_tundra.webp",
+      "offset": 19379102,
+      "size": 28192,
+      "sha256": "3dfb8029989e752d244b9e53a86b46eda7b495315372db44a871af0985dba3a5"
+    },
+    {
+      "path": "web-client/assets/planets.glut_basalt.webp",
+      "offset": 19407325,
+      "size": 16912,
+      "sha256": "483eed44372f41414fa0bc76bda173e62db7e994732501d1424bdcfd2c30b937"
+    },
+    {
+      "path": "web-client/assets/planets.glut_wueste.webp",
+      "offset": 19424268,
+      "size": 15688,
+      "sha256": "c803184c51f28ba33cf152dd7ce51396a02c58cda47f1c84e2c1abf5f1cf4db4"
+    },
+    {
+      "path": "web-client/assets/planets.leben_kontinent.webp",
+      "offset": 19439991,
+      "size": 19334,
+      "sha256": "0bb9ba5b335d431da5bac8d3803ac85c66d38a0bb2946e978ed9d428f4905ba7"
+    },
+    {
+      "path": "web-client/assets/planets.leben_ozean.webp",
+      "offset": 19459356,
+      "size": 23236,
+      "sha256": "ba86af04e7cb680a0ab3df2dd4a0c520cd1ba9b3827809c746d8254956fe8fd1"
+    },
+    {
+      "path": "web-client/assets/planets.nebel_xeno.webp",
+      "offset": 19482622,
+      "size": 13640,
+      "sha256": "c073a63d74f4956fa3d7ff3ade15f9fe3137c83c19d3e2724f66a0336903c70b"
+    },
+    {
+      "path": "web-client/assets/portraits.aurelianer.aurelianer.webp",
+      "offset": 19496305,
+      "size": 24882,
+      "sha256": "bfdb4d8e454c78c21626a27153fa4d169050abba29b2c11f790851827f1dd772"
+    },
+    {
+      "path": "web-client/assets/portraits.krath.krath.webp",
+      "offset": 19521220,
+      "size": 22078,
+      "sha256": "65c8b11df53581bbfc6833b831e50d1c1c0dd99ec2a76fece0b1931bf49a1126"
+    },
+    {
+      "path": "web-client/assets/portraits.syntheten.syntheten.webp",
+      "offset": 19543339,
+      "size": 20608,
+      "sha256": "61c86e992a327fc6067cc6471b411a7a99d2e7012fa29708a508c10005924e76"
+    },
+    {
+      "path": "web-client/assets/portraits.veyari.veyari.webp",
+      "offset": 19563982,
+      "size": 24018,
+      "sha256": "3bfd4ad3be9eb05a6f1ecfd37e864c958b67741351e3b4a34a29aa274719f0b4"
+    },
+    {
+      "path": "web-client/assets/progression.gruendung.aurelianer.webp",
+      "offset": 19588044,
+      "size": 31464,
+      "sha256": "e5d07059144caf238a6a62140f8df8bfa364fa7502341d64b8f0c2b9866093b6"
+    },
+    {
+      "path": "web-client/assets/progression.gruendung.krath.webp",
+      "offset": 19619547,
+      "size": 17152,
+      "sha256": "a594d26038f29f36795464e6851bd2c07f42ad56415e3048db53af21c5618de8"
+    },
+    {
+      "path": "web-client/assets/progression.gruendung.syntheten.webp",
+      "offset": 19636742,
+      "size": 10874,
+      "sha256": "40f5ff92acaab84649d407871d5213a9491bfc74b6bc19627e935c1a010dd617"
+    },
+    {
+      "path": "web-client/assets/progression.gruendung.veyari.webp",
+      "offset": 19647656,
+      "size": 11164,
+      "sha256": "f369cb712594e065b450d5547773be77af3d9f7cae506f01e1bcfeee35a4fca0"
+    },
+    {
+      "path": "web-client/assets/progression.imperium.aurelianer.webp",
+      "offset": 19658863,
+      "size": 13760,
+      "sha256": "0630c1c79539812ad3fedd2531519fee50d50e1e9e61c44203cdbbb95a9de5d3"
+    },
+    {
+      "path": "web-client/assets/progression.imperium.krath.webp",
+      "offset": 19672661,
+      "size": 23312,
+      "sha256": "aa12226fff622f5dc82a248f1213c61e33df12dc4e0b0b9aadf8a2125e0fb6da"
+    },
+    {
+      "path": "web-client/assets/progression.imperium.syntheten.webp",
+      "offset": 19696015,
+      "size": 13416,
+      "sha256": "c8cc33d2aaaef4e8c7db889bb9699c57adfdc46c66c8c378148a63f0728fa95e"
+    },
+    {
+      "path": "web-client/assets/progression.imperium.veyari.webp",
+      "offset": 19709470,
+      "size": 16008,
+      "sha256": "d0d96ac87789a7e223867155024bd1cb0e368903eb38f369994bfb7232746533"
+    },
+    {
+      "path": "web-client/assets/progression.industrie.aurelianer.webp",
+      "offset": 19725522,
+      "size": 34720,
+      "sha256": "1d3c41e887f5e7f3140960a2d5a77f6d3a90572c3a3d7e5c1497668e78407100"
+    },
+    {
+      "path": "web-client/assets/progression.industrie.krath.webp",
+      "offset": 19760281,
+      "size": 25116,
+      "sha256": "86a179f949ed6f31d240f63ddcac7ece76353565562685d9ce8d98a6be77e078"
+    },
+    {
+      "path": "web-client/assets/progression.industrie.syntheten.webp",
+      "offset": 19785440,
+      "size": 16918,
+      "sha256": "14b444baebf96a70f3e30b68a2aaaaf3257dc17da2adb0032520b6860c9d2f46"
+    },
+    {
+      "path": "web-client/assets/progression.industrie.veyari.webp",
+      "offset": 19802398,
+      "size": 15036,
+      "sha256": "aa1714081529225ddbf28411ad71a1bc8d112cd8f35f80b1326f19c7798c25ea"
+    },
+    {
+      "path": "web-client/assets/progression.orbit.aurelianer.webp",
+      "offset": 19817474,
+      "size": 30474,
+      "sha256": "1ded8538ad45866af75dc336029018ff5e27fc07b2fd0b05445ed4b61fff8056"
+    },
+    {
+      "path": "web-client/assets/progression.orbit.krath.webp",
+      "offset": 19847983,
+      "size": 22136,
+      "sha256": "a10db6d79cba39df97ac748149559d9fc61ce1aa3c7dbdc3588ac2cb10933448"
+    },
+    {
+      "path": "web-client/assets/progression.orbit.syntheten.webp",
+      "offset": 19870158,
+      "size": 25500,
+      "sha256": "6679a635661d3e5ff8ed9777527939d9a8805f507e6b070aeeb53480c2deee71"
+    },
+    {
+      "path": "web-client/assets/progression.orbit.veyari.webp",
+      "offset": 19895694,
+      "size": 32006,
+      "sha256": "091abbb9c41d217a6c27c60d4a1afa9f78d2366af12f60c738cdac26e1ceff4d"
+    },
+    {
+      "path": "web-client/assets/progression.sternenflug.aurelianer.webp",
+      "offset": 19927746,
+      "size": 32140,
+      "sha256": "4a5e8a6cf1ac7e3a73e134bd0d99fd61b26b98d2a2e8ae14793a1adf2d7294b1"
+    },
+    {
+      "path": "web-client/assets/progression.sternenflug.krath.webp",
+      "offset": 19959927,
+      "size": 23770,
+      "sha256": "8a16e628d74ea18e5e8384d58a79d9590c5e3dc7430a1cb6db85495b0d0901f2"
+    },
+    {
+      "path": "web-client/assets/progression.sternenflug.syntheten.webp",
+      "offset": 19983742,
+      "size": 27836,
+      "sha256": "4087a6d3d07cd45fcb45d546e21db7e8b6c310827659b2344f5bbc19e176704e"
+    },
+    {
+      "path": "web-client/assets/progression.sternenflug.veyari.webp",
+      "offset": 20011620,
+      "size": 31816,
+      "sha256": "cbd7666eeb4dbf43d86210e1cfb178dbdfe95c2cc7f909481743e51187d10c06"
+    },
+    {
+      "path": "web-client/assets/research.agrarwissenschaft.webp",
+      "offset": 20043474,
+      "size": 18354,
+      "sha256": "af2a13d2454f3b07c3fa655c3d9c9d31ffb3a66df31a2ed979cd7e0f2c9dba67"
+    },
+    {
+      "path": "web-client/assets/research.astrophysik.webp",
+      "offset": 20061860,
+      "size": 14162,
+      "sha256": "52e769bead37707415b9331715acb85155351f9b5896f115284ebe147e38884c"
+    },
+    {
+      "path": "web-client/assets/research.automatisierung.webp",
+      "offset": 20076058,
+      "size": 17478,
+      "sha256": "96932dec6316dafca93f41e6bb6d8d21c1e4523f496e6f07c66a68ecab9ba2f2"
+    },
+    {
+      "path": "web-client/assets/research.computertechnik.webp",
+      "offset": 20093572,
+      "size": 20184,
+      "sha256": "5aea9e707f5bb864af6f5713343e5f59263a3e15ae2501e532f6745eafff1208"
+    },
+    {
+      "path": "web-client/assets/research.energietechnik.webp",
+      "offset": 20113791,
+      "size": 17316,
+      "sha256": "943c283ade84ef4a721f0fcac91ed8d54e2bf0ae757ce08c7afb6a54110ff390"
+    },
+    {
+      "path": "web-client/assets/research.hyperraumantrieb.webp",
+      "offset": 20131144,
+      "size": 20740,
+      "sha256": "a6e9d13630280facf47861cc2f172e1eb976858bb432ccb0495d6311027745ee"
+    },
+    {
+      "path": "web-client/assets/research.impulsantrieb.webp",
+      "offset": 20151918,
+      "size": 16862,
+      "sha256": "bb0e9e0880cafcf0b29c47e6b831fa9912fa64d4cba216c034453e725396f2f6"
+    },
+    {
+      "path": "web-client/assets/research.logistik.webp",
+      "offset": 20168809,
+      "size": 16570,
+      "sha256": "783c6ea46dd8d7fccc668940066d0b0303de46cd707d561daa585a02e5487bd3"
+    },
+    {
+      "path": "web-client/assets/research.panzerung.webp",
+      "offset": 20185409,
+      "size": 12450,
+      "sha256": "ec708a3bcba47495578bdddb10e41a0346e63a4365252c3ed646d0873107c8e2"
+    },
+    {
+      "path": "web-client/assets/research.schildtechnik.webp",
+      "offset": 20197893,
+      "size": 15390,
+      "sha256": "8a6169f0e7daa6b57f7a7767f5416a13ed19f2bda190deb6ffabb0e6c9af55e4"
+    },
+    {
+      "path": "web-client/assets/research.soziologie.webp",
+      "offset": 20213314,
+      "size": 24456,
+      "sha256": "bd2116ff50e4306952d6334682dbd6e7111500e5c4f9e728a72cb2962a66cb2f"
+    },
+    {
+      "path": "web-client/assets/research.spionagetechnik.webp",
+      "offset": 20237806,
+      "size": 13962,
+      "sha256": "e66349c909b36cb421d9d7508272ed0f5f43844e9ede4a0b7e3d8743780d2f8c"
+    },
+    {
+      "path": "web-client/assets/research.terraforming.webp",
+      "offset": 20251801,
+      "size": 22288,
+      "sha256": "e709a9262b11805c2565ec526b7abb417e3cfcec8322b63b412a760ef0b3d713"
+    },
+    {
+      "path": "web-client/assets/research.verbrennungsantrieb.webp",
+      "offset": 20274129,
+      "size": 15328,
+      "sha256": "b107ae36db33edffb6d8c446905828a274c424b23b4550f3f70a5f4a63d10e80"
+    },
+    {
+      "path": "web-client/assets/research.waffentechnik.webp",
+      "offset": 20289491,
+      "size": 17898,
+      "sha256": "50705916de37dc80b6845caf9b4b2e7aa406635600cc10e0036ca4d6d7806449"
+    },
+    {
+      "path": "web-client/assets/research.werkstoffkunde.webp",
+      "offset": 20307424,
+      "size": 18782,
+      "sha256": "7910d0a2166fc7fe63d96eb66e6a469bad6d4338acc5d0f99d39efc245338e2f"
+    },
+    {
+      "path": "web-client/assets/research.xenomaterialkunde.webp",
+      "offset": 20326244,
+      "size": 15872,
+      "sha256": "26b235c00ba026d88f8105a869c74aaa7067af30673269e190639e25cffc2547"
+    },
+    {
+      "path": "web-client/assets/resources.antriebskern.webp",
+      "offset": 20342150,
+      "size": 18288,
+      "sha256": "fec07a6d84171714c3da36a80337d8d94bc1ce7563b26450bfca90a8d8d26c46"
+    },
+    {
+      "path": "web-client/assets/resources.credits.webp",
+      "offset": 20360467,
+      "size": 9118,
+      "sha256": "f21c4341f4db3fac9add5f836ce83e8fcb87071d225ff6bf43679efc1af41f42"
+    },
+    {
+      "path": "web-client/assets/resources.deuterium.webp",
+      "offset": 20369616,
+      "size": 12656,
+      "sha256": "166a1695c7c36c83ca8f27551d41d624b36e6ca85527c98c345f962d6f6c871d"
+    },
+    {
+      "path": "web-client/assets/resources.elektronik.webp",
+      "offset": 20382304,
+      "size": 17414,
+      "sha256": "bd3d89ccbff8a17fba46fd61fa57dbed7ec3fc533df857c80a63de5f9c8fc3c1"
+    },
+    {
+      "path": "web-client/assets/resources.energie.webp",
+      "offset": 20399747,
+      "size": 19182,
+      "sha256": "b2969c7050b64032c816585c3a0d736d5d7f28fc857c268a88f161b6728be454"
+    },
+    {
+      "path": "web-client/assets/resources.erz.webp",
+      "offset": 20418954,
+      "size": 20550,
+      "sha256": "d4e40d25377148dcd3a1a088d682bf3f709d776b328073274afbad613e218737"
+    },
+    {
+      "path": "web-client/assets/resources.forschungspunkte.webp",
+      "offset": 20439542,
+      "size": 18584,
+      "sha256": "b67aefc0c04c747205c910244f2f51319bfbaa9c2d1c6f2c23e8d6415488f6a3"
+    },
+    {
+      "path": "web-client/assets/resources.habitatmodul.webp",
+      "offset": 20458160,
+      "size": 16000,
+      "sha256": "7ef4fa0b44653b7500a0b68e7a997101aeacd05cb3e8f85af1293e51e96a2955"
+    },
+    {
+      "path": "web-client/assets/resources.konsumgut.webp",
+      "offset": 20474191,
+      "size": 15124,
+      "sha256": "0e9937ebbdeb3f8020f7a37024c8ad8985fa08b407639db0452447373d65c6c7"
+    },
+    {
+      "path": "web-client/assets/resources.kristall.webp",
+      "offset": 20489345,
+      "size": 16952,
+      "sha256": "45ea780b451bf3eaa1c70841064030afd531ad343d441dd7c0b084152ca7376d"
+    },
+    {
+      "path": "web-client/assets/resources.legierung.webp",
+      "offset": 20506328,
+      "size": 15500,
+      "sha256": "5f9208b865ffe5c8418e99b0fc87432181401ebdcb9d1be80e769f2c40d5c5ea"
+    },
+    {
+      "path": "web-client/assets/resources.nahrung.webp",
+      "offset": 20521857,
+      "size": 14106,
+      "sha256": "d7fe72635acdfefc35996a174b58200beb186df2b5b2a0c3e75e01d2f876d03a"
+    },
+    {
+      "path": "web-client/assets/resources.xenokristall.webp",
+      "offset": 20535997,
+      "size": 15782,
+      "sha256": "46116e56e4b22384f2d77cc43715c7ba87a06827c7c50277dcfb1b69067121f1"
+    },
+    {
+      "path": "web-client/assets/role_portraits.diplomat.aurelianer.webp",
+      "offset": 20551825,
+      "size": 27918,
+      "sha256": "00f651f0bdf364585e50bb506e4f9862c1b3040e50bddf731ef01e9795b32353"
+    },
+    {
+      "path": "web-client/assets/role_portraits.diplomat.krath.webp",
+      "offset": 20579784,
+      "size": 22186,
+      "sha256": "736b7dd8796e88c4c1aef5d5e842e468f2e5323eccacc876d1d7d74db39edbe0"
+    },
+    {
+      "path": "web-client/assets/role_portraits.diplomat.syntheten.webp",
+      "offset": 20602015,
+      "size": 21448,
+      "sha256": "9f39a3bc1e652676035761971643ee72af8cc5db12077a88dec9f41b66b2161e"
+    },
+    {
+      "path": "web-client/assets/role_portraits.diplomat.veyari.webp",
+      "offset": 20623505,
+      "size": 26096,
+      "sha256": "bca7bd24e8ac34e964daf4f51ff55d62117d54ad99a36b68d3aceb06da06c2ff"
+    },
+    {
+      "path": "web-client/assets/role_portraits.feldherr.aurelianer.webp",
+      "offset": 20649647,
+      "size": 24332,
+      "sha256": "bd324940412d7e98dc25229326dd7e9c4d9a3a3bea441b20c813e23fc1568af2"
+    },
+    {
+      "path": "web-client/assets/role_portraits.feldherr.krath.webp",
+      "offset": 20674020,
+      "size": 26926,
+      "sha256": "8c08491323300a520e47278401e135a1cdba5bfc942088913418690e1204e0e6"
+    },
+    {
+      "path": "web-client/assets/role_portraits.feldherr.syntheten.webp",
+      "offset": 20700991,
+      "size": 26382,
+      "sha256": "a9a8653df7752f6faa781ed4c93ffb70a9bd6c62de8c091b2a4ca397e56a0fc0"
+    },
+    {
+      "path": "web-client/assets/role_portraits.feldherr.veyari.webp",
+      "offset": 20727415,
+      "size": 25002,
+      "sha256": "e77a390aec1807e2bca10292bceb85460bee88e89ec5d0e9ac92523204dc5b72"
+    },
+    {
+      "path": "web-client/assets/role_portraits.stratege.aurelianer.webp",
+      "offset": 20752463,
+      "size": 30402,
+      "sha256": "8ee87261ce5b76461c9aa1e2b7c45d2ea285e2ea82cd1e3b4a6aa1ec264acc3c"
+    },
+    {
+      "path": "web-client/assets/role_portraits.stratege.krath.webp",
+      "offset": 20782906,
+      "size": 18524,
+      "sha256": "707b3e743d65039f957900b93fc7aaf758d64927015fea389476bb5c37aaa135"
+    },
+    {
+      "path": "web-client/assets/role_portraits.stratege.syntheten.webp",
+      "offset": 20801475,
+      "size": 13938,
+      "sha256": "3042891cf5ba92cfe8f412eeefcb23ad557f30a170b939ad028e0ff056caca93"
+    },
+    {
+      "path": "web-client/assets/role_portraits.stratege.veyari.webp",
+      "offset": 20815455,
+      "size": 20418,
+      "sha256": "41d5eeb2f9d2dbad36e1ae9d093170bc9513a3f4e35ea822b64e4048a9ec9a67"
+    },
+    {
+      "path": "web-client/assets/role_portraits.verwalter.aurelianer.webp",
+      "offset": 20835920,
+      "size": 29332,
+      "sha256": "247b74ba5cdc33fee0d21d16c6fe8e88fe7f4f3d60e160bbef214900daaaa387"
+    },
+    {
+      "path": "web-client/assets/role_portraits.verwalter.krath.webp",
+      "offset": 20865294,
+      "size": 27458,
+      "sha256": "6191fc8e704414fb17c5f1f16706f52ded86642d5ec50944a3698557e8b41c0f"
+    },
+    {
+      "path": "web-client/assets/role_portraits.verwalter.syntheten.webp",
+      "offset": 20892798,
+      "size": 17336,
+      "sha256": "182f5d58dc5a86f6707aedc230b0546ea52afaa93d7f2411c4cde4c5895d5d03"
+    },
+    {
+      "path": "web-client/assets/role_portraits.verwalter.veyari.webp",
+      "offset": 20910177,
+      "size": 21734,
+      "sha256": "844c7a524ebecdaed810fc254a6c65c58e6e00e5ace6c8c68f836524679fddc0"
+    },
+    {
+      "path": "web-client/assets/ships.bergbauschiff.aurelianer.webp",
+      "offset": 20931953,
+      "size": 15840,
+      "sha256": "84a6f5e1c7009d324c034bbaa09397e5822ec5f560f302e03318516af4678d8f"
+    },
+    {
+      "path": "web-client/assets/ships.bergbauschiff.krath.webp",
+      "offset": 20947830,
+      "size": 10540,
+      "sha256": "1a47332f89ec2a43b6dfc26f0d9f807af3dc313ffd1de0f4c42ad08e04afff88"
+    },
+    {
+      "path": "web-client/assets/ships.bergbauschiff.syntheten.webp",
+      "offset": 20958411,
+      "size": 13052,
+      "sha256": "21930a1011349412812d511cc430c730ae0a3c3033490993acc23792a5b2e5d3"
+    },
+    {
+      "path": "web-client/assets/ships.bergbauschiff.veyari.webp",
+      "offset": 20971501,
+      "size": 14216,
+      "sha256": "10d22fb95761bc8935cb079682a9dc52515e9a73b14e0e437c4a0995165644f0"
+    },
+    {
+      "path": "web-client/assets/ships.bomber.aurelianer.webp",
+      "offset": 20985752,
+      "size": 14266,
+      "sha256": "39929409bbd9994bfbbb9acda437aaa46f4f4baa40281581a1c6a9e912392c9e"
+    },
+    {
+      "path": "web-client/assets/ships.bomber.krath.webp",
+      "offset": 21000048,
+      "size": 10722,
+      "sha256": "ef1775383e9ee3b2a47539836a8540c48b283944ffc27525bb153b42399df808"
+    },
+    {
+      "path": "web-client/assets/ships.bomber.syntheten.webp",
+      "offset": 21010804,
+      "size": 12708,
+      "sha256": "628b2cde926caef31098c32e6c3575376a37e69dcc0ca45a5349daa1e411b8da"
+    },
+    {
+      "path": "web-client/assets/ships.bomber.veyari.webp",
+      "offset": 21023543,
+      "size": 15530,
+      "sha256": "5f3ca53d222139820a76282b6b846061c6dc59412c00ebe275515792145d3476"
+    },
+    {
+      "path": "web-client/assets/ships.grosser_transporter.aurelianer.webp",
+      "offset": 21039121,
+      "size": 18076,
+      "sha256": "3c59aa46f4a0e5abe5bb1e7117c2b6f400100fceeeeb38bf638d4f6c82bd696e"
+    },
+    {
+      "path": "web-client/assets/ships.grosser_transporter.krath.webp",
+      "offset": 21057240,
+      "size": 10600,
+      "sha256": "315ff9e8048be30fa7af1f410c985be21aa0deb0d65f4ecbc9e41015c5515571"
+    },
+    {
+      "path": "web-client/assets/ships.grosser_transporter.syntheten.webp",
+      "offset": 21067887,
+      "size": 11374,
+      "sha256": "6350307d6ced5ae8ac929bb47baa2972e9879235153712a8f445ab8162c202bf"
+    },
+    {
+      "path": "web-client/assets/ships.grosser_transporter.veyari.webp",
+      "offset": 21079305,
+      "size": 14680,
+      "sha256": "aca91ef3dc33cdbd3ffbaef44409d805c57350eb69ac84dac5be265f1521c70f"
+    },
+    {
+      "path": "web-client/assets/ships.kleiner_transporter.aurelianer.webp",
+      "offset": 21094033,
+      "size": 16312,
+      "sha256": "d16f344361eba03ff8d5a49457b98febbf1a1fc2238294f5ef3dd616a0c3028a"
+    },
+    {
+      "path": "web-client/assets/ships.kleiner_transporter.krath.webp",
+      "offset": 21110388,
+      "size": 9276,
+      "sha256": "05434abbda13aefe9d2f37084bd1fc03030bf33dd72a7be849e7480ea7ddf142"
+    },
+    {
+      "path": "web-client/assets/ships.kleiner_transporter.syntheten.webp",
+      "offset": 21119711,
+      "size": 13270,
+      "sha256": "8c6dba5f526f7c15baec941e29dd29c1ea5120bf44705cbef35f07c834556274"
+    },
+    {
+      "path": "web-client/assets/ships.kleiner_transporter.veyari.webp",
+      "offset": 21133025,
+      "size": 15922,
+      "sha256": "421db6bcbb2927ad37842db9361d6c4f86a2b47b4c8b9cd38297ae89d1e971a4"
+    },
+    {
+      "path": "web-client/assets/ships.kolonieschiff.aurelianer.webp",
+      "offset": 21148989,
+      "size": 15376,
+      "sha256": "fbdcd40189fc26085ee120f926c5986b539e38b4cda5b40e414db517a36c13d5"
+    },
+    {
+      "path": "web-client/assets/ships.kolonieschiff.krath.webp",
+      "offset": 21164402,
+      "size": 10906,
+      "sha256": "ee0c0e2d5c41c06dff5125fdd33f269a5a8e96b026eaa84a7cb7efe6b4165d19"
+    },
+    {
+      "path": "web-client/assets/ships.kolonieschiff.syntheten.webp",
+      "offset": 21175349,
+      "size": 12612,
+      "sha256": "b0288f72b4ea13d8655b7362ca0a69c4199fd65fb7a1af9513c5de0bc2c401d8"
+    },
+    {
+      "path": "web-client/assets/ships.kolonieschiff.veyari.webp",
+      "offset": 21187999,
+      "size": 16104,
+      "sha256": "60563fb7f5a85e7bb225f2581a0de6bcf229510afe4a4d6c13153442dd2bd73b"
+    },
+    {
+      "path": "web-client/assets/ships.kreuzer.aurelianer.webp",
+      "offset": 21204139,
+      "size": 13448,
+      "sha256": "9ed124a3b3582f900cdd7549553b25445a6a455a459138045cba5bbd2899baab"
+    },
+    {
+      "path": "web-client/assets/ships.kreuzer.krath.webp",
+      "offset": 21217618,
+      "size": 9592,
+      "sha256": "61a7107742c28d2da3480ad485d7d3a8ab17d85f313a5b3ffe980cc1da228bab"
+    },
+    {
+      "path": "web-client/assets/ships.kreuzer.syntheten.webp",
+      "offset": 21227245,
+      "size": 12824,
+      "sha256": "c200f69fef26a6cdd7f83e19557cc919b0f1aef8cd1634dee09c0ce2d39fea22"
+    },
+    {
+      "path": "web-client/assets/ships.kreuzer.veyari.webp",
+      "offset": 21240101,
+      "size": 13202,
+      "sha256": "6450a094412285fe31fb541d9d90345eecf6687a592f8aba2e9ebda302c55b53"
+    },
+    {
+      "path": "web-client/assets/ships.leichter_jaeger.aurelianer.webp",
+      "offset": 21253347,
+      "size": 13412,
+      "sha256": "3573c17364689b59cef4890dfb4c08f69ef7a4e48a3c47ab515592fa6fa415ee"
+    },
+    {
+      "path": "web-client/assets/ships.leichter_jaeger.krath.webp",
+      "offset": 21266798,
+      "size": 8724,
+      "sha256": "7d7eec50c9cf260793e985733ca7304f825e2297e37536df0b1475f50010a111"
+    },
+    {
+      "path": "web-client/assets/ships.leichter_jaeger.syntheten.webp",
+      "offset": 21275565,
+      "size": 10812,
+      "sha256": "0a7c1cc4941a02b36200e75f405d74e350f9576aecf7bee6fdc3b0a807b893d3"
+    },
+    {
+      "path": "web-client/assets/ships.leichter_jaeger.veyari.webp",
+      "offset": 21286417,
+      "size": 12840,
+      "sha256": "05aade5b45745bc3f77c85be3a831f76c6b2c6adc96eaa6b4a7efc720fb38d53"
+    },
+    {
+      "path": "web-client/assets/ships.recycler.aurelianer.webp",
+      "offset": 21299294,
+      "size": 15886,
+      "sha256": "e3881d6d55a24f1af4813bb72bdf12901793701460a14423025d310cb8f7d86c"
+    },
+    {
+      "path": "web-client/assets/ships.recycler.krath.webp",
+      "offset": 21315212,
+      "size": 8796,
+      "sha256": "f2224dd9ddc2eb2815d1622bad776fcb23fe55ccf6432198133a5c577422031e"
+    },
+    {
+      "path": "web-client/assets/ships.recycler.syntheten.webp",
+      "offset": 21324044,
+      "size": 15390,
+      "sha256": "ac2a90df4fe8dcee99f977b414b457ac751e10b1be12fed66e83a264d4655c00"
+    },
+    {
+      "path": "web-client/assets/ships.recycler.veyari.webp",
+      "offset": 21339467,
+      "size": 14362,
+      "sha256": "135728ee1901df367701233556f3ec123ddf7a58a675964e860c78266ebb2dcc"
+    },
+    {
+      "path": "web-client/assets/ships.schlachtschiff.aurelianer.webp",
+      "offset": 21353872,
+      "size": 12772,
+      "sha256": "0de557a220a8b8182c8d5eb0205a2ef10223030ce2c3c234e97ae255641bd61b"
+    },
+    {
+      "path": "web-client/assets/ships.schlachtschiff.krath.webp",
+      "offset": 21366682,
+      "size": 8796,
+      "sha256": "a79539a56f79db11407b09bc3303c43c55ac42cb3fbcda38c3ac92250c386c7d"
+    },
+    {
+      "path": "web-client/assets/ships.schlachtschiff.syntheten.webp",
+      "offset": 21375520,
+      "size": 16792,
+      "sha256": "89fd17ec32a69f5061e02c3eccf7455c08232d8d8dd68500c280a5cb9fc3e4f4"
+    },
+    {
+      "path": "web-client/assets/ships.schlachtschiff.veyari.webp",
+      "offset": 21392351,
+      "size": 15750,
+      "sha256": "1b320bbc1d7df6d8658ddc346b2c42fffe5851f931a66849027a46fa7ef81b71"
+    },
+    {
+      "path": "web-client/assets/ships.spionagesonde.aurelianer.webp",
+      "offset": 21408143,
+      "size": 7890,
+      "sha256": "9b5d0603d1ea2908c93ae763207fb21e2a8ad843abb36585c5c518db32d74445"
+    },
+    {
+      "path": "web-client/assets/ships.spionagesonde.krath.webp",
+      "offset": 21416070,
+      "size": 4776,
+      "sha256": "7c6922a21b752f9664aaac9965db03d84743c412352c50fc95171bef1ae7f3dd"
+    },
+    {
+      "path": "web-client/assets/ships.spionagesonde.syntheten.webp",
+      "offset": 21420887,
+      "size": 7794,
+      "sha256": "54e5f6b5f03d451e89fd850b40fc0fd93d298dd31ac63bbcf8bbb0a53d96cc1a"
+    },
+    {
+      "path": "web-client/assets/ships.spionagesonde.veyari.webp",
+      "offset": 21428719,
+      "size": 6626,
+      "sha256": "0420e7e0c8bf133612b62ede2a0c18b2f2ce0a2b34a8914483547a3d53d58c43"
+    },
+    {
+      "path": "web-client/assets/ships.truppentransporter.aurelianer.webp",
+      "offset": 21435392,
+      "size": 15548,
+      "sha256": "03bc8f85a4bba79285f7fc94ed50869698ae0590955725e8ad78e328ad7b21f6"
+    },
+    {
+      "path": "web-client/assets/ships.truppentransporter.krath.webp",
+      "offset": 21450982,
+      "size": 9778,
+      "sha256": "9eea2498720ec5984d05db6cdc53ba85f203147c379c9550d3716b0e96145ba7"
+    },
+    {
+      "path": "web-client/assets/ships.truppentransporter.syntheten.webp",
+      "offset": 21460806,
+      "size": 11920,
+      "sha256": "4ac58bfaebeeea2c24bcb6a4dd1a4dcaf80f6049dafb17194003ccf0d91711d8"
+    },
+    {
+      "path": "web-client/assets/ships.truppentransporter.veyari.webp",
+      "offset": 21472769,
+      "size": 13980,
+      "sha256": "c40c4881d87a63ccb6eddbb20f7d3f4974f30e963b34d2d558a54b8334510aef"
+    },
+    {
+      "path": "web-client/assets/ships.zerstoerer.aurelianer.webp",
+      "offset": 21486788,
+      "size": 15518,
+      "sha256": "48151de5a4d8083c164245f4036f34f6f538b8c5839f0492fe919085c7633d47"
+    },
+    {
+      "path": "web-client/assets/ships.zerstoerer.krath.webp",
+      "offset": 21502340,
+      "size": 9900,
+      "sha256": "a85c85ca9c5c85cfeeb4f8a5b1fbdb5de5ec75a1b9213251c50f3660f3333396"
+    },
+    {
+      "path": "web-client/assets/ships.zerstoerer.syntheten.webp",
+      "offset": 21512278,
+      "size": 14984,
+      "sha256": "d3e26c6eb637c7eab4a9b0b6ffdd8a87506b45f564dc7961443b184ff51c465b"
+    },
+    {
+      "path": "web-client/assets/ships.zerstoerer.veyari.webp",
+      "offset": 21527297,
+      "size": 15932,
+      "sha256": "5f9b0230a52e322548be3c6349702e094ce7f7bbcb65ea9daac606e997202b17"
+    },
+    {
+      "path": "web-client/assets/stats.arbeitskraefte.webp",
+      "offset": 21543261,
+      "size": 10250,
+      "sha256": "c36cc001d3b83dd57dd1dc9abb178b470743e9d7708d0de0ef8ebdcf159c99ae"
+    },
+    {
+      "path": "web-client/assets/stats.baufelder.webp",
+      "offset": 21553538,
+      "size": 8590,
+      "sha256": "ad320edffc599b56ca660a4d538fe7a3c3d044a782c31537c3685bfd0e9a3f4c"
+    },
+    {
+      "path": "web-client/assets/stats.besatzung.webp",
+      "offset": 21562155,
+      "size": 14734,
+      "sha256": "3ae9324bfd504db5d43ea580d3e2b8592286debf245c6e565f02c3550930fbb8"
+    },
+    {
+      "path": "web-client/assets/stats.bevoelkerung.webp",
+      "offset": 21576919,
+      "size": 15206,
+      "sha256": "ea56697e9a1c64fac560dfddd2acc5d11e84f85fcf12f872e611466f0821a6d6"
+    },
+    {
+      "path": "web-client/assets/stats.fachkraefte.webp",
+      "offset": 21592154,
+      "size": 17256,
+      "sha256": "6aad0613256be5a3410eeae3b5ae86a2044de281e2babfb3b9b0a88be71e1e22"
+    },
+    {
+      "path": "web-client/assets/stats.garnison.webp",
+      "offset": 21609436,
+      "size": 14776,
+      "sha256": "34ed74ba3d753eece41e0c3ff94fc39517f50a5abaebda284b1715c8989e0c0a"
+    },
+    {
+      "path": "web-client/assets/stats.punkte.webp",
+      "offset": 21624236,
+      "size": 21288,
+      "sha256": "781084799cf7ae990db8054e6609af3095a293d7c959669006809add1923354c"
+    },
+    {
+      "path": "web-client/assets/stats.siedler.webp",
+      "offset": 21645549,
+      "size": 17614,
+      "sha256": "c56d99c1efcba62d03f1533411f58dc4956388869fa42d6ee6047998860f765b"
+    },
+    {
+      "path": "web-client/assets/stats.stabilitaet.webp",
+      "offset": 21663192,
+      "size": 15232,
+      "sha256": "54add6c8efd05a4bd820cc2d40e2139e21a963737a3fcfcd69098b24ec55f9af"
+    },
+    {
+      "path": "web-client/assets/stats.verwaltung.webp",
+      "offset": 21678452,
+      "size": 18386,
+      "sha256": "34d60a0d43aee013510b8a55e7db5f034551e360f33c08acf891a04b5e378880"
+    },
+    {
+      "path": "web-client/assets/stats.wohnraum.webp",
+      "offset": 21696864,
+      "size": 15194,
+      "sha256": "37b5b2d7ff42e9f27fbf9f05d5c74c58280313433214b3f63c7f215b316024ba"
+    },
+    {
+      "path": "web-client/assets/surfaces.frost.aurelianer.webp",
+      "offset": 21712095,
+      "size": 29704,
+      "sha256": "3f0734a2cd471e49399bfd3cf6ea83527badc4714708970e0b72aa02040f2806"
+    },
+    {
+      "path": "web-client/assets/surfaces.frost.krath.webp",
+      "offset": 21741831,
+      "size": 21454,
+      "sha256": "146fd80a025bb1a381fc756b8515e8a2bc4991ea4cf2363d5327300eff632bf2"
+    },
+    {
+      "path": "web-client/assets/surfaces.frost.syntheten.webp",
+      "offset": 21763321,
+      "size": 23760,
+      "sha256": "8df7cfb257ec3d203c3f6a44e936e87cf699ab4622f6be5832a921774e399662"
+    },
+    {
+      "path": "web-client/assets/surfaces.frost.veyari.webp",
+      "offset": 21787114,
+      "size": 29102,
+      "sha256": "082e1840b24b6138e8e15eb7ae50b57ba1dd3a8dae24daa0a1b1201795d82c93"
+    },
+    {
+      "path": "web-client/assets/surfaces.glut.aurelianer.webp",
+      "offset": 21816252,
+      "size": 27846,
+      "sha256": "1a32a79caf34a3ff1f6e91bb5a95d46492d882cf93fc838a3b88fca6e2c0e5b9"
+    },
+    {
+      "path": "web-client/assets/surfaces.glut.krath.webp",
+      "offset": 21844129,
+      "size": 24428,
+      "sha256": "bbecc702475f7ef0e26224c3b5f896c658dbd68842c3caa70524f8e517471ffc"
+    },
+    {
+      "path": "web-client/assets/surfaces.glut.syntheten.webp",
+      "offset": 21868592,
+      "size": 25658,
+      "sha256": "83b27eb25513233296af6f660f0691e7b85aa012064f5465f67ff19245d1be2a"
+    },
+    {
+      "path": "web-client/assets/surfaces.glut.veyari.webp",
+      "offset": 21894282,
+      "size": 32050,
+      "sha256": "af481e5be8c3fc69ac4ab18734abcf86ccf3381ce3d9b9cdc267eba1b3d2bc30"
+    },
+    {
+      "path": "web-client/assets/surfaces.leben.aurelianer.webp",
+      "offset": 21926369,
+      "size": 30776,
+      "sha256": "099f7bc3824ec60ce10bb3478833e4baf08dd4060d00cc173052f61546288150"
+    },
+    {
+      "path": "web-client/assets/surfaces.leben.krath.webp",
+      "offset": 21957177,
+      "size": 21520,
+      "sha256": "cc6b8ed53719eb472adcbe9cec1ec309e628c6c29298ffe72f5f55131f74c180"
+    },
+    {
+      "path": "web-client/assets/surfaces.leben.syntheten.webp",
+      "offset": 21978733,
+      "size": 30966,
+      "sha256": "10f5b7b2d4f108fb168ccc7256f2ff564689a19a3fec1ba31031b3a775ebd130"
+    },
+    {
+      "path": "web-client/assets/surfaces.leben.veyari.webp",
+      "offset": 22009732,
+      "size": 34834,
+      "sha256": "7c3deef8caad35eddce19cfa1be11c84384bcb61b61ee1dfaab08bc44df27b8c"
+    },
+    {
+      "path": "web-client/brand/neuralstern-panels.png",
+      "offset": 139686787,
+      "size": 391537,
+      "sha256": "658316c270db30f09b480ac25105602d1ad48704048fccaad60ad883cd84ddc9"
+    },
+    {
+      "path": "web-client/brand/neuralstern-panels.webp",
+      "offset": 140078333,
+      "size": 49978,
+      "sha256": "4c427634c7696fbcf3bee1435ad2687666bed1aeb396f98fc00efff032e35099"
+    },
+    {
+      "path": "web-client/guide/allianz.webp",
+      "offset": 139062063,
+      "size": 65688,
+      "sha256": "025f5c9c725b47db2bedbc3b13afeda413483d44d6d41318e26880e473a32341"
+    },
+    {
+      "path": "web-client/guide/allianzpost.webp",
+      "offset": 138877257,
+      "size": 82698,
+      "sha256": "52485b7c55a5ea25e60badc04440815e1ccd3ffccf08440d10575a41bb03e35f"
+    },
+    {
+      "path": "web-client/guide/anfragen.webp",
+      "offset": 139256211,
+      "size": 51016,
+      "sha256": "1cfb2443b9b76786fb70ea9a7cdd2a2ad828f7d4f0d83e75c4df11459d10a61f"
+    },
+    {
+      "path": "web-client/guide/briefkasten.webp",
+      "offset": 139127751,
+      "size": 71612,
+      "sha256": "ebb535da39c00722aeec3f8c82d512aabe021f7b9c367b020611e565efb0dbe8"
+    },
+    {
+      "path": "web-client/guide/chat.webp",
+      "offset": 139307227,
+      "size": 58838,
+      "sha256": "0ed49ace559cf752ec355b85c61908833c570ea52f1ff3915be728cddafb708c"
+    },
+    {
+      "path": "web-client/guide/gruenden.webp",
+      "offset": 139199363,
+      "size": 56848,
+      "sha256": "32f73585f92ac23f4011f580d77dd50f21297a849caa82219a5059f0719ab700"
+    },
+    {
+      "path": "web-client/guide/hilfe.webp",
+      "offset": 138959955,
+      "size": 48136,
+      "sha256": "ae9444da5401cf85981ce6bca8fc6f5485707da3b3577d33923c888dd9beca08"
+    },
+    {
+      "path": "web-client/guide/schreiben.webp",
+      "offset": 139366065,
+      "size": 31694,
+      "sha256": "55c6f061e426a6776b6b6bb4f1cf691119ec787ebcc90d44eef27daca3291bab"
+    },
+    {
+      "path": "web-client/guide/team-01-modelle.webp",
+      "offset": 138815191,
+      "size": 62066,
+      "sha256": "6769ca18c4ccd6e3f7ef6be5d157454a1fae283b3fc29bb84d150ae7224b543d"
+    },
+    {
+      "path": "web-client/guide/team-02-ollama.webp",
+      "offset": 138792979,
+      "size": 22212,
+      "sha256": "e7e555d555160d53f117ced15df9a74e1099c29191f3abc1a58ff4a17cbd29b7"
+    },
+    {
+      "path": "web-client/guide/team-03-openrouter.webp",
+      "offset": 138771097,
+      "size": 21882,
+      "sha256": "e38cc46d6145bf90f643adc6a33dc0edf2f8117e284aeec154d3acb92c7d232f"
+    },
+    {
+      "path": "web-client/guide/team-04-rollen.webp",
+      "offset": 138739025,
+      "size": 32072,
+      "sha256": "9607451c4edd4d01957acd0072b2cbc5544377d06ca9250e413bb09676b91c06"
+    },
+    {
+      "path": "web-client/guide/team-05-browserfreigabe.webp",
+      "offset": 138712323,
+      "size": 26702,
+      "sha256": "5d789cee64ebe84ca58d4bc7cbb62a342e7b77be888eba5a40690de6611fa70c"
+    },
+    {
+      "path": "web-client/guide/team-06-pinwaende.webp",
+      "offset": 138629349,
+      "size": 82964,
+      "sha256": "e6c18dbacc114493f552f93fe13a01e7978a67cbef8a26467d8cf589abc5c9d7"
+    },
+    {
+      "path": "web-client/guide/wirtschaft.webp",
+      "offset": 139008091,
+      "size": 53972,
+      "sha256": "86e26c386a2dc367c54ed68f95363e83162fcd05430f2129a30b86c602cf9947"
+    },
+    {
+      "path": "web-client/audio/bots/haendler.ogg",
+      "offset": 22044590,
+      "size": 45671,
+      "sha256": "1de419f314eabf9c28a0175dde2288d306bbfd0e462143c3e086a7357d797523"
+    },
+    {
+      "path": "web-client/audio/bots/igel.ogg",
+      "offset": 22090281,
+      "size": 37834,
+      "sha256": "ab58d10f45d558cf4741a57154c5a5113646a8a3045f3dc718bcdf95f0a7245f"
+    },
+    {
+      "path": "web-client/audio/bots/oekonom.ogg",
+      "offset": 22128138,
+      "size": 35587,
+      "sha256": "c19599262b57e4f077a5f090353e1bfb64d652b289dca053f8d647743996a078"
+    },
+    {
+      "path": "web-client/audio/bots/raeuber.ogg",
+      "offset": 22163748,
+      "size": 35168,
+      "sha256": "35c3daaaccac27a3989489e55cdd8c7405c7660738f11705f4dcfa22aa08e6a9"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/diplomat.aurelianer.glb",
+      "offset": 22225204,
+      "size": 6560016,
+      "sha256": "03061fe2c3d70d0c014171c200e6c13ab294177ee73997275387333eada0fe62"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/diplomat.aurelianer.webp",
+      "offset": 28785252,
+      "size": 84112,
+      "sha256": "576e1893a27e5c375b5631363a3571972ca000d219abcc932d5a96a5dfcac3b4"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/diplomat.krath.glb",
+      "offset": 28869390,
+      "size": 6044412,
+      "sha256": "b3261e325bf3a2727d37ea0ce7120dfae96d72c83dc8b608330bdb2aa9f5bc8e"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/diplomat.krath.webp",
+      "offset": 34913829,
+      "size": 40936,
+      "sha256": "0cccda2810986e4993c14f21e20a3c8b64e40fd8b2363b0fbaf3160bcd273022"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/diplomat.syntheten.glb",
+      "offset": 34954795,
+      "size": 6640616,
+      "sha256": "b9f014e81cf65a271e8da091ec662d9ec840c4c02fffac5c4844d5653d7ac889"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/diplomat.syntheten.webp",
+      "offset": 41595442,
+      "size": 80480,
+      "sha256": "f080f950bf01d12cb3cdd9d7824b566743b1fcefbb61930f93cf6733a47909b2"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/diplomat.veyari.glb",
+      "offset": 41675949,
+      "size": 6426920,
+      "sha256": "2a5348e2f55a1bc1daef2f5f6053589631841f33ff465ef0a9db4103bfd8e8b2"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/diplomat.veyari.webp",
+      "offset": 48102897,
+      "size": 78800,
+      "sha256": "996c81955e8c1685e7bd5f1868a6ef2db1105b9bda2d5c87cf195c9ce5d28b01"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/feldherr.aurelianer.glb",
+      "offset": 48181728,
+      "size": 6275604,
+      "sha256": "377fad03c08c73e4829779d590c9dc4ee62516ca88ef2f74d6a6d9f59d47cd02"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/feldherr.aurelianer.webp",
+      "offset": 54457364,
+      "size": 74816,
+      "sha256": "24f7476322db2625ff54c9f357e78a4fa761e63f36bdf6270ff3111e89799cb0"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/feldherr.krath.glb",
+      "offset": 54532206,
+      "size": 6364912,
+      "sha256": "d8b13ce083ce091ead38a3ef5706f080e24321e650f6a3a745dc2b12d6ce0002"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/feldherr.krath.webp",
+      "offset": 60897145,
+      "size": 78840,
+      "sha256": "c9441782a1fc6b99403b323d5ae51a26a73b7f448afa7c5487723f367aac2c7a"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/feldherr.syntheten.glb",
+      "offset": 60976015,
+      "size": 6388240,
+      "sha256": "bb40fef1498298de6bd902e4d92109503576a5723c28e902cc6071ad50770552"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/feldherr.syntheten.webp",
+      "offset": 67364286,
+      "size": 81984,
+      "sha256": "d9aa3b96780da7b6e32c1a0dc1ff204f58738efdd9831df85a854a082d33ce85"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/feldherr.veyari.webp",
+      "offset": 73847225,
+      "size": 73814,
+      "sha256": "caf5e9407ae8f80511322b23c733741fcc135db1804c8356380bc20d0c521e51"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/stratege.aurelianer.glb",
+      "offset": 73921070,
+      "size": 6441688,
+      "sha256": "50afa8cb50424c6dfd0a2e6557a01264d37e6a5979d60f22fc6c987772cc6d49"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/stratege.aurelianer.webp",
+      "offset": 80362790,
+      "size": 86068,
+      "sha256": "57954e4156f07a6b8e04a5c56764cce7351be522f5746cdf52d53a616ad7abd8"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/stratege.krath.glb",
+      "offset": 80448884,
+      "size": 5976356,
+      "sha256": "f0518af812f5735a29224ab630cd6599ec6221a3d73bcab69badee1e19021b10"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/stratege.krath.webp",
+      "offset": 86425267,
+      "size": 54450,
+      "sha256": "4c05f28c3554df06ed982c7c1ddfd9d61796c25010addbd4e72cb4410b17d189"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/stratege.syntheten.glb",
+      "offset": 86479747,
+      "size": 6127180,
+      "sha256": "803d1173d89a6c8fe8f0b85919d258d265ba84177452218a581025f32ff4fa93"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/stratege.syntheten.webp",
+      "offset": 92606958,
+      "size": 42716,
+      "sha256": "78afa124df289bf99d6a13cd88084d3c4abfc1258e59eb8cb5517143f2b63209"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/stratege.veyari.glb",
+      "offset": 92649701,
+      "size": 5912512,
+      "sha256": "4c9cfc0b4a68bdce663409fc2f226764c78447aed81ee517cf33bc07ae82acd1"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/stratege.veyari.webp",
+      "offset": 98562241,
+      "size": 50178,
+      "sha256": "d49669a5ce1396a932f7fa11ba7040f49aef7578cae9a5d056cce844138bfe0c"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/verwalter.aurelianer.glb",
+      "offset": 98612451,
+      "size": 6518468,
+      "sha256": "1f2926be635bb51c2563e772c32fa360c4789a90d10d4927680fc20f4e529e2e"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/verwalter.aurelianer.webp",
+      "offset": 105130952,
+      "size": 81870,
+      "sha256": "7ae9a2ce6a2beb9f64eae97260bd278af0795f9e0ba2c725bbddb445200f140d"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/verwalter.krath.glb",
+      "offset": 105212849,
+      "size": 6262608,
+      "sha256": "5001cb5dc603124301d93a26830408b535704fbfac16e1f77b3cc79f21202b5f"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/verwalter.krath.webp",
+      "offset": 111475485,
+      "size": 74202,
+      "sha256": "c3db0f5085ed54b018dbd065e9eb06924da30b38761181e92c0f7a5713a58c51"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/verwalter.syntheten.glb",
+      "offset": 111549718,
+      "size": 6443832,
+      "sha256": "71ad9c60a6e78552e9f8d415431a2fd8828c9229024c245f733f39883836256e"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/verwalter.syntheten.webp",
+      "offset": 117993582,
+      "size": 58778,
+      "sha256": "1563e8768b6945937733e489399f3bdcf346e02d121d20906a34b456119751b2"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/verwalter.veyari.glb",
+      "offset": 118052388,
+      "size": 6548952,
+      "sha256": "dd950e20714386c35564d9e6994a8e16a7b9c6a5424718c6b359a2bf38f21141"
+    },
+    {
+      "path": "harness/cockpit/assets/figuren/verwalter.veyari.webp",
+      "offset": 124601369,
+      "size": 64940,
+      "sha256": "c135074bfa1b475c4977e5c84c121539bf5c32010ef4280efa22bccab2cefc5d"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/angriff_1.ogg",
+      "offset": 125562472,
+      "size": 18994,
+      "sha256": "48013d13f001d452b9d88cc134267167571d83ebd14f6af5c10da2fc14f5f9ef"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/aufstieg_1.ogg",
+      "offset": 125581508,
+      "size": 16390,
+      "sha256": "bb6ae907beee119733a9969b5999c0b5cf319dd1108404cb564c661f6a675773"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/erfolg_1.ogg",
+      "offset": 125597938,
+      "size": 20843,
+      "sha256": "bd83a500fdb59d3cd36f594a645467fed4dda2dc14d4c46b8a33e8d1d7c102fd"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/erfolg_2.ogg",
+      "offset": 125618821,
+      "size": 15715,
+      "sha256": "6d0690c9b69fa4fbc4af09ef9868833f93418d833a53fe4d17e26aa1af51655d"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/erlaubnis_1.ogg",
+      "offset": 125634579,
+      "size": 14886,
+      "sha256": "d8a40c34474e96390ae81d2353d4d4723f63ceae35948fd06a6888ffcc201bc0"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/fehler_1.ogg",
+      "offset": 125649505,
+      "size": 20922,
+      "sha256": "04209868539ddc081cc2c5850b58890ad417a101c15e685f37a14784c87fa0ed"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/genervt_1.ogg",
+      "offset": 125670468,
+      "size": 19498,
+      "sha256": "c83585b40211d5678e3a3dbf83cd595037cbdccaa16aca38f893e43a44877311"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/klick_1.ogg",
+      "offset": 125690005,
+      "size": 8080,
+      "sha256": "dc6e639a04c52ea0f079ad3bf9761446c9b7a20d90eaeb4d9b64dc5baf526478"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/klick_2.ogg",
+      "offset": 125698124,
+      "size": 6851,
+      "sha256": "bf90b9a31b1f0494353362f13c575ec6611acad69edb82da261c4393841f13b7"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/klick_3.ogg",
+      "offset": 125705014,
+      "size": 11196,
+      "sha256": "1d8c7e6d1222c3679d9a33ea142a6a14d6d5f7f8ef6a0b3f2d74f01fa28ab3b0"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/kolonie_1.ogg",
+      "offset": 125716251,
+      "size": 16655,
+      "sha256": "84edfc13c499a962efa8329ddc75fa9a4019304f13264d2a13d37115d3dcd8f6"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/leerlauf_1.ogg",
+      "offset": 125732948,
+      "size": 16168,
+      "sha256": "2b44583358680e5cb4788f5d0edba7865be6ddbbbd656638a2341d0b92c9a21b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/misserfolg_1.ogg",
+      "offset": 125749160,
+      "size": 10566,
+      "sha256": "7f3f73d66677bff218229a7663165fd0ba9fcb6c89fedbc91f9571655d3e116e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/misserfolg_2.ogg",
+      "offset": 125759770,
+      "size": 21250,
+      "sha256": "d72add04e24a57662216be720526512e0dcd943b140a5eb4a1d553b821e557b0"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/rat_ruht_1.ogg",
+      "offset": 125781062,
+      "size": 22094,
+      "sha256": "ae46a823744d09c1565580626698578cb638ac5ab1ebe10d5e586f0f29ea37f1"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/rat_tagt_1.ogg",
+      "offset": 125803198,
+      "size": 17399,
+      "sha256": "326408456f8caedc02dfc3372431b8e5e2808c0481201557ad7bd683969dd459"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/vorstellung.ogg",
+      "offset": 126125988,
+      "size": 125927,
+      "sha256": "7a78ef7e40db9fb104a8a528dcbb0559a6fc7d6c865eaaff175a1d867bf60cb7"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/angriff_1.ogg",
+      "offset": 126251951,
+      "size": 31759,
+      "sha256": "0edf90f02af858655a03461eabf36b683f6929e2a0c858ddf133273ba0e61857"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/aufstieg_1.ogg",
+      "offset": 126283747,
+      "size": 25316,
+      "sha256": "4b9fa57c685aa43619c15270b3b7489c87f955921927df724d0d76cdf1c3827e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/erfolg_1.ogg",
+      "offset": 126309098,
+      "size": 13031,
+      "sha256": "bdb02bf1e83c44b135a6cdabeea0fd3a71383ca911358bd5a2c15de541e90b42"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/erfolg_2.ogg",
+      "offset": 126322164,
+      "size": 24065,
+      "sha256": "36bd7f62a20d800032073f996f41fc44688197be3db560a1ef8fe89d63a59c4e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/erlaubnis_1.ogg",
+      "offset": 126346267,
+      "size": 21825,
+      "sha256": "013c9e81662ff946871e233dd3f4bf6d3aeed6bf767c56856536be661afdf7bb"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/fehler_1.ogg",
+      "offset": 126368127,
+      "size": 25024,
+      "sha256": "268eb3b59139318b5f8bd8828c9e8d25ef8d9ce222a627f20a4ce0f404d7c6cb"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/genervt_1.ogg",
+      "offset": 126393187,
+      "size": 23636,
+      "sha256": "d135fed17aa1901cf5ec6ec9b75c8136375ea145d6299684e4346c1414966246"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/klick_1.ogg",
+      "offset": 126416857,
+      "size": 12984,
+      "sha256": "91d083903b1936d9c9f90036438d39a003cfaf3d6a839c8bc4b88bf185c9f7e6"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/klick_2.ogg",
+      "offset": 126429875,
+      "size": 4245,
+      "sha256": "602cff8ca83e1a7f4510aed4a7fee85eec7739981de752df0704c34cc8d23ae0"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/klick_3.ogg",
+      "offset": 126434154,
+      "size": 12378,
+      "sha256": "6752a515b9f70d1e7a60c6416a1839a33ccb0ba4b1bb9058677ca0df934c8fc4"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/kolonie_1.ogg",
+      "offset": 126446568,
+      "size": 29315,
+      "sha256": "47d27166535b85e22ba11e9cabc7114680a11c48658ab7d91e5de77526655aca"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/leerlauf_1.ogg",
+      "offset": 126475920,
+      "size": 27517,
+      "sha256": "d930a1b62fddfa705c5b5b719641e0770cbfe0ce4cc22c409ff6d66653d04866"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/misserfolg_1.ogg",
+      "offset": 126503476,
+      "size": 15576,
+      "sha256": "29dbaa63a2d66c5b63c1db1206d7de299b5650886ee83b70534f58755c993754"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/misserfolg_2.ogg",
+      "offset": 126519091,
+      "size": 15479,
+      "sha256": "1b3f9889190ee7defe7155b5fc4c5f0e70b89ff07b13a6bb3191c8059bf7004c"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/rat_ruht_1.ogg",
+      "offset": 126534607,
+      "size": 16999,
+      "sha256": "66ebd58dc4964d10a8bb49a5031f4ce5388e9478756fb6b8c825ca0c5cbce0a3"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/rat_tagt_1.ogg",
+      "offset": 126551643,
+      "size": 18779,
+      "sha256": "417e6cd9e6087dac2a958337e6114a9eabfa656f4378c7640e1696a1568802d9"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/vorstellung.ogg",
+      "offset": 126910057,
+      "size": 154753,
+      "sha256": "1ee617497227a5f2322cc9bac1c6fe0470c7b4653908b56278f36df6e70b013e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/angriff_1.ogg",
+      "offset": 127064850,
+      "size": 23182,
+      "sha256": "59c3b041dfca609c7e7ce7a9f3e7f40df563c764ac7602e93969b0ee821391e1"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/aufstieg_1.ogg",
+      "offset": 127088073,
+      "size": 20509,
+      "sha256": "417a2451dfb4842ad44eb5c8ad0d6f46832ab4536e512f5f89c8171dfd6c9ee8"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/erfolg_1.ogg",
+      "offset": 127108621,
+      "size": 15871,
+      "sha256": "7c0f110ccf0657d58c69b91b8cb21a9d7947738dcab448129604d81360ea629d"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/erfolg_2.ogg",
+      "offset": 127124531,
+      "size": 17994,
+      "sha256": "16351af0712033b918cc13f6c36b588ae1a9c567586c65abb35742f9e846cfc7"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/erlaubnis_1.ogg",
+      "offset": 127142567,
+      "size": 18607,
+      "sha256": "72e3f2d554141777624ea1060073cc6de9b0b0d6344d648c506ba31ba16ed35e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/fehler_1.ogg",
+      "offset": 127161213,
+      "size": 22687,
+      "sha256": "dd4ba9a9e3195c21de6244e3af5375f0493b0f3e137734395ceebdd17a7611c6"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/genervt_1.ogg",
+      "offset": 127183940,
+      "size": 30440,
+      "sha256": "78492bd89bc6418a49bd09669391f7f4aefc30df2205b7cbbae8f81b2bade639"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/klick_1.ogg",
+      "offset": 127214418,
+      "size": 4646,
+      "sha256": "93e3b8ac50440a27069804e4520549f3abd3126e1bc13ba4d1474bcfd4671493"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/klick_2.ogg",
+      "offset": 127219102,
+      "size": 5488,
+      "sha256": "8da8e9e72b9facf25da98d729a78e12f679df0c3c3031d9bca03501f6dfb2566"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/klick_3.ogg",
+      "offset": 127224628,
+      "size": 13425,
+      "sha256": "2c99112c52fa6d9d5deb10637487fa385a12b9e359e6509b65f789240724ca96"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/kolonie_1.ogg",
+      "offset": 127238093,
+      "size": 27008,
+      "sha256": "148db675d3c458b53617bae376189fe75a6d2ff09a6b19b414a006a30d3a799c"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/leerlauf_1.ogg",
+      "offset": 127265142,
+      "size": 21577,
+      "sha256": "33c651ff97f5588b61f0ae7bff569289358577541ffc6129a57afbab7f1eb155"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/misserfolg_1.ogg",
+      "offset": 127286762,
+      "size": 17513,
+      "sha256": "b5c7a9ecb8a87d9b468171631b34468185519db7f4f817afbd630708b98cdc54"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/misserfolg_2.ogg",
+      "offset": 127304318,
+      "size": 13276,
+      "sha256": "e9f23e60322d144500c45b423283a54be80103cbe1cae6502922ee015dac3bbc"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/rat_ruht_1.ogg",
+      "offset": 127317635,
+      "size": 17313,
+      "sha256": "578b4a071829e9b60efc8706570d0ab772497df9f91d76f408198d1c538fc9ad"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/rat_tagt_1.ogg",
+      "offset": 127334989,
+      "size": 21341,
+      "sha256": "e6a561e5662124c918fcc65748a2b5b8e9f5b80c982cf068caf648b407ad6237"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/vorstellung.ogg",
+      "offset": 127711881,
+      "size": 149674,
+      "sha256": "caec9c37df1b894d1d8e714cbb61d77c4de161ddc85d678d897939f33b843efb"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/angriff_1.ogg",
+      "offset": 127861592,
+      "size": 29736,
+      "sha256": "4e596eaad8fc8fef465dcc8b97c3584c5d2dad5a43ff85d7835fd45b7c126669"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/aufstieg_1.ogg",
+      "offset": 127891366,
+      "size": 15331,
+      "sha256": "89ac4bc55e0ff0d6f76d6701dfc50c65bd9ad19348a8e5bc3b567b14f8ae1e4b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/erfolg_1.ogg",
+      "offset": 127906733,
+      "size": 15806,
+      "sha256": "59023ea3888c9470619341e6c72fda5cc3db3fade9637d3c6631a20345c5c00b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/erfolg_2.ogg",
+      "offset": 127922575,
+      "size": 16356,
+      "sha256": "876c0c39373fc72251420d39ce9f7a4aa214f63cdaaeb154e9a41c913f66a2d6"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/erlaubnis_1.ogg",
+      "offset": 127938970,
+      "size": 18089,
+      "sha256": "deb6b41d7498711aaa3e6ab6b6f2d93df1e8f3ba2e8447d8d84c4d546106eb42"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/fehler_1.ogg",
+      "offset": 127957095,
+      "size": 18938,
+      "sha256": "92ca552d71a30460682387dd922d4e13051707dbc9d91faa21c1da15e18bf52d"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/genervt_1.ogg",
+      "offset": 127976070,
+      "size": 22863,
+      "sha256": "1486e4134ab0d4904d4ea0180e03adb35a3dcd82e8a1614b3e1f26b5edb614cf"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/klick_1.ogg",
+      "offset": 127998968,
+      "size": 5307,
+      "sha256": "23c4ee3e7f9010cccff498c420db8e29d767c8b01a333c6b564c0899a74621a3"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/klick_2.ogg",
+      "offset": 128004310,
+      "size": 12525,
+      "sha256": "e24ff77b596db4df4b6f7caadd015e7c3f176e4e486c3691b2b25410effee4a9"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/klick_3.ogg",
+      "offset": 128016870,
+      "size": 4760,
+      "sha256": "218a599579b4ff6e921cd30505dc755054f99562d75cef62c3be2e356d87b540"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/kolonie_1.ogg",
+      "offset": 128021667,
+      "size": 22957,
+      "sha256": "7140f4ee7a48430de03f999834e9b200dedd9838a2e240ec661692aee6f896d7"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/leerlauf_1.ogg",
+      "offset": 128044662,
+      "size": 17191,
+      "sha256": "b4f8dbe8bfe82caab3ce0bdafcbb3287061f995acda72382c7cb8c29b72a07e5"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/misserfolg_1.ogg",
+      "offset": 128061893,
+      "size": 23120,
+      "sha256": "d73d634c70ce5f39cb6d10575b4f1cdf65045ad785fe9b0514a9bfc3caffb180"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/misserfolg_2.ogg",
+      "offset": 128085053,
+      "size": 18061,
+      "sha256": "cbfd86afcf2c6f8eb08f62cb844af63b9300136a77b93647f421d9b054a1bf5c"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/rat_ruht_1.ogg",
+      "offset": 128103152,
+      "size": 12588,
+      "sha256": "3a5a8246c2ba13671b2ec53bf8e1ebc7f223806f1bd7cc41bfbca8d976eb647a"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/rat_tagt_1.ogg",
+      "offset": 128115778,
+      "size": 18182,
+      "sha256": "e7dbc443507313e2a57861a67554482d56d6c531386c8f068586d4a2fe9add4b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/vorstellung.ogg",
+      "offset": 128353153,
+      "size": 147206,
+      "sha256": "4bed9a58879f1d62211f97dcaa6eb1b044457dfcaa607a1c85cca3df016e9c78"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/angriff_1.ogg",
+      "offset": 128500400,
+      "size": 20008,
+      "sha256": "b87b949c81716a1078896cb7e0173f89ccffb922fba0d95ad4d35d6482e0cb6e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/aufstieg_1.ogg",
+      "offset": 128520450,
+      "size": 17048,
+      "sha256": "0ce8935719884c340e5f70daacd4eff9352a6fe802c5394913e007e5ce091e4c"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/erfolg_1.ogg",
+      "offset": 128537538,
+      "size": 12720,
+      "sha256": "36425611f03266757d348fa9b9af0f3b774908140b11c0f0b6572a1b7daa7904"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/erfolg_2.ogg",
+      "offset": 128550298,
+      "size": 11320,
+      "sha256": "562593d9474599944d423bf207c1bd039f8c9dc3152229d9e9fd267bed154405"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/erlaubnis_1.ogg",
+      "offset": 128561661,
+      "size": 13088,
+      "sha256": "d492ac3145bea8fabbff7185331646c6228e02b8d069c18f3591c88adbd45361"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/fehler_1.ogg",
+      "offset": 128574789,
+      "size": 15255,
+      "sha256": "0db7e8cec3a5bef6191998173db9bff8f108de1fbd20e469edc36282fdba66a5"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/genervt_1.ogg",
+      "offset": 128590085,
+      "size": 10335,
+      "sha256": "bf38787398a83cb2b8df57728324b5ac6e36d4bef09b84d53c5cc2579ebac794"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/klick_1.ogg",
+      "offset": 128600459,
+      "size": 4601,
+      "sha256": "557058330bf075d6aae07e0b801106beaa7df8faa9d53f00ea072a7a3f66db4b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/klick_2.ogg",
+      "offset": 128605099,
+      "size": 4229,
+      "sha256": "e6c27aa54ddf540a382bac7bb65429cb9d95fa2efab045f287577a5abba0fc48"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/klick_3.ogg",
+      "offset": 128609367,
+      "size": 9748,
+      "sha256": "2228286e7e24dc39bf296cd477f678e65f2ddf7aa0ce1ce7fbfd5424bb8b8b85"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/kolonie_1.ogg",
+      "offset": 128619156,
+      "size": 16702,
+      "sha256": "2ec3a7eb47e8fee6b9f0700c5494708b9e69203ee35dfc52a798cde57ad312f6"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/leerlauf_1.ogg",
+      "offset": 128635900,
+      "size": 24032,
+      "sha256": "98d30691bf558b8480f90c10d858cbf11c003acc29b8ec60b2d5e80ea08dbc89"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/misserfolg_1.ogg",
+      "offset": 128659976,
+      "size": 15979,
+      "sha256": "bef499132f3c0b105f08963667a42b6a102a6e458247fd0244934f28a2983b7e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/misserfolg_2.ogg",
+      "offset": 128675999,
+      "size": 18698,
+      "sha256": "681ad3d262d868d798a6a6e25eeac234f8212b6175fc9e433813b362072f4981"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/rat_ruht_1.ogg",
+      "offset": 128694739,
+      "size": 13474,
+      "sha256": "023e4d365f511e938813fdfba2d7773bd5e9f5065b7ebf97047082bfe23b946e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/rat_tagt_1.ogg",
+      "offset": 128708255,
+      "size": 14221,
+      "sha256": "5008503e94c8baca9b1c30589c970485266b94c18eee368a28c773b54b2d5d3d"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/vorstellung.ogg",
+      "offset": 128972732,
+      "size": 150192,
+      "sha256": "332c3b1cd504516f5fef0c1ae5a350c6744092c6049b14a42ec281a6c3ac715a"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/angriff_1.ogg",
+      "offset": 129122960,
+      "size": 23840,
+      "sha256": "fbdbcb4d0cf6260c8b79a2833a5a10addae9172149ede835c688ef30529db7f7"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/aufstieg_1.ogg",
+      "offset": 129146837,
+      "size": 23384,
+      "sha256": "ca04e5e665d51000a17037812e7ae859515f76557353d71890dff11a53865cae"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/erfolg_1.ogg",
+      "offset": 129170256,
+      "size": 16703,
+      "sha256": "a01619dfda134642709d4ebd0195e3028e8bdddaf4717a0a3a46c6a9f574b47a"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/erfolg_2.ogg",
+      "offset": 129186994,
+      "size": 16098,
+      "sha256": "a7913cd01bad25cb11c519be829c3260b0ca91f9c1fb09c8d8de5da912576c0e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/erlaubnis_1.ogg",
+      "offset": 129203130,
+      "size": 18572,
+      "sha256": "c16fcce17cfd5fe6a3bcc9f3eda5dfd0e803c3880349889859dc4f1ade6adbdc"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/fehler_1.ogg",
+      "offset": 129221737,
+      "size": 22361,
+      "sha256": "4557637a01af0281bc462232dd213c58be1695f38ddc06543dfe2685c97b2642"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/genervt_1.ogg",
+      "offset": 129244134,
+      "size": 24809,
+      "sha256": "827f09163da87b610187bdb53fd38d5c7f93537be97965d550f619a37c11b032"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/klick_1.ogg",
+      "offset": 129268977,
+      "size": 8235,
+      "sha256": "84f0881fe2a8e94f5ef5b7b165e4bd16d510a7f2d2cf5a4cb604ff72eb6a45e5"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/klick_2.ogg",
+      "offset": 129277246,
+      "size": 6819,
+      "sha256": "71df04b877822f284dc06f981725843affdcc382daa673f7de6ea14fb0d262aa"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/klick_3.ogg",
+      "offset": 129284099,
+      "size": 10580,
+      "sha256": "05ae088f8e1f41334aa20d3c7122a26d4558f813dee182ce6694c8fc3cd7aa5f"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/kolonie_1.ogg",
+      "offset": 129294715,
+      "size": 21553,
+      "sha256": "b674a873e32660e8bb8571160348a271853fdd2776190fde21ec0dcecbf65780"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/leerlauf_1.ogg",
+      "offset": 129316305,
+      "size": 19059,
+      "sha256": "6566f8e9fba2a69c78eff7a03f13880dbe38ff86ea6f14789ab8448800b3353e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/misserfolg_1.ogg",
+      "offset": 129335403,
+      "size": 17965,
+      "sha256": "9cc060bbe5a430eebd294a632638d12ed2716f8deca40112ce1c40e4b0961907"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/misserfolg_2.ogg",
+      "offset": 129353407,
+      "size": 16647,
+      "sha256": "be82e7a7918b39dd0976b6558c86cccb4af50a66d5fbd3881ce070414279434b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/rat_ruht_1.ogg",
+      "offset": 129370091,
+      "size": 18435,
+      "sha256": "82a5a817d075e7da3deda26059e0b252b3ccc1fd0ce7d420612d28279dad09ff"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/rat_tagt_1.ogg",
+      "offset": 129388563,
+      "size": 12965,
+      "sha256": "cde485ea207ee24c478bc664dd3509285aa23b3f2f98c7c213fc46345ec23894"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/vorstellung.ogg",
+      "offset": 129705924,
+      "size": 146560,
+      "sha256": "ab1cac712d0b711441baabca1f70f95eef3f61c681b1d7d811b94fad7f6f0e7a"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/angriff_1.ogg",
+      "offset": 129852524,
+      "size": 22362,
+      "sha256": "59ead34582e518578e9015fb44de520e4d82648e30bb5921afe5491922e1af12"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/aufstieg_1.ogg",
+      "offset": 129874927,
+      "size": 15328,
+      "sha256": "411129ff6c0fc5e6a12a748c96119107e315cf110719c7f944c8200d5d21b25a"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/erfolg_1.ogg",
+      "offset": 129890294,
+      "size": 15237,
+      "sha256": "ff5252afd94f2c55e2e6680e3daaa0e298bde6e92ff1e8f78cb12f7255aa4ada"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/erfolg_2.ogg",
+      "offset": 129905570,
+      "size": 10068,
+      "sha256": "ffba97b65ee449fc3836248c6f03aa5197cefc121f2c4b85c74051f10dcb7e5a"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/erlaubnis_1.ogg",
+      "offset": 129915680,
+      "size": 17669,
+      "sha256": "36be75076367844c0358f58d03c5327632a32da37fc92151da2c4e1a8ab4aa14"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/fehler_1.ogg",
+      "offset": 129933388,
+      "size": 12862,
+      "sha256": "7776016b1c14d92f2bfc5fa2206cd992ba1d1fadbdeee008f87a630ccc3c851e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/genervt_1.ogg",
+      "offset": 129946290,
+      "size": 24997,
+      "sha256": "3a5e46583216e260d13624c7dec295cf638241be64f99133b308510b0351d918"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/klick_1.ogg",
+      "offset": 129971325,
+      "size": 8485,
+      "sha256": "0d240bfc24e9dc5f8e2320a7944a087fdaae7168bb6f55e83cbce800f8cdb377"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/klick_2.ogg",
+      "offset": 129979848,
+      "size": 4699,
+      "sha256": "b70a562a24f061025c07907f98215bf11daca4ea92f80943b416cd545270acaa"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/klick_3.ogg",
+      "offset": 129984585,
+      "size": 5466,
+      "sha256": "078a0ef6588ff2dfcf61a5c1b9e3b5c3cc9190e4268bf6de7ede02386107def8"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/kolonie_1.ogg",
+      "offset": 129990091,
+      "size": 15228,
+      "sha256": "c0f4c65662bb836e9731ad09df8c76450c9c72ccdbd313688959ba6e9a345e24"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/leerlauf_1.ogg",
+      "offset": 130005360,
+      "size": 16833,
+      "sha256": "74a287c0f3b7fc946b5b4bd6778d7c9462390acece7918a0f3809c4903cd6326"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/misserfolg_1.ogg",
+      "offset": 130022236,
+      "size": 16073,
+      "sha256": "ab14e562e5c396fa48c2a3f34017d3cfa94b3a1e75d21460866de0c2270c25b5"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/misserfolg_2.ogg",
+      "offset": 130038352,
+      "size": 19512,
+      "sha256": "bfc2c45b60eff6ef6def947688800586fd5370fe5ce65b24adf3992a315e1c2d"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/rat_ruht_1.ogg",
+      "offset": 130057905,
+      "size": 13172,
+      "sha256": "e89cf1c57658d9f42889239145fa0acc62c150c0ff3555e2403b46cc9442e799"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/rat_tagt_1.ogg",
+      "offset": 130071118,
+      "size": 13810,
+      "sha256": "52b98d0cbe3aac9ce3b92fb42afa461867169a48e64c9d933b4247360cc28b85"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/vorstellung.ogg",
+      "offset": 130314823,
+      "size": 136133,
+      "sha256": "a2989ba84d37d504f8adf22cd6bebf9f9de3127201733a8822022d1bcf834007"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/angriff_1.ogg",
+      "offset": 130450993,
+      "size": 19749,
+      "sha256": "9d1d9b3e3870469e40de06372093177bb1ec74c4a2f64fae970249c232ff33ad"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/aufstieg_1.ogg",
+      "offset": 130470780,
+      "size": 18560,
+      "sha256": "f0fb1e3faf419a50a880effe9490b61f5b95dbb901757f23c8b188d54cb449fc"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/erfolg_1.ogg",
+      "offset": 130489376,
+      "size": 18107,
+      "sha256": "2da21cf2516785a065a7c52c212791ced55aaba451f0d6d310aea2204d9e3bf2"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/erfolg_2.ogg",
+      "offset": 130507519,
+      "size": 12854,
+      "sha256": "eaacf25baf11e94973523df89f9e8d56fab0d55a19d3122fc26bb851dcc9d89a"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/erlaubnis_1.ogg",
+      "offset": 130520412,
+      "size": 16048,
+      "sha256": "b10ee3d874d0538538b56065d7f485a48960fa61713754cc64a080bd1cc4e120"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/fehler_1.ogg",
+      "offset": 130536496,
+      "size": 18488,
+      "sha256": "9884c76d385da0396fa54195be7cdeb7b12fcc18ce10f8ebadc22895eb8db7b1"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/genervt_1.ogg",
+      "offset": 130555021,
+      "size": 18788,
+      "sha256": "2f52907919ec15d56c99a4b324d7f9fbf83bcb5e730654410e28081e26828ce5"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/klick_1.ogg",
+      "offset": 130573844,
+      "size": 9417,
+      "sha256": "0215d4fff99abd59e5cdfe1ac8277f981cb61ab87d8f02019668cecf74edcada"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/klick_2.ogg",
+      "offset": 130583296,
+      "size": 3338,
+      "sha256": "7110db3b4dfe499e75cfa2b67308c57e839725bb2d724b8b3a0ca6d4647a36a9"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/klick_3.ogg",
+      "offset": 130586669,
+      "size": 4892,
+      "sha256": "9b2157bd27dab9379ca57dd1f0482ee677cb6e755122f989006ad6a73a0d1e33"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/kolonie_1.ogg",
+      "offset": 130591598,
+      "size": 19037,
+      "sha256": "cd9024550f1c501dfab7bf8367d75636f7758a56f0f0025773eb525361d66d34"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/leerlauf_1.ogg",
+      "offset": 130610673,
+      "size": 26758,
+      "sha256": "ed1ff3c108aec02fa04b21df1c16b6410d1b6d491d64ee58021e3920dcaab36d"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/misserfolg_1.ogg",
+      "offset": 130637471,
+      "size": 15846,
+      "sha256": "1adecc25987a6fd62648a83ca75184bc5f6a8b65593d39d1971ad8650dd2f4ed"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/misserfolg_2.ogg",
+      "offset": 130653357,
+      "size": 18017,
+      "sha256": "10afeac39ad4a34899f4f8c8f00b3816299bb7d0d651d543b00856c26ef027b0"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/rat_ruht_1.ogg",
+      "offset": 130671412,
+      "size": 16440,
+      "sha256": "5fe8121b635e4f472b21e20faf0fd5fbab69d9916442d1a0f0f3072ffb93cbfc"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/rat_tagt_1.ogg",
+      "offset": 130687890,
+      "size": 14712,
+      "sha256": "3c2468404ed4cec23ec0ae26976dbc60e68a0c2e6326800df68d73c7e836866e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/vorstellung.ogg",
+      "offset": 130951470,
+      "size": 131152,
+      "sha256": "ba4c70808e93369fabaeabd695775bdf38f75fec1d5fef6f7d9a1744e7d38a80"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/angriff_1.ogg",
+      "offset": 131122567,
+      "size": 30320,
+      "sha256": "f2df8746146bd48d82e9cde2a0a6ed6a1db069203bd6c59ae150977bdca13366"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/aufstieg_1.ogg",
+      "offset": 131152929,
+      "size": 14787,
+      "sha256": "f29af454c703a7ec68d17ef0db97abb445abee4f3199fcc731285a8fa96c27f0"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/erfolg_1.ogg",
+      "offset": 131167756,
+      "size": 12073,
+      "sha256": "1025a7f2ea196b550742d4e0d6aff85a3b41f5036ea00c8ee91751e572374e5b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/erfolg_2.ogg",
+      "offset": 131179869,
+      "size": 17513,
+      "sha256": "0a50d717db87f3a64811f8a2a41da82bcbd6c51c577d465c5f910f59e5029e4b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/erlaubnis_1.ogg",
+      "offset": 131197425,
+      "size": 18758,
+      "sha256": "534e69ec268aaaa03003a531e679d1bdc2c315e2df7f18b2aa174eacc9322b78"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/fehler_1.ogg",
+      "offset": 131216223,
+      "size": 25873,
+      "sha256": "d54aad930947fee8649255281030a2106f9237934604fdbe962489b2ef706a2c"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/genervt_1.ogg",
+      "offset": 131242137,
+      "size": 17905,
+      "sha256": "ceb2efd191ad293073e80aefe2b1635999bcd94d2bf734cea469aebdfaeb621a"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/klick_1.ogg",
+      "offset": 131260081,
+      "size": 9700,
+      "sha256": "852ca09f4d5a268734f9e2c49268bbf984106441acda2706f25e476f638c9609"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/klick_2.ogg",
+      "offset": 131269820,
+      "size": 9843,
+      "sha256": "7d74975fedee8b04993e870d2584858989f3a7ae60f81963e0c4a36b522bfe0b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/klick_3.ogg",
+      "offset": 131279702,
+      "size": 10186,
+      "sha256": "c2de248d86b12405e9b8d50218a1eb80fc77bcade4516dfb5bbb33dda97dff31"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/kolonie_1.ogg",
+      "offset": 131289929,
+      "size": 17634,
+      "sha256": "fd9d85267fc333066ea6a6fd0e8d85185e7178befe5ecd0baadde3b75255e494"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/leerlauf_1.ogg",
+      "offset": 131307605,
+      "size": 21623,
+      "sha256": "06d85a89a501138b3b45fc0345791490c1536a2a142c2eaba13b9ee6c36e9eb7"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/misserfolg_1.ogg",
+      "offset": 131329272,
+      "size": 15298,
+      "sha256": "2cee4b92c720dcddbf4aa59967a2287fcdc770e9dbf72995c1f58d3cad2f34c4"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/misserfolg_2.ogg",
+      "offset": 131344614,
+      "size": 14600,
+      "sha256": "ca63569628b3fd441ef1ae8f95fb9c2160bff555e645b80ae147cdef7e039c8b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/rat_ruht_1.ogg",
+      "offset": 131359256,
+      "size": 14427,
+      "sha256": "f9ae6c6d1f1a5cb2f0589f74ca0362b9df7e6946015ce039792a691d75c54929"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/rat_tagt_1.ogg",
+      "offset": 131373725,
+      "size": 21296,
+      "sha256": "11995d2bc377c5aa065f8febc7f63924dfca2f24da599235fa39c72210531708"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/vorstellung.ogg",
+      "offset": 131663367,
+      "size": 148967,
+      "sha256": "fc10d0950b4e6d8c1ddba081070e0da013fafb986eba0a6e63c01c4fc1f94ad9"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/angriff_1.ogg",
+      "offset": 131812370,
+      "size": 19033,
+      "sha256": "edb58848bbf9108f347ffa5ab11586b77b6c3237137d4e5c3f88c2b9d53c3f24"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/aufstieg_1.ogg",
+      "offset": 131831440,
+      "size": 16792,
+      "sha256": "cb4a1b4d2fd90a2040ebda1dec61c5355b130775b19ceb61df520c50d0b9f464"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/erfolg_1.ogg",
+      "offset": 131848267,
+      "size": 9241,
+      "sha256": "91017d58ed595d13e8c3a1451c7ec13edd7d4c3dedef93220533e96aa5c9041e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/erfolg_2.ogg",
+      "offset": 131857543,
+      "size": 11776,
+      "sha256": "8c7c3ea01a6970637dbd42af3cf55d5d78cb5be98ad7847cf1ad576e575a8c65"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/erlaubnis_1.ogg",
+      "offset": 131869357,
+      "size": 15745,
+      "sha256": "fcaae17ce4db2663058d08fbfe75373a90565c8b9942005967ed3eda73ea4d47"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/fehler_1.ogg",
+      "offset": 131885137,
+      "size": 13188,
+      "sha256": "46582ee4171efbefd6da1fcda118e2f1335e2fe00058d609de66c7e8f351a9ac"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/genervt_1.ogg",
+      "offset": 131898361,
+      "size": 18058,
+      "sha256": "ef0913e9510c255814b26e7488842fb4a657db462670938a5d05a1b4d30c9e5f"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/klick_1.ogg",
+      "offset": 131916453,
+      "size": 3804,
+      "sha256": "f156e11248a7c162fd8eeecd009a527962a46bfe4856a64d93a84090bde8aac4"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/klick_2.ogg",
+      "offset": 131920291,
+      "size": 5990,
+      "sha256": "122b5894d8aa23a79d798c5584ab7201cf21621c1deeb809a233739273c0728a"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/klick_3.ogg",
+      "offset": 131926315,
+      "size": 9273,
+      "sha256": "c196df6c36aefb3a745850ac38f5786c4385ad6e8f5caa43c8e16838977736a5"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/kolonie_1.ogg",
+      "offset": 131935624,
+      "size": 18710,
+      "sha256": "31512760e6bb36885648e5d3179bef6c8b0af82e226b31d509360b39cb3fe4e9"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/leerlauf_1.ogg",
+      "offset": 131954371,
+      "size": 21405,
+      "sha256": "6481cc588a2d99481b9a2c291928a338668af9c26769a154203f756d806c608d"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/misserfolg_1.ogg",
+      "offset": 131975815,
+      "size": 17387,
+      "sha256": "73713d034d67098b64a77b443723ca2e2ae67c7cf3a2ef4541cccbf08b387a72"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/misserfolg_2.ogg",
+      "offset": 131993241,
+      "size": 38400,
+      "sha256": "c01b3d0efb1e11ffac9831064545b5bb55b8d2ad0fec9058186aedae40be19e4"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/rat_ruht_1.ogg",
+      "offset": 132031678,
+      "size": 15168,
+      "sha256": "3b164cf69cf1291977d2f102ba03f7e331471a8c03c6e8f39916ef493fd0381b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/rat_tagt_1.ogg",
+      "offset": 132046883,
+      "size": 19168,
+      "sha256": "38d7dc21b25773237ef062a5f2acf1c5122b906022f6a793af1fe276847f8327"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/vorstellung.ogg",
+      "offset": 132385666,
+      "size": 175083,
+      "sha256": "080ca6a56916b07f7e814aaf454dcf31b8b6a822d875bd8bf01815fb3355ea5e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/angriff_1.ogg",
+      "offset": 132560789,
+      "size": 21576,
+      "sha256": "661ac89146999078a942ec6e52980ad38748834c39c461123b72e7d2c4a0a81f"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/aufstieg_1.ogg",
+      "offset": 132582406,
+      "size": 16106,
+      "sha256": "f3c84d56af995078d5fddff0ff8021907e8a899b9ba6b0e37bd3165300a4086c"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/erfolg_1.ogg",
+      "offset": 132598551,
+      "size": 13473,
+      "sha256": "657316b34bfb32b43a180b4f146157a015a01c435fc72ebd8fca13e1130605bc"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/erfolg_2.ogg",
+      "offset": 132612063,
+      "size": 23051,
+      "sha256": "b666056249341fed2d268447b15b955941c3d38361462de8a5ee7e911e1b376d"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/erlaubnis_1.ogg",
+      "offset": 132635156,
+      "size": 19251,
+      "sha256": "9743aef8e4141d007f0775e228d77f102bf3fdb3253f1d6c0ffb38cca847b6b0"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/fehler_1.ogg",
+      "offset": 132654446,
+      "size": 21300,
+      "sha256": "00d13d68997925b59bc97f6d27e364db0c03eee038dee8cdff0101e763561cc0"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/genervt_1.ogg",
+      "offset": 132675786,
+      "size": 29610,
+      "sha256": "465385de62da67bf83bf00e1e8f1e7beeea66372c76f385cf59b522a7a6b0285"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/klick_1.ogg",
+      "offset": 132705434,
+      "size": 5097,
+      "sha256": "3e61707518bd0d24de0d3b104eb5d4b4c19466eed4aecf703d63ae86a5f08f21"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/klick_2.ogg",
+      "offset": 132710569,
+      "size": 5893,
+      "sha256": "c02391c55d752023ed9c564e9096ed8a69a1853893d20f51d8d362feceba977f"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/klick_3.ogg",
+      "offset": 132716500,
+      "size": 10355,
+      "sha256": "8bd53b5a65915f972f8ecac49d647043696da5e306308eab41d584ebb2667f2f"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/kolonie_1.ogg",
+      "offset": 132726895,
+      "size": 15237,
+      "sha256": "cc38e1d795c067f6f3ef169974c27907d508ed0b466c84242ab0864ed77a8e57"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/leerlauf_1.ogg",
+      "offset": 132742173,
+      "size": 23703,
+      "sha256": "6769e005862477dcb37567eb60c527ebc7eee172bb6152266b73b2074c7c0f62"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/misserfolg_1.ogg",
+      "offset": 132765919,
+      "size": 12745,
+      "sha256": "17ed7a774b21b4f014cb391ef431723bf761a7493798140ad3257a3eddc2fb61"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/misserfolg_2.ogg",
+      "offset": 132778707,
+      "size": 19325,
+      "sha256": "0ccea16315d24c2e6eb5210f5a57cbadaaa8d47064d8cd6b0e9c5cdbbc4ea96b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/rat_ruht_1.ogg",
+      "offset": 132798073,
+      "size": 19316,
+      "sha256": "b550f0b35ffff6c8998d62da07451af0ed29f53dd73828fee5f9815fa36eeb11"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/rat_tagt_1.ogg",
+      "offset": 132817430,
+      "size": 14969,
+      "sha256": "dfa4d69e568e8360d7e9576f8bf2d274ebcef3e0a6a285f52cb4cf1fce5e4c19"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/vorstellung.ogg",
+      "offset": 133104265,
+      "size": 148387,
+      "sha256": "5fdcaaa881ec4d9aeab2bede95baf275e785dfa009147197b9953f7a9c1c30b4"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/angriff_1.ogg",
+      "offset": 133252689,
+      "size": 26375,
+      "sha256": "da584d7e47974a698f255606256cba57ae5ba1ea1c28a4d46a5443cb9e13e323"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/aufstieg_1.ogg",
+      "offset": 133279102,
+      "size": 18997,
+      "sha256": "b62b0d8062f92f95b0697725d611f72f3ec1a9751023ebf86e402380cc66fe92"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/erfolg_1.ogg",
+      "offset": 133298135,
+      "size": 17170,
+      "sha256": "7da540cedf3dccc003664569392443d46a5001bfdc13176064d215906999f62a"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/erfolg_2.ogg",
+      "offset": 133315341,
+      "size": 15589,
+      "sha256": "91111d6230b549578dac222d35a95b6d50643cd1d0d5685fa5219bd31ba52b17"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/erlaubnis_1.ogg",
+      "offset": 133330969,
+      "size": 21847,
+      "sha256": "097f34f5da49f0729d218f0cb152f3198612d28945694308cd1a83133338e33b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/fehler_1.ogg",
+      "offset": 133352852,
+      "size": 21467,
+      "sha256": "690cefdec251e2638bb1397112b1609d22c8315d5cb101e915fa7993003ccc13"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/genervt_1.ogg",
+      "offset": 133374356,
+      "size": 26500,
+      "sha256": "5570694185f6d81e52fb9a9f40346c1aa88ab021f05dd3022e05925b3b1a399e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/klick_1.ogg",
+      "offset": 133400891,
+      "size": 5379,
+      "sha256": "6803bf3b1cc9094acbd4679f6ba08145b2265f619a6fb80bd0e19f3011901a0a"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/klick_2.ogg",
+      "offset": 133406305,
+      "size": 5813,
+      "sha256": "a4aa09f3277330046953397db09a79ca55ca743212f5b3da526d43bd8e2da334"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/klick_3.ogg",
+      "offset": 133412153,
+      "size": 17446,
+      "sha256": "0dfae3f07e148b50496ea31e85474dac1e6a52a26c959e085c1ac2271b697a17"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/kolonie_1.ogg",
+      "offset": 133429636,
+      "size": 19969,
+      "sha256": "fde3b6ed83ecfff7850896a54dac2907cb76381c9059c5a9b6ff471d60f26b44"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/leerlauf_1.ogg",
+      "offset": 133449643,
+      "size": 26408,
+      "sha256": "e0d1e346f54269be1c3619bb07817b96877e6abb24bbd2b6eea13897244fddfb"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/misserfolg_1.ogg",
+      "offset": 133476091,
+      "size": 14252,
+      "sha256": "3e5f433330ffc0c672510bc6eb54674b90a27e73cbafe3d32fd945b3f3f9a6cb"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/misserfolg_2.ogg",
+      "offset": 133490383,
+      "size": 17228,
+      "sha256": "1678cef9a837e54016f8e35b909f2380354a9ab1b465287044b4ab7cc847f0cf"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/rat_ruht_1.ogg",
+      "offset": 133507649,
+      "size": 20046,
+      "sha256": "318f08a86b03b5ef369e9d9dae62ccb40fadaca8df49e71be3beb74c078e7f25"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/rat_tagt_1.ogg",
+      "offset": 133527733,
+      "size": 22093,
+      "sha256": "165efa078a2faed4c79462572509d341551a63f89d2ec7de39ac24bd5c80c03e"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/vorstellung.ogg",
+      "offset": 133816692,
+      "size": 148576,
+      "sha256": "f6511b0ae99b8d557ccb63ee832c9492758a1c84c3ccc1a6e82c3d12205a0b8b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/angriff_1.ogg",
+      "offset": 133965310,
+      "size": 17440,
+      "sha256": "582fa2fa94c23802cffe422c11f8e98e7b54c041c9ea6da100bb53ac8959ed02"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/aufstieg_1.ogg",
+      "offset": 133982793,
+      "size": 17911,
+      "sha256": "e0dc04cd189783ab4e6df9b7c378b0f046a34932e69141632f67d2762cffdaff"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/erfolg_1.ogg",
+      "offset": 134000745,
+      "size": 21481,
+      "sha256": "536e39dd10658bd311e721f30b7a4e075977e46b0657395899f54ebb1c343849"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/erfolg_2.ogg",
+      "offset": 134022267,
+      "size": 19111,
+      "sha256": "b90dff9fa1efc54ed90e44e710ac7e38eb389cb1b0b9a3e02e1dc10e8fbb355b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/erlaubnis_1.ogg",
+      "offset": 134041422,
+      "size": 18637,
+      "sha256": "9f5f6ee09767f2b91209721d13c212b51e716cd6398aa9ed68b34dab301c883d"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/fehler_1.ogg",
+      "offset": 134060100,
+      "size": 24940,
+      "sha256": "df967cba08c7b6ad7db783402620d2275959091445b56b856bf7aa55df7c0f86"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/genervt_1.ogg",
+      "offset": 134085082,
+      "size": 20672,
+      "sha256": "7249ead32c72181cdc7be0e05134ebf517bee451989e6c767ff0f348ed40f63f"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/klick_1.ogg",
+      "offset": 134105794,
+      "size": 10565,
+      "sha256": "d4574cda80be96e64a74985dd5c069a7f8fde2bf04efb2129ba55343379094e3"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/klick_2.ogg",
+      "offset": 134116399,
+      "size": 16672,
+      "sha256": "847ce0e097101501395b7c2aa429ba03b5b629a8223af5a94bfb0e61a2705a29"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/klick_3.ogg",
+      "offset": 134133111,
+      "size": 3867,
+      "sha256": "bf4d6e3dd473aee4b110e15579d6086447896220a7dcb8a93c8cab8f0f9f3911"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/kolonie_1.ogg",
+      "offset": 134137020,
+      "size": 18440,
+      "sha256": "6e71ea97d2b0f92153f3b73c47b6da49afe7465430255fa0b1da03338968ee43"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/leerlauf_1.ogg",
+      "offset": 134155503,
+      "size": 22504,
+      "sha256": "2723ea63e60b520467ca1d559496d1122343952e691161c5ae7969ea69938676"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/misserfolg_1.ogg",
+      "offset": 134178052,
+      "size": 16818,
+      "sha256": "99500b8bb2778ebb62bf008cf2288e6c1ddd9f71bd36408b7896b158252a7743"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/misserfolg_2.ogg",
+      "offset": 134194915,
+      "size": 17789,
+      "sha256": "9e777e91b6f4e3b8cc33aeea3020e1264451ee7b70a3fe19db4174b00fd6f8c5"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/rat_ruht_1.ogg",
+      "offset": 134212747,
+      "size": 15445,
+      "sha256": "cf33a5620cadf6ecde837dd0263d4da251bec066af7c3d8ad72f49812bc93dcf"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/rat_tagt_1.ogg",
+      "offset": 134228235,
+      "size": 24288,
+      "sha256": "4e0a4191a7f19ef7ac44655a3afce1e608b12751f7ac9c5a68ade1fdf6cd7783"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/vorstellung.ogg",
+      "offset": 134563868,
+      "size": 152559,
+      "sha256": "8db7babf5c282b23365894c2fc2d28203b519b28be6d98f386d9e5f8e42c8a6d"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/angriff_1.ogg",
+      "offset": 134716464,
+      "size": 17303,
+      "sha256": "bfc45f14373aaf55c53f5ee1893e175956f2647810442f55b42b028a366fa7b9"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/aufstieg_1.ogg",
+      "offset": 134733805,
+      "size": 16150,
+      "sha256": "f3a27870a36203880e4080a85e99034a83ac8bf0df5d4b361c0701288438fdbf"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/erfolg_1.ogg",
+      "offset": 134749991,
+      "size": 6732,
+      "sha256": "285e0ae149f67aa7a3f497762d3e1701929ff4c82e7533ca45976596b3b162f0"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/erfolg_2.ogg",
+      "offset": 134756759,
+      "size": 13032,
+      "sha256": "75af69efe38f6f60568e3d244859c155c2141cd5e06f57fac2234dffe311ed68"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/erlaubnis_1.ogg",
+      "offset": 134769830,
+      "size": 12522,
+      "sha256": "c40ec95649010ee2fa5a971a5ea0ff7514fc2498216ec094ba4fedbb3697407c"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/fehler_1.ogg",
+      "offset": 134782388,
+      "size": 16689,
+      "sha256": "26230e2b533fc8fa14d80b49ac27683838296d69f04c6b4623916c96c13eec97"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/genervt_1.ogg",
+      "offset": 134799114,
+      "size": 19360,
+      "sha256": "0befe378fd80841bd4225ad2f8fc80597ded3ed559bfa26c6f2bd198513da267"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/klick_1.ogg",
+      "offset": 134818509,
+      "size": 2170,
+      "sha256": "9df8514152b083e2d5263e46a902728f08d972a4ca25277cfcd95694653eac23"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/klick_2.ogg",
+      "offset": 134820714,
+      "size": 12972,
+      "sha256": "8ef7407cbc4266b78a9f831181cc83453d3445f6c0c4864d9b6cb059bcbaa88c"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/klick_3.ogg",
+      "offset": 134833721,
+      "size": 5480,
+      "sha256": "0cf179833a3f343d37ecb5742045c929eb14b6eb69ff9ad7340095b1a8078841"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/kolonie_1.ogg",
+      "offset": 134839238,
+      "size": 9970,
+      "sha256": "fb6b218da1ce32a8535bf070f7d9be6add96c2b63f5afc7a654de8f4bb2674b7"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/leerlauf_1.ogg",
+      "offset": 134849246,
+      "size": 18244,
+      "sha256": "a3104fcf8243f5eaad0dc276e31bf8d473b8dde042767d75a1d8413a9926b838"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/misserfolg_1.ogg",
+      "offset": 134867530,
+      "size": 9470,
+      "sha256": "53fa9987564ca0b671720261d6162aa7461f1fc7a67d3cb51ed407369c036346"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/misserfolg_2.ogg",
+      "offset": 134877040,
+      "size": 14172,
+      "sha256": "056eb87e8a41ec612bedd09f96d5e4e6f98da1c2cfbf0722123db36e3740f5aa"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/rat_ruht_1.ogg",
+      "offset": 134891250,
+      "size": 10850,
+      "sha256": "316e363e05f5e0ba2819122486b90c822bb03ecad950129a3ab94b9791bc68bb"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/rat_tagt_1.ogg",
+      "offset": 134902138,
+      "size": 12094,
+      "sha256": "635de6a8cf46d3355f0ed75affb34f6225c9e3c7cffb28142798a28de8cc5ef7"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/vorstellung.ogg",
+      "offset": 135138339,
+      "size": 134110,
+      "sha256": "85aa21e00c1687e253a56d94295459d570596e61e4d757151f2866d82233746a"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/angriff_1.ogg",
+      "offset": 135272490,
+      "size": 19936,
+      "sha256": "d1b13a143c997708d52b8b104f0b666792eee893923c434866aa45a7777148f4"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/aufstieg_1.ogg",
+      "offset": 135292468,
+      "size": 25674,
+      "sha256": "bb3ddc2eaa5887ae322e4ed9367982ffa93b701628fe9a9bd697450b2e19e099"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/erfolg_1.ogg",
+      "offset": 135318182,
+      "size": 18470,
+      "sha256": "13928c2a9369a0a388795cd9951815838913f78037dd1628a1092daa83ac7549"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/erfolg_2.ogg",
+      "offset": 135336692,
+      "size": 14018,
+      "sha256": "17770b8015fc49f46727816273bb7b3ca3cf66e70d90f35e5b36278d333038b5"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/erlaubnis_1.ogg",
+      "offset": 135350753,
+      "size": 16480,
+      "sha256": "083fcd1ed23dff230b81f3807e59305b706a105805ca4f1f7523645b4254ffa2"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/fehler_1.ogg",
+      "offset": 135367273,
+      "size": 17410,
+      "sha256": "6b698545c8009ca56ae8fbd6ebdea3b95e5e2133d5c6ec80ad460e57df1271da"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/genervt_1.ogg",
+      "offset": 135384724,
+      "size": 19506,
+      "sha256": "b5d41ba22615c09a49698dec3c1a1253f3953c0c0f7b5f01a9c920ea3711cadb"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/klick_1.ogg",
+      "offset": 135404269,
+      "size": 6686,
+      "sha256": "0fff27c8cabd3dba667168e11e52d60faabc37b5a368b5d75617f81d5db50f19"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/klick_2.ogg",
+      "offset": 135410994,
+      "size": 2766,
+      "sha256": "df32355084ed8aa6d40097f1bcc8c4922766519b6b35fdf11be531ffbdea064f"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/klick_3.ogg",
+      "offset": 135413799,
+      "size": 13300,
+      "sha256": "74108c9caa26fd9973a64b59a2a7073ee79e66029cc1783f09b10f2d2c7adb7b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/kolonie_1.ogg",
+      "offset": 135427140,
+      "size": 19804,
+      "sha256": "cc4f01805c57262d6c8658cb65d1bd81bbdd55cf39a7a4da84cfafbe9bed4bc6"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/leerlauf_1.ogg",
+      "offset": 135446986,
+      "size": 20700,
+      "sha256": "3d87323cab05c9caab3a7c0627a6adf3c345ccab06d16f0ae554565b4d86c27b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/misserfolg_1.ogg",
+      "offset": 135467730,
+      "size": 15221,
+      "sha256": "f7c9262ecf3a1a84640799124ec1a16e08fb57aa4e33ae66cb02b1e73e999926"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/misserfolg_2.ogg",
+      "offset": 135482995,
+      "size": 17721,
+      "sha256": "861927811beeb5daa71c7fe1bb62c03da323b942b73707ece90c277ecf56909a"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/rat_ruht_1.ogg",
+      "offset": 135500758,
+      "size": 15313,
+      "sha256": "466f6ccfbd51657eda21df3178ad9c7bbf87f50ad018366e6c7d3b6f2a434698"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/rat_tagt_1.ogg",
+      "offset": 135516113,
+      "size": 17312,
+      "sha256": "6c344dd844ada1ba8f5361736b83afb21bc5b41de2b6e68184f25e9b8936e493"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/vorstellung.ogg",
+      "offset": 135803423,
+      "size": 130617,
+      "sha256": "8211087c344dcdce804f854ea6cad3d42f975eb2ee1dd1753b4579b55dd4e7e5"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/angriff_1.ogg",
+      "offset": 135934078,
+      "size": 20305,
+      "sha256": "61e3678d25850acd41bbb8ad51a0e877c7b0a13737e6756a25132a3ace2d8e9f"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/aufstieg_1.ogg",
+      "offset": 135954422,
+      "size": 26268,
+      "sha256": "20c6dc0bc364c7ca54351a408147bbefa1239819da394af6df8725df740e2d93"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/erfolg_1.ogg",
+      "offset": 135980727,
+      "size": 14990,
+      "sha256": "53ad973aec1e2c8730dc3ff6d1be93585a6b8596b7e0d0340dc9b9dc7a447018"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/erfolg_2.ogg",
+      "offset": 135995754,
+      "size": 25819,
+      "sha256": "9e14c9e47fdedad758e4619c21193d8f8fef7c720361a4cda5230711d5ffa08f"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/erlaubnis_1.ogg",
+      "offset": 136021613,
+      "size": 13403,
+      "sha256": "7e5efaf49c0961197010d45c9de67838d0680f0142bf42edef97808a338f02a9"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/fehler_1.ogg",
+      "offset": 136035053,
+      "size": 21675,
+      "sha256": "daba5370d57e9a85b32e951191dc984466070a1d9d726529ad7a270fbd3a853d"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/genervt_1.ogg",
+      "offset": 136056766,
+      "size": 20928,
+      "sha256": "8ed98137abe3c541c944c492f47d8ba75247a4c4e7c50fac2b793cba065abac5"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/klick_1.ogg",
+      "offset": 136077730,
+      "size": 7840,
+      "sha256": "caa67648d1797acd64f819b5f8b4c99f34cecf39305ef43ed9ba69d9ea32fff1"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/klick_2.ogg",
+      "offset": 136085606,
+      "size": 5082,
+      "sha256": "fdd2ffae87b7057b2412670d895c762cf0269b526351e3f5b1066d9bb67d591b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/klick_3.ogg",
+      "offset": 136090724,
+      "size": 13034,
+      "sha256": "0a712abceca2e6496151f41029f8cf97fb336de3293aae07ee9a2cf7c34fa5b6"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/kolonie_1.ogg",
+      "offset": 136103796,
+      "size": 17660,
+      "sha256": "2a5303d8b6b1849294d89d86ff7a24a81db5dd4bef5a481d4588051eaaeee76f"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/leerlauf_1.ogg",
+      "offset": 136121495,
+      "size": 14030,
+      "sha256": "2d3b30c0e7a6e3fc2156f7d089afbf5a105dd88c896621c4acac9ac249840f65"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/misserfolg_1.ogg",
+      "offset": 136135566,
+      "size": 18278,
+      "sha256": "62bee04458c5cd93f182850fd0105f25059877fdcf1afec56750d819cd67fff8"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/misserfolg_2.ogg",
+      "offset": 136153885,
+      "size": 13984,
+      "sha256": "5f7ff287f1af8b7a44c6b25f0f48cfa2d66781f543c0f03c2dd74ae54bbb8e48"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/rat_ruht_1.ogg",
+      "offset": 136167908,
+      "size": 14161,
+      "sha256": "915b9eab8751e4fb6d6288a5eb124a0ec47737ad32b029c347185dba7910ab30"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/rat_tagt_1.ogg",
+      "offset": 136182108,
+      "size": 17266,
+      "sha256": "71f7bc152ff08fef417f9cc3d3c2b86c6eb2c5e32e3eedd7ba238f9ba81448c3"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/vorstellung.ogg",
+      "offset": 136451964,
+      "size": 155898,
+      "sha256": "2a3604d1b188dd905163aec14d09109ecd270aae0e2f3f138d945eb65513fd45"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.veyari/stimme/verwalter.veyari.voicebox.zip",
+      "offset": 136200863,
+      "size": 251061,
+      "sha256": "81cc15075b7be9f5010fd1c5fcf7d410e10d2ef534cf8815069715e628df359c"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.syntheten/stimme/verwalter.syntheten.voicebox.zip",
+      "offset": 135534960,
+      "size": 268420,
+      "sha256": "b6a5caee2e962ade1e159ae3d4563d2f4be359346f52e9c01f8ea59b49b11937"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.krath/stimme/verwalter.krath.voicebox.zip",
+      "offset": 134915713,
+      "size": 222587,
+      "sha256": "aa2d32bb9945e75b0db451cacc0952eb6b0ef7445a130c2fff5cbf19bdaa813f"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/verwalter.aurelianer/stimme/verwalter.aurelianer.voicebox.zip",
+      "offset": 134254062,
+      "size": 309762,
+      "sha256": "39c7b70bff752494476a76959c206a3596d33aaa1cdbc3061e62927271afee3d"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.veyari/stimme/stratege.veyari.voicebox.zip",
+      "offset": 133551323,
+      "size": 265330,
+      "sha256": "94eb1ffba9d155032088aa04dff4311cbcdf44ea1c54c51dd783df283b00bd3a"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.syntheten/stimme/stratege.syntheten.voicebox.zip",
+      "offset": 132833925,
+      "size": 270298,
+      "sha256": "683b67846e3174b77cc5240f6e80820591d79768775e12d3f34a00b0ef9f906b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.krath/stimme/stratege.krath.voicebox.zip",
+      "offset": 132067475,
+      "size": 318153,
+      "sha256": "f1f48805e0c4aa40a63d4c0b5c63a857fbaedfd8c2c9f355463792d919240102"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/stratege.aurelianer/stimme/stratege.aurelianer.voicebox.zip",
+      "offset": 131396541,
+      "size": 266783,
+      "sha256": "49546915931073319c28eb714b6bf0ed3b7e8d5bdf1a46da3cf5dbe28b3f80ee"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.veyari/stimme/feldherr.veyari.voicebox.zip",
+      "offset": 130702661,
+      "size": 247358,
+      "sha256": "c6e362a9c6e3bb1b93b666ede1c2cce6c4c7ac67a5bb770afeb7c5432e6e136b"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.syntheten/stimme/feldherr.syntheten.voicebox.zip",
+      "offset": 130084993,
+      "size": 228340,
+      "sha256": "d95cddd1b87b2f74409a5ee18f1a3ab5a60bc64e874f0e020281a9f6ae10ab4d"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.krath/stimme/feldherr.krath.voicebox.zip",
+      "offset": 129401585,
+      "size": 302835,
+      "sha256": "e316b2d971e7eac031c397e353ed9f9a74685d8a698acde1677e4999ac2b0901"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/feldherr.aurelianer/stimme/feldherr.aurelianer.voicebox.zip",
+      "offset": 128722543,
+      "size": 248688,
+      "sha256": "2d2c894d6780e4e7d001f0620a04881b6b6483cbf31d33d2284cfd2cc84a6794"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.veyari/stimme/diplomat.veyari.voicebox.zip",
+      "offset": 128134019,
+      "size": 217696,
+      "sha256": "7f966a7b086fe98e1baf9316589100115229b863ab59566fd8ee57df81318513"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.syntheten/stimme/diplomat.syntheten.voicebox.zip",
+      "offset": 127356395,
+      "size": 353975,
+      "sha256": "9fa1f68cbc96ec92448dd37cbea6b47411f992b83138af653b3022cfa9c59ace"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.krath/stimme/diplomat.krath.voicebox.zip",
+      "offset": 126570479,
+      "size": 338103,
+      "sha256": "f1528760ff1cd2e6fd566778ef2f9abd9deba12eb03a2dbbc0b052a6b0f561b8"
+    },
+    {
+      "path": "harness/cockpit/assets/stimmen/diplomat.aurelianer/stimme/diplomat.aurelianer.voicebox.zip",
+      "offset": 125820664,
+      "size": 303817,
+      "sha256": "9cacd3fbe7990ba8e1044a661880f2d51650eeae8b95da762ae60101fe24dd8f"
+    },
+    {
+      "path": "docs/branding/sternenepoche-mark.png",
+      "offset": 18869168,
+      "size": 47350,
+      "sha256": "1eee356b53af1ebfa85dc6f868639e48b0e3d65b3fe16a0bcf6cf53619c6f17b"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "sternenepoche/diplomat-veyari",
+  "anzeigename": "Sylvane Ithrel",
+  "rolle": "Diplomat · Veyari",
+  "beschreibung": "Adult woman in her thirties with a soft, melodic, calm alto voice, gentle and elegant, slightly airy, speaks slowly and kindly, warm and never shrill, clearly a woman's voice.",
+  "beschreibung_de": "Weich, melodisch, ruhig, elegant – eine geduldige Vermittlerin.",
+  "referenztext": "Ein Gespräch ist wie ein Garten. Wer zuhört, erntet mehr als der, der nur spricht.",
+  "sprache": "German",
+  "seed": 8873,
+  "gewaehlt": 1,
+  "lage": "frau_mittel",
+  "modelle": {
+    "design": "Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+    "base": "Qwen3-TTS-12Hz-1.7B-Base"
+  },
+  "comfyui_name": "sternenepoche_diplomat-veyari",
+  "erstellt": "2026-10-11T01:43:02+02:00",
+  "aktualisiert": "2026-10-11T01:43:02+02:00",
+  "voicebox_name": "Sternenepoche Sylvane Ithrel (Diplomat, Veyari)",
+  "nutzung": {
+    "loki_stimmen": "stimmen.cmd sprechen sternenepoche/diplomat-veyari \"Text\"",
+    "comfyui": "LoadSpeaker -> sternenepoche_diplomat-veyari.wav (models/qwen-tts/voices), dann VoiceClone",
+    "voicebox": "Profil importieren: diplomat.veyari.voicebox.zip (oder das Cockpit legt es selbst an)",
+    "qwen_tts": "referenz.wav + referenztext als ref_audio/ref_text, oder stimme.qvp als voice_clone_prompt"
+  }
+}

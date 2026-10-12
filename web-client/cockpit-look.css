@@ -1,0 +1,132 @@
+/* Cockpit-Look für das Spiel: dieselbe Sprache wie das Harness-Cockpit – Nachtblau mit langsam driftendem
+   Sternenfeld, Glas mit goldenen Eckmarken, Champagnergold für Führung, Eiscyan für Leben, Symbole in der Schiene.
+   Liegt als letzte Schicht über style.css/game.css und ändert nur Gestaltung, keine Abläufe. */
+.game-client {
+  --nacht: #050a12; --glas: rgba(14, 25, 40, .74); --glas2: rgba(19, 34, 53, .86); --linie: rgba(120, 160, 200, .16);
+  --linie2: rgba(127, 211, 255, .32); --text-hell: #e4ecf4; --matt: #8ea3b8; --gold: #dab57b; --gold2: #f3d9a6;
+  --cyan: #7fd3ff; --gruen: #8fdca5; --rot: #ff8c8c; --bernstein: #f4b467; --r: 14px;
+  --titel: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  background: var(--nacht); color: var(--text-hell);
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+}
+.game-client::selection, .game-client ::selection { background: rgba(127, 211, 255, .3); }
+.game-client ::-webkit-scrollbar { width: 10px; height: 10px; }
+.game-client ::-webkit-scrollbar-thumb { background: rgba(120, 160, 200, .22); border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+
+/* ---------- Hintergrund: Sternenfeld mit sehr langsamer Drift, Cyan- und Goldschimmer (wie im Cockpit) */
+.game-client::before { content: ""; position: fixed; inset: -6%; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse at 18% 8%, rgba(63, 169, 224, .14), transparent 45%), radial-gradient(ellipse at 88% 92%, rgba(218, 181, 123, .10), transparent 50%),
+    linear-gradient(rgba(5, 10, 18, .7), rgba(5, 10, 18, .9)), url("assets/backgrounds.stars.webp") center/cover;
+  animation: cockpit-drift 160s linear infinite alternate; }
+@keyframes cockpit-drift { from { transform: translate3d(0, 0, 0) scale(1.02); } to { transform: translate3d(-2.5%, -1.5%, 0) scale(1.06); } }
+
+/* ---------- Kopfleiste: Glas, goldene Leuchtlinie, Marke mit Stern, Status als Pille mit Licht */
+.game-client header { position: relative; background: linear-gradient(180deg, rgba(8, 15, 27, .96), rgba(8, 15, 27, .82)) !important; border-bottom: 1px solid var(--linie) !important; }
+.game-client header::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(218, 181, 123, .55), rgba(127, 211, 255, .35), transparent); }
+.game-client header .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--gold); letter-spacing: .22em; font: 600 15px/1.1 var(--titel); text-decoration: none; }
+.game-client header .brand::before { content: ""; width: 34px; height: 34px; flex: none; border-radius: 50%; background: url("brand/neuralstern-poster.jpg") center/cover;
+  box-shadow: 0 0 14px rgba(127, 211, 255, .35); }
+.game-client header .brand span { color: var(--matt); letter-spacing: .3em; font-size: 10px; text-transform: uppercase; }
+.game-client #account-strip, .game-client #world-time, .game-client #connection { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 20px;
+  border: 1px solid var(--linie); background: rgba(255, 255, 255, .03); white-space: nowrap; }
+.game-client #account-strip:empty { display: none; }
+.game-client #world-time { font-variant-numeric: tabular-nums; color: var(--gold2); }
+.game-client #connection::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--gruen); box-shadow: 0 0 0 0 rgba(143, 220, 165, .55); animation: cockpit-puls 2s infinite; flex: none; }
+.game-client #connection[data-stand="pause"]::before { background: var(--bernstein); animation: none; }
+.game-client #connection[data-stand="aus"]::before, .game-client #connection[data-stand="ende"]::before { background: var(--rot); animation: none; }
+@keyframes cockpit-puls { 0% { box-shadow: 0 0 0 0 rgba(143, 220, 165, .55); } 70% { box-shadow: 0 0 0 8px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+
+/* ---------- Knöpfe wie die .k-Familie: Cyan-Glas, Hauptknöpfe in Gold */
+.game-client button:not(.item-tile):not(.faction-card):not(.planet-pick):not(.zoom):not(.space-label) { border-radius: 10px; border: 1px solid var(--linie2); background: rgba(127, 211, 255, .07); color: var(--text-hell);
+  box-shadow: none; transition: background-color .15s, border-color .15s, filter .15s; }
+/* Hauptknöpfe (ohne .secondary) in Gold-Glas; volles Gold nur für das Absenden eines Formulars. */
+.game-client button:not(.secondary):not(.danger):not(.item-tile):not(.faction-card):not(.planet-pick):not(.zoom):not([data-tab]):not([aria-pressed]):not(.space-label) {
+  background: linear-gradient(180deg, rgba(218, 181, 123, .22), rgba(218, 181, 123, .08)); color: var(--gold2); border-color: rgba(218, 181, 123, .6); font-weight: 600; }
+.game-client form button:not([type="button"]):not(.secondary):not(.danger), .game-client #claim-panel button:not(.secondary):not(.faction-card):not(.planet-pick) {
+  background: linear-gradient(180deg, #f1d39c, #c99a55); color: #1d1406; border-color: #f6dfb0; font-weight: 650;
+  box-shadow: 0 6px 22px rgba(218, 181, 123, .22), inset 0 1px 0 rgba(255, 255, 255, .5); }
+.game-client button.danger { background: linear-gradient(180deg, #a8364a, #7a2232); border-color: #ff8c8c; color: #fff; }
+.game-client button:disabled { opacity: .45; filter: grayscale(.4); }
+@media (hover: hover) and (pointer: fine) {
+  .game-client button:not(.item-tile):not(.faction-card):not(.planet-pick):not(.zoom):hover:not(:disabled) { filter: brightness(1.08); border-color: var(--cyan); }
+}
+
+/* ---------- Schiene links: Symbol und Text, aktive Seite in Gold mit leuchtendem Balken */
+.game-client #tabs button[data-tab] { display: flex; align-items: center; gap: 10px; border: 1px solid transparent; background: transparent; color: var(--matt); border-radius: 10px; position: relative; box-shadow: none; font-weight: 500; }
+.game-client #tabs button[data-tab]::before { content: ""; width: 18px; height: 18px; flex: none; background: currentColor; -webkit-mask: var(--symbol) center/contain no-repeat; mask: var(--symbol) center/contain no-repeat; opacity: .9; }
+.game-client #tabs button[data-tab]:hover { color: var(--text-hell); background: rgba(255, 255, 255, .045); border-color: transparent; filter: none; }
+.game-client #tabs button[data-tab][aria-selected="true"] { color: var(--gold2); background: linear-gradient(90deg, rgba(218, 181, 123, .16), rgba(218, 181, 123, .03)); border-color: rgba(218, 181, 123, .28); box-shadow: none; }
+.game-client #tabs button[data-tab][aria-selected="true"]::after { content: ""; position: absolute; left: -7px; top: 8px; bottom: 8px; width: 3px; border-radius: 3px; background: var(--gold); box-shadow: 0 0 12px var(--gold); }
+.game-client .nav-group { color: var(--gold); letter-spacing: .2em; opacity: .85; }
+.game-client #tabs .nav-brand strong { color: var(--gold); letter-spacing: .22em; font-family: var(--titel); }
+.game-client #tabs .nav-brand small { color: var(--matt); letter-spacing: .3em; }
+.game-client #tabs button[data-tab="reich"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l2.6 5.6L20 9.5l-4 4 1 5.8L12 16.6 7 19.3l1-5.8-4-4 5.4-.9z'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="gebaeude"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20h16M6 20V9l6-5 6 5v11M10 20v-5h4v5M9 10h6'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="kolonie"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 2L4 14h7l-1 8 9-12h-7z'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="forschen"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 3h6M10 3v6l-5.5 9.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3M7.5 15h9'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="werft"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="verteidigung"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="flotten"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 11l18-8-8 18-2-8z'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="karte"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3.5 9h17M3.5 15h17M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="kolonien"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM2.6 15.2c-.9-1.8 3.4-4.8 8.8-6.7s10.4-2 11.1-.2-3.4 4.8-8.8 6.7-10.4 2-11.1.2z'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="kampf"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4l16 16M20 4L4 20M4 4h4M4 4v4M20 4h-4M20 4v4'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="aktionen"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v18M5 7h14M5 7l-3 7a4 4 0 0 0 6 0zM19 7l-3 7a4 4 0 0 0 6 0zM8 21h8'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="briefkasten"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h18v12H3zM3 6l9 7 9-7'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="allianzbereich"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm8 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M12.5 14.4c1-.3 2.2-.4 3.5-.4 3.3 0 6 2.7 6 6'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="allianzpost"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 6h18v12H3zM3 6l9 7 9-7M12 2l1 2 2 .3-1.5 1.4.4 2.1L12 6.8l-1.9 1 .4-2.1L9 4.3l2-.3z'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="berichte"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="imperium"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20V11M10 20V4M16 20v-7M2 20h20'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="freischaltungen"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm14 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM12 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM6.5 6.5l4.5 9.5M17.5 6.5L13 16M7 5h10'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="agent"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2l8.7 5v10L12 22l-8.7-5V7zM12 22V12m8.7-5L12 12 3.3 7'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="pinwaende"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 3h6l-1 6 4 4H6l4-4zM12 13v8'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="profil"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM5 21a7 7 0 0 1 14 0'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="regeln"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5zm0 0v17M8 7h8M8 11h6'/%3E%3C/svg%3E")}
+
+/* ---------- Glas-Karten mit goldenen Eckmarken (Cockpit .karte) */
+.game-client .panel, .game-client #planet-sidebar, .game-client #event-bar, .game-client .resource { border-color: var(--linie) !important; }
+.game-client #game > .panel, .game-client main > .panel { position: relative; border-radius: var(--r); box-shadow: 0 18px 50px rgba(0, 0, 0, .5); }
+.game-client #game > .panel::after, .game-client main > .panel::after, .game-client #planet-sidebar::after, .game-client .resource::after {
+  content: ""; position: absolute; inset: -1px; pointer-events: none; border-radius: inherit; z-index: 3;
+  background:
+    linear-gradient(rgba(218, 181, 123, .6), rgba(218, 181, 123, .6)) top left / 14px 1px no-repeat,
+    linear-gradient(rgba(218, 181, 123, .6), rgba(218, 181, 123, .6)) top left / 1px 14px no-repeat,
+    linear-gradient(rgba(218, 181, 123, .6), rgba(218, 181, 123, .6)) bottom right / 14px 1px no-repeat,
+    linear-gradient(rgba(218, 181, 123, .6), rgba(218, 181, 123, .6)) bottom right / 1px 14px no-repeat; }
+.game-client #planet-sidebar { position: sticky; }
+.game-client #game > .panel > h2:first-child, .game-client #game > .panel > .row:first-child h2, .game-client #game > .panel .space-header h2 { font: 600 26px/1.15 var(--titel); letter-spacing: .02em; color: var(--gold2); }
+.game-client h3 { color: var(--text-hell); }
+.game-client #planet-sidebar h3, .game-client .eyebrow { color: var(--gold); letter-spacing: .18em; }
+.game-client .card, .game-client .queue-card, .game-client .fleet-card, .game-client .profile-card { border: 1px solid var(--linie); background: var(--glas2); border-radius: 12px; }
+.game-client .item-tile { border-radius: 14px !important; border-color: var(--linie) !important; background: var(--glas2) !important; }
+.game-client .item-tile:hover, .game-client .item-tile.selected { border-color: var(--linie2) !important; box-shadow: 0 0 0 1px rgba(127, 211, 255, .14), 0 14px 34px rgba(0, 0, 0, .45); }
+.game-client .item-tile.selected { border-color: rgba(218, 181, 123, .75) !important; box-shadow: 0 0 0 1px rgba(218, 181, 123, .35), 0 14px 34px rgba(0, 0, 0, .45); }
+
+/* ---------- Kennzahlen, Ereignisleiste, Warnungen, Tabellen, Hinweise */
+.game-client .stat { border-radius: 12px; background: var(--glas2); border-color: var(--linie); }
+.game-client .stat strong { color: var(--gold2); font-family: var(--titel); font-variant-numeric: tabular-nums; }
+.game-client .stat span { color: var(--matt); }
+.game-client #event-bar { border-radius: 12px; background: var(--glas); }
+.game-client .warning { border-radius: 12px; border: 1px solid rgba(244, 180, 103, .45) !important; border-left: 3px solid var(--bernstein) !important; background: linear-gradient(180deg, rgba(60, 40, 15, .55), var(--glas)) !important; }
+.game-client table { border-collapse: separate; border-spacing: 0; }
+.game-client th { color: var(--gold); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: 11px; border-bottom: 1px solid var(--linie); }
+.game-client td { border-bottom: 1px solid rgba(120, 160, 200, .08); }
+.game-client tr:hover td { background: rgba(127, 211, 255, .035); }
+.game-client .table-wrap { border-radius: 12px; border: 1px solid var(--linie); background: var(--glas); }
+.game-client .badge { border-radius: 12px; border: 1px solid var(--linie); background: rgba(255, 255, 255, .04); }
+.game-client .toast { border-radius: 12px; border: 1px solid var(--linie2); background: rgba(8, 18, 32, .94); box-shadow: 0 18px 50px rgba(0, 0, 0, .55); backdrop-filter: blur(8px); }
+.game-client input, .game-client select, .game-client textarea { border-radius: 10px; border: 1px solid var(--linie2); background: rgba(4, 10, 18, .7); color: var(--text-hell); }
+.game-client input:focus, .game-client select:focus, .game-client textarea:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(127, 211, 255, .14); }
+.game-client a { color: var(--cyan); }
+.game-client dialog { border-radius: var(--r); border: 1px solid var(--linie2); background: #0a1524; color: var(--text-hell); box-shadow: 0 30px 90px rgba(0, 0, 0, .7); }
+.game-client dialog::backdrop { background: rgba(2, 6, 12, .74); backdrop-filter: blur(3px); }
+.game-client details > summary { color: var(--gold2); cursor: pointer; }
+.game-client .comm-tabs button[aria-pressed="true"] { border-color: rgba(218, 181, 123, .7); color: var(--gold2); background: linear-gradient(180deg, rgba(218, 181, 123, .16), rgba(218, 181, 123, .04)); }
+
+/* ---------- Mobil: Schiene als Leiste mit Symbolen, ohne Balken links */
+@media (max-width: 760px) {
+  .game-client #tabs button[data-tab][aria-selected="true"]::after { left: 8px; right: 8px; top: auto; bottom: -1px; width: auto; height: 2px; }
+  .game-client header .brand::before { width: 28px; height: 28px; }
+}
+@media (prefers-reduced-motion: reduce) { .game-client::before, .game-client #connection::before { animation: none; } }
+@media print { .game-client::before { display: none; } }

@@ -1,0 +1,184 @@
+# Harness-Cockpit für Windows, Linux und macOS bauen, prüfen, starten und (bei einem Tag cockpit-v*) veröffentlichen.
+# Quelle dieser Datei: harness/paket/ci/cockpit.yml im Projekt; der Export (harness/paket/quelle_exportieren.py)
+# legt sie hier ab.
+name: Cockpit bauen
+
+on:
+  push:
+    branches: [main]
+    tags: ['cockpit-v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cockpit-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  RUST_VERSION: '1.97.0'
+  CARGO_TERM_COLOR: never
+
+jobs:
+  bauen:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Windows, os: windows-latest, plattform: windows }
+          - { name: Linux, os: ubuntu-22.04, plattform: linux }
+          - { name: macOS, os: macos-14, plattform: macos }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Gemeinsame Grafikdateien wiederherstellen
+        run: python harness/paket/assets_wiederherstellen.py
+
+      - name: Rust bereitstellen
+        shell: bash
+        run: |
+          rustup toolchain install "$RUST_VERSION" --profile minimal
+          rustup default "$RUST_VERSION"
+          rustup target add wasm32-unknown-unknown
+          if [ "${{ matrix.plattform }}" = macos ]; then rustup target add aarch64-apple-darwin x86_64-apple-darwin; fi
+          rustc --version
+
+      - name: Linux-Bibliotheken (WebKitGTK 4.1, GTK 3) und virtueller Bildschirm
+        if: matrix.plattform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libxkbcommon-x11-dev libgl1-mesa-dri xvfb
+
+      - name: Cargo-Zwischenstände
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target
+            harness/cockpit/target
+            harness/runtime/target
+            harness/beispiele/energiewaechter/target
+          key: ${{ matrix.plattform }}-${{ env.RUST_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ matrix.plattform }}-${{ env.RUST_VERSION }}-
+
+      - name: Beispiel-Plugin (WASM)
+        run: cargo build --release --locked --target wasm32-unknown-unknown --manifest-path harness/beispiele/energiewaechter/Cargo.toml
+
+      - name: Tests – lokaler Spielkern (Singleplayer/LAN)
+        run: cargo test --release --locked -p sternenepoche-server --lib local::
+
+      - name: Tests – Cockpit
+        run: cargo test --release --locked --manifest-path harness/cockpit/Cargo.toml
+
+      - name: DuckDB-Laufzeit für den Gedächtnistest (gleiche Datei und Prüfsumme wie im Cockpit)
+        shell: bash
+        run: |
+          case "${{ matrix.plattform }}" in
+            windows) z=libduckdb-windows-amd64.zip; s=44cf59583f9951d2cb09b1bf115a63ecb2d8901e363903029d86c7d8683fe96a; d=duckdb.dll;;
+            linux)   z=libduckdb-linux-amd64.zip;   s=b845005f5132a7d8180057c35e14a7626632258782f871a90861b19c1c03841b; d=libduckdb.so;;
+            macos)   z=libduckdb-osx-universal.zip; s=e0bc007d9b0094c0970ac1847a8601d10aad07cbd2910ce586ec810f77b638d6; d=libduckdb.dylib;;
+          esac
+          mkdir -p "$RUNNER_TEMP/duckdb" && cd "$RUNNER_TEMP/duckdb"
+          curl -fsSL -o duckdb.zip "https://github.com/duckdb/duckdb/releases/download/v1.5.6/$z"
+          echo "$s  duckdb.zip" | (sha256sum -c - 2>/dev/null || shasum -a 256 -c -)
+          unzip -q -o duckdb.zip "$d"
+          echo "STERNENEPOCHE_DUCKDB_LIB=$RUNNER_TEMP/duckdb/$d" >> "$GITHUB_ENV"
+
+      - name: Tests – Harness (alle Bausteine)
+        run: cargo test --release --locked --manifest-path harness/runtime/Cargo.toml --no-default-features --features ollama,openrouter,openai,sqlite,duckdb,wasm,lokale-api -- --nocapture
+
+      - name: Paket bauen
+        shell: bash
+        run: |
+          stempel=$(date -u +%Y%m%d)
+          if [[ "$GITHUB_REF_NAME" =~ ^cockpit-v[0-9.]+-([0-9]{8})$ ]]; then stempel="${BASH_REMATCH[1]}"; fi
+          python -X utf8 harness/paket/paket_plattform.py --stempel "$stempel"
+
+      - name: Startprüfung (Windows)
+        if: matrix.plattform == 'windows'
+        # Windows-Rechner von GitHub haben kein OpenGL 2+; scheitert das Fenster daran, ist das kein Paketfehler.
+        continue-on-error: true
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/paket" && cd "$RUNNER_TEMP/paket" && unzip -q "$GITHUB_WORKSPACE"/harness/paket/aus/*-windows-x64.zip
+          python -X utf8 "$GITHUB_WORKSPACE/harness/paket/startpruefung.py" "$RUNNER_TEMP/paket/Sternenepoche-Harness-Cockpit/sternenepoche-cockpit.exe"
+
+      - name: Startprüfung (Linux, Archiv)
+        if: matrix.plattform == 'linux'
+        run: |
+          mkdir -p "$RUNNER_TEMP/paket" && tar -xzf harness/paket/aus/*-linux-x64.tar.gz -C "$RUNNER_TEMP/paket"
+          sh -n "$RUNNER_TEMP/paket/Sternenepoche-Harness-Cockpit/installieren.sh"
+          xvfb-run -a -s "-screen 0 1600x1000x24" python -X utf8 harness/paket/startpruefung.py "$RUNNER_TEMP/paket/Sternenepoche-Harness-Cockpit/sternenepoche-cockpit"
+
+      - name: Startprüfung (Linux, .deb installiert)
+        if: matrix.plattform == 'linux'
+        run: |
+          sudo apt-get remove -y libwebkit2gtk-4.1-dev libgtk-3-dev >/dev/null
+          sudo apt-get install -y ./harness/paket/aus/sternenepoche-cockpit_*_amd64.deb
+          test -f /usr/share/applications/sternenepoche-cockpit.desktop
+          desktop-file-validate /usr/share/applications/sternenepoche-cockpit.desktop || true
+          xvfb-run -a -s "-screen 0 1600x1000x24" python -X utf8 harness/paket/startpruefung.py /usr/bin/sternenepoche-cockpit
+
+      - name: Startprüfung (macOS)
+        if: matrix.plattform == 'macos'
+        run: |
+          mkdir -p "$RUNNER_TEMP/paket" && ditto -x -k harness/paket/aus/*-macos.zip "$RUNNER_TEMP/paket"
+          app="$RUNNER_TEMP/paket/Sternenepoche-Harness-Cockpit/Sternenepoche Cockpit.app"
+          codesign --verify --deep --strict "$app"
+          lipo -archs "$app/Contents/MacOS/sternenepoche-cockpit"
+          python -X utf8 harness/paket/startpruefung.py "$app/Contents/MacOS/sternenepoche-cockpit"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cockpit-${{ matrix.plattform }}
+          path: |
+            harness/paket/aus/*.zip
+            harness/paket/aus/*.tar.gz
+            harness/paket/aus/*.deb
+            harness/paket/aus/SHA256SUMS-*.txt
+            harness/paket/aus/paket-*.json
+          if-no-files-found: error
+
+  veroeffentlichen:
+    name: Release
+    if: startsWith(github.ref, 'refs/tags/cockpit-v')
+    needs: bauen
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: aus
+          merge-multiple: true
+      - name: Release anlegen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(sed -n 's/^version *= *"\(.*\)"/\1/p' harness/cockpit/Cargo.toml | head -1)
+          case "$GITHUB_REF_NAME" in "cockpit-v$version"|"cockpit-v$version"-*) ;; *) echo "Tag $GITHUB_REF_NAME passt nicht zu Version $version"; exit 1;; esac
+          cat aus/SHA256SUMS-*.txt > aus/SHA256SUMS.txt
+          python3 - "$version" <<'PY' > notes.md
+          import json, pathlib, sys
+          p = {j["plattform"]: j for j in (json.loads(f.read_text(encoding="utf-8")) for f in sorted(pathlib.Path("aus").glob("paket-*.json")))}
+          print(f"Harness-Cockpit {sys.argv[1]} für Windows, Linux und macOS – automatisch gebaut, getestet und auf jeder Plattform gestartet "
+                "(Einrichtung mit vorgebautem Harness, Singleplayer mit 30 Bots, Speichern, Beenden).\n")
+          namen = {"windows": "Windows 10/11 (x64)", "linux": "Linux (x86-64; .deb für Ubuntu/Debian, .tar.gz für alle)", "macos": "macOS 11+ (Apple Silicon und Intel)"}
+          for k in ("windows", "linux", "macos"):
+              for d in p.get(k, {}).get("dateien", []):
+                  print(f"- **{namen[k]}**: `{d['datei']}` · {d['groesse_mb']} MB · SHA-256 `{d['sha256']}`")
+          print("\nmacOS: Die App ist nicht notarisiert. Beim ersten Start: Systemeinstellungen → Datenschutz & Sicherheit → „Dennoch öffnen“ (Details in LIESMICH.txt).")
+          PY
+          gh release create "$GITHUB_REF_NAME" aus/*.zip aus/*.tar.gz aus/*.deb aus/SHA256SUMS.txt aus/paket-*.json \
+            --title "Harness-Cockpit $version für Windows, Linux und macOS" --notes-file notes.md

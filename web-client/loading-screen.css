@@ -1,0 +1,23 @@
+/* Shared loading surface for the public pages and the embedded Rust game client. */
+.sternen-loader{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;overflow:auto;background:#050b14;color:#e6edf5;opacity:1;transition:opacity .38s ease;isolation:isolate;font:14px/1.5 "Segoe UI",system-ui,sans-serif}
+.sternen-loader[hidden]{display:none!important}
+.sternen-loader.is-leaving{opacity:0;pointer-events:none}
+.sternen-loader-inner{width:min(100%,760px);padding:26px 20px 22px;text-align:center;display:flex;flex-direction:column;align-items:center}
+.sternen-loader-wordmark{font-size:clamp(14px,2vw,19px);font-weight:650;letter-spacing:.23em;color:#efc88b}
+.sternen-loader-art{position:relative;display:block!important;width:min(64vh,70vw,590px);aspect-ratio:1;margin:8px auto -4px}
+.sternen-loader-art img{display:block;width:100%;height:100%;max-width:100%;border:0;border-radius:0;object-fit:contain}
+.sternen-loader-art canvas{position:absolute;inset:0;width:100%;height:100%}
+.sternen-loader-art [hidden]{display:none!important}
+.sternen-loader.is-still .sternen-loader-track span{animation:none;transform:none;width:100%;opacity:.6}
+.sternen-loader-status{margin:0 0 18px!important;min-height:22px;color:#c2d3df;font-size:14px;font-weight:400;letter-spacing:.02em}
+.sternen-loader-track{width:min(260px,70vw);height:2px;background:#4c8d9d33;overflow:hidden}
+.sternen-loader-track span{display:block;width:35%;height:100%;background:linear-gradient(90deg,transparent,#8be0dc,#efc88b);animation:sternen-loading-track 1.8s ease-in-out infinite}
+@keyframes sternen-loading-track{from{transform:translateX(-100%)}to{transform:translateX(390%)}}
+.sternen-loader-controls{display:flex;justify-content:center;flex-wrap:wrap;gap:12px 24px;margin-top:23px}
+.sternen-loader-controls button{border:0!important;border-radius:0;background:transparent!important;box-shadow:none!important;padding:8px 5px;min-height:40px;color:#9bb1c1!important;font:inherit;font-size:12px;font-weight:400;cursor:pointer;text-decoration:underline;text-underline-offset:5px}
+.sternen-loader-controls button:hover{color:#efc88b!important}
+.sternen-loader-controls button:focus-visible{outline:2px solid #efc88b;outline-offset:3px}
+.sternen-loader-credit{display:block;margin-top:14px;color:#6f8798;font-size:10px}
+@media(max-width:480px){.sternen-loader-art{width:min(72vw,54vh)}.sternen-loader-inner{padding:22px 12px}.sternen-loader-status{font-size:13px}}
+@media(max-height:540px) and (min-width:600px){.sternen-loader-inner{padding:12px}.sternen-loader-art{width:58vh}.sternen-loader-controls{margin-top:10px}.sternen-loader-credit{margin-top:3px}}
+@media(prefers-reduced-motion:reduce){.sternen-loader{transition:none}.sternen-loader-track span{animation:none;transform:none;width:100%;opacity:.6}}

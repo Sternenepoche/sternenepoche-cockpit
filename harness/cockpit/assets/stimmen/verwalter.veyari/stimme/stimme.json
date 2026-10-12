@@ -1,0 +1,26 @@
+{
+  "name": "sternenepoche/verwalter-veyari",
+  "anzeigename": "Orrin Moosgrund",
+  "rolle": "Verwalter · Veyari",
+  "beschreibung": "Man in his fifties with a warm, round, low male voice, earthy and friendly like a practical farmer and quartermaster, steady medium pace, slightly gravelly, clearly a man's voice.",
+  "beschreibung_de": "Warm, rund, erdig, freundlich – ein Bauer und Quartiermeister.",
+  "referenztext": "Eine volle Speisekammer ist die beste Verteidigung. Erst wird gesät, dann gerechnet, dann gegessen.",
+  "sprache": "German",
+  "seed": 3777,
+  "gewaehlt": 1,
+  "lage": "mann_mittel",
+  "modelle": {
+    "design": "Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+    "base": "Qwen3-TTS-12Hz-1.7B-Base"
+  },
+  "comfyui_name": "sternenepoche_verwalter-veyari",
+  "erstellt": "2026-10-11T01:43:01+02:00",
+  "aktualisiert": "2026-10-11T01:43:01+02:00",
+  "voicebox_name": "Sternenepoche Orrin Moosgrund (Verwalter, Veyari)",
+  "nutzung": {
+    "loki_stimmen": "stimmen.cmd sprechen sternenepoche/verwalter-veyari \"Text\"",
+    "comfyui": "LoadSpeaker -> sternenepoche_verwalter-veyari.wav (models/qwen-tts/voices), dann VoiceClone",
+    "voicebox": "Profil importieren: verwalter.veyari.voicebox.zip (oder das Cockpit legt es selbst an)",
+    "qwen_tts": "referenz.wav + referenztext als ref_audio/ref_text, oder stimme.qvp als voice_clone_prompt"
+  }
+}

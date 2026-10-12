@@ -1,0 +1,26 @@
+{
+  "name": "sternenepoche/feldherr-syntheten",
+  "anzeigename": "Bastion",
+  "rolle": "Feldherr · Syntheten",
+  "beschreibung": "Adult man with a deep, cold, low bass voice that sounds metallic and controlled, curt and commanding like a military combat computer, flat emotion, steady and heavy, clearly a man's low voice.",
+  "beschreibung_de": "Tief, kalt, knapp, gleichförmig – ein militärischer Gefechtsrechner.",
+  "referenztext": "Ziel erfasst, Entfernung berechnet, Treffer wahrscheinlich. Ich bevorzuge allerdings sichere Treffer.",
+  "sprache": "German",
+  "seed": 8877,
+  "gewaehlt": 1,
+  "lage": "mann_tief",
+  "modelle": {
+    "design": "Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+    "base": "Qwen3-TTS-12Hz-1.7B-Base"
+  },
+  "comfyui_name": "sternenepoche_feldherr-syntheten",
+  "erstellt": "2026-10-11T01:43:02+02:00",
+  "aktualisiert": "2026-10-11T01:43:02+02:00",
+  "voicebox_name": "Sternenepoche Bastion (Feldherr, Syntheten)",
+  "nutzung": {
+    "loki_stimmen": "stimmen.cmd sprechen sternenepoche/feldherr-syntheten \"Text\"",
+    "comfyui": "LoadSpeaker -> sternenepoche_feldherr-syntheten.wav (models/qwen-tts/voices), dann VoiceClone",
+    "voicebox": "Profil importieren: feldherr.syntheten.voicebox.zip (oder das Cockpit legt es selbst an)",
+    "qwen_tts": "referenz.wav + referenztext als ref_audio/ref_text, oder stimme.qvp als voice_clone_prompt"
+  }
+}

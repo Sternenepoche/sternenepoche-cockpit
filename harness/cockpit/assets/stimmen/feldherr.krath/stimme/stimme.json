@@ -1,0 +1,26 @@
+{
+  "name": "sternenepoche/feldherr-krath",
+  "anzeigename": "Drak Ul-Tharn",
+  "rolle": "Feldherr · Krath",
+  "beschreibung": "Man in his fifties with a very deep, low bass voice, heavy and gravelly, a calm growl rather than shouting, battle-hardened warlord with barely restrained menace, slow and weighty pace, clearly a man's low bass voice, never high-pitched.",
+  "beschreibung_de": "Tief, dröhnend, rau, laut – ein kampferprobter Kriegsherr.",
+  "referenztext": "Die Geschütze sind geladen, die Schilde sind oben, und meine Geduld ist unten. Gib mir endlich ein Ziel.",
+  "sprache": "German",
+  "seed": 8636,
+  "gewaehlt": 2,
+  "lage": "mann_tief",
+  "modelle": {
+    "design": "Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+    "base": "Qwen3-TTS-12Hz-1.7B-Base"
+  },
+  "comfyui_name": "sternenepoche_feldherr-krath",
+  "erstellt": "2026-10-11T02:00:38+02:00",
+  "aktualisiert": "2026-10-11T02:25:27+02:00",
+  "voicebox_name": "Sternenepoche Drak Ul-Tharn (Feldherr, Krath)",
+  "nutzung": {
+    "loki_stimmen": "stimmen.cmd sprechen sternenepoche/feldherr-krath \"Text\"",
+    "comfyui": "LoadSpeaker -> sternenepoche_feldherr-krath.wav (models/qwen-tts/voices), dann VoiceClone",
+    "voicebox": "Profil importieren: feldherr.krath.voicebox.zip (oder das Cockpit legt es selbst an)",
+    "qwen_tts": "referenz.wav + referenztext als ref_audio/ref_text, oder stimme.qvp als voice_clone_prompt"
+  }
+}

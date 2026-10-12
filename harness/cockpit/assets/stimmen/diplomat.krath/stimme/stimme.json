@@ -1,0 +1,26 @@
+{
+  "name": "sternenepoche/diplomat-krath",
+  "anzeigename": "Vashkor",
+  "rolle": "Diplomat · Krath",
+  "beschreibung": "Middle-aged man with a deep, resonant bass voice, surprisingly formal and polite, calm and dry, slow deliberate diction, a hint of menace beneath the courtesy, clearly a man's low voice.",
+  "beschreibung_de": "Tiefer, resonanter Bass, förmlich, trocken – Höflichkeit mit Drohung darunter.",
+  "referenztext": "Wir Krath verhandeln gern. Wir haben nur festgestellt, dass Verhandlungen mit Kriegsschiffen im Orbit schneller gehen.",
+  "sprache": "German",
+  "seed": 9273,
+  "gewaehlt": 1,
+  "lage": "mann_tief",
+  "modelle": {
+    "design": "Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+    "base": "Qwen3-TTS-12Hz-1.7B-Base"
+  },
+  "comfyui_name": "sternenepoche_diplomat-krath",
+  "erstellt": "2026-10-11T01:43:02+02:00",
+  "aktualisiert": "2026-10-11T01:43:02+02:00",
+  "voicebox_name": "Sternenepoche Vashkor (Diplomat, Krath)",
+  "nutzung": {
+    "loki_stimmen": "stimmen.cmd sprechen sternenepoche/diplomat-krath \"Text\"",
+    "comfyui": "LoadSpeaker -> sternenepoche_diplomat-krath.wav (models/qwen-tts/voices), dann VoiceClone",
+    "voicebox": "Profil importieren: diplomat.krath.voicebox.zip (oder das Cockpit legt es selbst an)",
+    "qwen_tts": "referenz.wav + referenztext als ref_audio/ref_text, oder stimme.qvp als voice_clone_prompt"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "sternenepoche/stratege-veyari",
+  "anzeigename": "Thalen Vey-Oruun",
+  "rolle": "Stratege · Veyari",
+  "beschreibung": "Man in his sixties with a calm, warm, low-middle male voice, slow and measured, soft slightly breathy timbre like an old gardener and philosopher, patient and thoughtful, clearly a man's voice.",
+  "beschreibung_de": "Ruhig, warm, langsam, leicht hauchig – ein alter Gärtner-Philosoph.",
+  "referenztext": "Ein Wald wächst nicht in einer Nacht. Wer die Jahreszeiten kennt, gewinnt am Ende jeden Winter.",
+  "sprache": "German",
+  "seed": 5602,
+  "gewaehlt": 1,
+  "lage": "mann_mittel",
+  "modelle": {
+    "design": "Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+    "base": "Qwen3-TTS-12Hz-1.7B-Base"
+  },
+  "comfyui_name": "sternenepoche_stratege-veyari",
+  "erstellt": "2026-10-11T01:43:01+02:00",
+  "aktualisiert": "2026-10-11T01:43:01+02:00",
+  "voicebox_name": "Sternenepoche Thalen Vey-Oruun (Stratege, Veyari)",
+  "nutzung": {
+    "loki_stimmen": "stimmen.cmd sprechen sternenepoche/stratege-veyari \"Text\"",
+    "comfyui": "LoadSpeaker -> sternenepoche_stratege-veyari.wav (models/qwen-tts/voices), dann VoiceClone",
+    "voicebox": "Profil importieren: stratege.veyari.voicebox.zip (oder das Cockpit legt es selbst an)",
+    "qwen_tts": "referenz.wav + referenztext als ref_audio/ref_text, oder stimme.qvp als voice_clone_prompt"
+  }
+}

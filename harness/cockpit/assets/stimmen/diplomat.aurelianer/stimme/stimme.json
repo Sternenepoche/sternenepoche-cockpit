@@ -1,0 +1,26 @@
+{
+  "name": "sternenepoche/diplomat-aurelianer",
+  "anzeigename": "Severin Lazar",
+  "rolle": "Diplomat · Aurelianer",
+  "beschreibung": "Man in his fifties with a velvety, warm, low male voice, courteous and diplomatic, unhurried and smooth like an experienced ambassador, a gentle smile in the voice, clearly a man's voice.",
+  "beschreibung_de": "Samtig, warm, höflich, gelassen – ein erfahrener Botschafter.",
+  "referenztext": "Man sagt niemals nein. Man sagt: Lassen Sie uns darüber noch einmal in Ruhe sprechen. Das wirkt fast immer.",
+  "sprache": "German",
+  "seed": 9621,
+  "gewaehlt": 4,
+  "lage": "mann_mittel",
+  "modelle": {
+    "design": "Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+    "base": "Qwen3-TTS-12Hz-1.7B-Base"
+  },
+  "comfyui_name": "sternenepoche_diplomat-aurelianer",
+  "erstellt": "2026-10-11T01:43:02+02:00",
+  "aktualisiert": "2026-10-11T01:43:02+02:00",
+  "voicebox_name": "Sternenepoche Severin Lazar (Diplomat, Aurelianer)",
+  "nutzung": {
+    "loki_stimmen": "stimmen.cmd sprechen sternenepoche/diplomat-aurelianer \"Text\"",
+    "comfyui": "LoadSpeaker -> sternenepoche_diplomat-aurelianer.wav (models/qwen-tts/voices), dann VoiceClone",
+    "voicebox": "Profil importieren: diplomat.aurelianer.voicebox.zip (oder das Cockpit legt es selbst an)",
+    "qwen_tts": "referenz.wav + referenztext als ref_audio/ref_text, oder stimme.qvp als voice_clone_prompt"
+  }
+}

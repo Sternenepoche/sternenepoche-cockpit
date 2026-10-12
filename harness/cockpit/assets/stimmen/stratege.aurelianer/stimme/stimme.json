@@ -1,0 +1,26 @@
+{
+  "name": "sternenepoche/stratege-aurelianer",
+  "anzeigename": "Cassian Varro",
+  "rolle": "Stratege · Aurelianer",
+  "beschreibung": "Man in his forties with a confident, smooth, polished baritone, eloquent and charming like a senator, measured pace with a hint of amusement, clearly a man's voice.",
+  "beschreibung_de": "Selbstsicher, glatt, eloquent, charmant – ein Senator mit Augenzwinkern.",
+  "referenztext": "Ein Krieg ist nur ein schlechter Handel, bei dem beide Seiten zu viel bezahlen. Ich bevorzuge gute Geschäfte.",
+  "sprache": "German",
+  "seed": 3824,
+  "gewaehlt": 1,
+  "lage": "mann_mittel",
+  "modelle": {
+    "design": "Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+    "base": "Qwen3-TTS-12Hz-1.7B-Base"
+  },
+  "comfyui_name": "sternenepoche_stratege-aurelianer",
+  "erstellt": "2026-10-11T01:43:02+02:00",
+  "aktualisiert": "2026-10-11T01:43:02+02:00",
+  "voicebox_name": "Sternenepoche Cassian Varro (Stratege, Aurelianer)",
+  "nutzung": {
+    "loki_stimmen": "stimmen.cmd sprechen sternenepoche/stratege-aurelianer \"Text\"",
+    "comfyui": "LoadSpeaker -> sternenepoche_stratege-aurelianer.wav (models/qwen-tts/voices), dann VoiceClone",
+    "voicebox": "Profil importieren: stratege.aurelianer.voicebox.zip (oder das Cockpit legt es selbst an)",
+    "qwen_tts": "referenz.wav + referenztext als ref_audio/ref_text, oder stimme.qvp als voice_clone_prompt"
+  }
+}

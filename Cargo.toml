@@ -1,0 +1,16 @@
+# Erzeugt von harness/paket/quelle_exportieren.py: nur die Spiel-Crates, die das Cockpit einbindet.
+[workspace]
+resolver = "2"
+members = ["crates/kern", "crates/lauf", "crates/server"]
+exclude = ["harness"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+
+[profile.release]
+opt-level = 3
+debug = false
+
+[profile.dev]
+opt-level = 1

@@ -1,0 +1,22 @@
+﻿[
+    {
+        "voice":  "Microsoft Hedda Desktop",
+        "id":  "oekonom",
+        "text":  "Willkommen im Sektor. Sichere zuerst Energie und Versorgung. Eine solide Wirtschaft trägt jedes große Reich."
+    },
+    {
+        "voice":  "Microsoft Hedda Desktop",
+        "id":  "haendler",
+        "text":  "Guten Tag, Handelspartner. Nenne mir Ware, Menge und Gegenleistung. Verlässliche Lieferungen sind der Anfang einer guten Zusammenarbeit."
+    },
+    {
+        "voice":  "Microsoft Hedda Desktop",
+        "id":  "igel",
+        "text":  "Unsere Sensoren sind bereit. Gemeinsam schützen wir unsere Welten. Melde einen Angriff über den Hilferuf deiner Allianz."
+    },
+    {
+        "voice":  "Microsoft Hedda Desktop",
+        "id":  "raeuber",
+        "text":  "Hier spricht die Flottenführung. Ich bleibe unabhängig. Sichere deine Lager und unterschätze keinen fremden Anflug."
+    }
+]

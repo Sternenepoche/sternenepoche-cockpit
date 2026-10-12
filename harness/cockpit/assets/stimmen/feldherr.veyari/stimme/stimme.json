@@ -1,0 +1,26 @@
+{
+  "name": "sternenepoche/feldherr-veyari",
+  "anzeigename": "Kael Dornhag",
+  "rolle": "Feldherr · Veyari",
+  "beschreibung": "Man in his forties with a firm, low-middle male voice, disciplined and clipped, slightly rough, a protective veteran soldier, steady and serious, clearly a man's voice.",
+  "beschreibung_de": "Fest, knapp, diszipliniert, leicht rau – ein schützender Veteran.",
+  "referenztext": "Unsere Panzer sind dünn, also müssen unsere Augen scharf sein. Wer uns überrascht, hat schon gewonnen.",
+  "sprache": "German",
+  "seed": 9150,
+  "gewaehlt": 1,
+  "lage": "mann_mittel",
+  "modelle": {
+    "design": "Qwen3-TTS-12Hz-1.7B-VoiceDesign",
+    "base": "Qwen3-TTS-12Hz-1.7B-Base"
+  },
+  "comfyui_name": "sternenepoche_feldherr-veyari",
+  "erstellt": "2026-10-11T01:43:02+02:00",
+  "aktualisiert": "2026-10-11T01:43:02+02:00",
+  "voicebox_name": "Sternenepoche Kael Dornhag (Feldherr, Veyari)",
+  "nutzung": {
+    "loki_stimmen": "stimmen.cmd sprechen sternenepoche/feldherr-veyari \"Text\"",
+    "comfyui": "LoadSpeaker -> sternenepoche_feldherr-veyari.wav (models/qwen-tts/voices), dann VoiceClone",
+    "voicebox": "Profil importieren: feldherr.veyari.voicebox.zip (oder das Cockpit legt es selbst an)",
+    "qwen_tts": "referenz.wav + referenztext als ref_audio/ref_text, oder stimme.qvp als voice_clone_prompt"
+  }
+}
