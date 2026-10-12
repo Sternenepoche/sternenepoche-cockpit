@@ -75,7 +75,8 @@ jobs:
         run: cargo build --release --locked --target wasm32-unknown-unknown --manifest-path harness/beispiele/energiewaechter/Cargo.toml
 
       - name: Tests – lokaler Spielkern (Singleplayer/LAN)
-        run: cargo test --release --locked -p sternenepoche-server --lib local::
+        run: |
+          cargo test --release --locked -p sternenepoche-server --lib local::
 
       - name: Tests – Cockpit
         run: cargo test --release --locked --manifest-path harness/cockpit/Cargo.toml
