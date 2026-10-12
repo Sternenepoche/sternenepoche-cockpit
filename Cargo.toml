@@ -2,7 +2,7 @@
 [workspace]
 resolver = "2"
 members = ["crates/kern", "crates/lauf", "crates/server"]
-exclude = ["harness"]
+exclude = ["harness", "vendor/tiny_http"]
 
 [workspace.package]
 version = "0.1.0"

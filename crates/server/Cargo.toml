@@ -13,7 +13,7 @@ sha2 = "0.10"
 rand = "0.8"
 argon2 = "0.5"
 rusqlite = { version = "0.32", features = ["bundled", "backup"] }
-tiny_http = "0.12"
+tiny_http = { path = "../../vendor/tiny_http" }
 fs2 = "0.4"
 lettre = { version = "0.11.23", default-features = false, features = ["builder", "smtp-transport", "rustls-tls"] }
 totp-rs = { version = "5", features = ["otpauth", "qr"] }

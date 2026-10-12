@@ -1,0 +1,1 @@
+Upstream tiny_http 0.12.0 (MIT/Apache-2.0). One accept-loop change: retry transient WouldBlock, TimedOut and Interrupted errors. Linux listener receive deadlines also apply to accept; an idle deadline must not terminate the HTTP listener. Accepted connections retain their read/write deadlines.
