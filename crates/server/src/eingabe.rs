@@ -11,21 +11,31 @@ pub const MAX_KNOTEN: usize = 6000;
 pub const MAX_TEXT: usize = 8000;
 
 pub fn json_grenzen(v: &Value) -> Result<(), String> {
-    fn gehe(v: &Value, tiefe: usize, knoten: &mut usize) -> Result<(), String> {
+    json_grenzen_mit_profil(v, false)
+}
+
+/// Nur die authentifizierte Verwaltung darf ihr vollständiges Regelprofil senden.
+pub fn json_grenzen_adminprofil(v: &Value) -> Result<(), String> {
+    json_grenzen_mit_profil(v, true)
+}
+
+fn json_grenzen_mit_profil(v: &Value, adminprofil: bool) -> Result<(), String> {
+    fn gehe(v: &Value, tiefe: usize, knoten: &mut usize, textlimit: usize, adminprofil: bool) -> Result<(), String> {
         *knoten += 1;
         if tiefe > MAX_TIEFE { return Err(format!("JSON zu tief verschachtelt (höchstens {MAX_TIEFE} Ebenen)")); }
         if *knoten > MAX_KNOTEN { return Err(format!("JSON enthält zu viele Werte (höchstens {MAX_KNOTEN})")); }
         match v {
-            Value::String(s) if s.chars().count() > MAX_TEXT => Err(format!("Text zu lang (höchstens {MAX_TEXT} Zeichen je Feld)")),
-            Value::Array(a) => a.iter().try_for_each(|x| gehe(x, tiefe + 1, knoten)),
+            Value::String(s) if s.chars().count() > textlimit => Err(format!("Text zu lang (höchstens {textlimit} Zeichen je Feld)")),
+            Value::Array(a) => a.iter().try_for_each(|x| gehe(x, tiefe + 1, knoten, MAX_TEXT, adminprofil)),
             Value::Object(o) => o.iter().try_for_each(|(k, x)| {
                 if k.chars().count() > 80 { return Err("Feldname zu lang".into()); }
-                gehe(x, tiefe + 1, knoten)
+                let limit = if adminprofil && tiefe == 0 && k == "rules" { 65536 } else { MAX_TEXT };
+                gehe(x, tiefe + 1, knoten, limit, adminprofil)
             }),
             _ => Ok(()),
         }
     }
-    gehe(v, 0, &mut 0)
+    gehe(v, 0, &mut 0, MAX_TEXT, adminprofil)
 }
 
 fn bildzeichen(c: char) -> bool {
@@ -153,6 +163,16 @@ pub fn kontoname_zeichen(name: &str) -> bool {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn grosse_regelprofile_nur_am_verwaltungseingang() {
+        let lang = "x".repeat(MAX_TEXT + 1);
+        assert!(json_grenzen(&json!({"rules":lang})).is_err());
+        assert!(json_grenzen_adminprofil(&json!({"rules":lang})).is_ok());
+        assert!(json_grenzen_adminprofil(&json!({"text":lang})).is_err());
+        assert!(json_grenzen_adminprofil(&json!({"daten":{"rules":lang}})).is_err());
+        assert!(json_grenzen_adminprofil(&json!({"rules":"x".repeat(65537)})).is_err());
+    }
 
     #[test]
     fn unsichtbare_zeichen_werden_abgelehnt() {

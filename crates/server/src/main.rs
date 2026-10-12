@@ -376,7 +376,13 @@ fn serve(
                 return;
             }
         };
-        if let Err(e) = eingabe::json_grenzen(&body) {
+        let grenzen = if admin && path == "/api/admin/action"
+            && matches!(body["action"].as_str(), Some("rules_validate" | "reset_preview" | "reset")) {
+            eingabe::json_grenzen_adminprofil(&body)
+        } else {
+            eingabe::json_grenzen(&body)
+        };
+        if let Err(e) = grenzen {
             json_reply(req, Err((400, e)), &origin);
             return;
         }
