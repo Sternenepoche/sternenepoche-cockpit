@@ -1,0 +1,207 @@
+#![enable(implicit_some)]
+// Kernwerte (ConfigWelt, 21.10.2026; Karl: „ich brauche mehr Kontrolle und Übersicht“).
+// Spielwerte, die bis dahin fest im Kern standen. Wirkt nur in Welten, die Welt::technik_aktivieren bei Spielbeginn
+// aufrufen (Server, lokale Online-Partie, App); die Bytes dieser Datei gehen dabei einmalig in den Regelhash ein.
+// Laufende Welten behalten ihre Werte (dort gelten die bisherigen Konstanten). Bearbeiten am besten mit der ConfigWelt
+// (tools/configwelt), die jeden Wert gegen den Kern prüft. Die Standardwerte sind genau die bisherigen Konstanten.
+(
+    version: 1,
+
+    // Klima und Bevölkerungswachstum (neue Welten, Ablauf ≥ 1). Wachstum je Spieltag am Platz =
+    // wirtschaft.wachstum_je_tag × Volksfaktor voelker.<volk>.wachstum × Klimafaktor/1000, logistisch gebremst durch
+    // Wohnraum, Versorgung und Stabilität. Terraforming zieht den Klimafaktor linear zum Optimum 1000, bis bei
+    // endspiel_tech nur restklima_promille der Abweichung bleibt.
+    klima: (
+        // Klimafaktor in Promille des Grundwerts je Platz 1–12 (1000 = Grundwert).
+        wachstum: {
+            aurelianer: [700, 780, 850, 950, 1000, 1000, 1000, 950, 850, 780, 700, 620],
+            krath:      [950, 1000, 1000, 1000, 950, 850, 780, 700, 620, 550, 480, 410],
+            veyari:     [550, 620, 700, 780, 850, 950, 1000, 1000, 1000, 950, 850, 780],
+            syntheten:  [410, 480, 550, 620, 700, 780, 850, 950, 1000, 1000, 1000, 950],
+        },
+        // Nötige Terraforming-Stufe je Platz 1–12 (0 = sofort bewohnbar).
+        freigabe: {
+            aurelianer: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            krath:      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 7],
+            veyari:     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            syntheten:  [7, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        },
+        restklima_promille: 100,        // bei voller Terraforming-Technik bleiben 10 % der Klimaabweichung
+        endspiel_tech: 10,              // Terraforming-Stufe der vollen Wirkung
+        klimaverlust_promille: 20,      // höchstens 2 % Bewohner je Stunde auf noch unbewohnbaren Plätzen
+        xeno_wachstum_promille: 700,    // Xeno-Planeten (natürlicher Xenokristall) wachsen mit 70 %
+    ),
+
+    // Sonnen (neue Welten, Ablauf ≥ 2). Solarkraftwerk und Solarsonde: Ertrag × Platzfaktor/1000 × Strahlkraft.
+    sonne: (
+        solar_promille: [1200, 1160, 1120, 1080, 1040, 1000, 967, 933, 900, 867, 833, 800],   // Platz 1–12
+        // Strahlkraft je Sternklasse (Klasse wie in der 3D-Ansicht: G 40 %, K 25 %, M 15 %, F 12 %, A 8 % der Systeme).
+        klassen: {
+            g: (strahlkraft: 1.0),      // Gelber Zwerg, Radius 9,5
+            k: (strahlkraft: 1.0),      // Oranger Zwerg, Radius 9
+            m: (strahlkraft: 1.0),      // Roter Zwerg, Radius 8
+            f: (strahlkraft: 1.0),      // Weißgelber Stern, Radius 10
+            a: (strahlkraft: 1.0),      // Weißer Stern, Radius 10,5
+        },
+        groessen_exponent: 0.0,         // Strahlkraft zusätzlich × (Radius/9,5)^Exponent; 2 = nach Sternoberfläche
+        dyson_schatten: 0.5,            // Solarleistung fremder Planeten in einem System mit vollendeter Dysonsphäre
+    ),
+
+    // Produktion neuer Welten.
+    produktion: (
+        produktionsausbau: 2.0,         // Faktor auf Minen, Synthesizer, Farm, Gießerei, Elektronik-, Konsumgüterwerk, Xenoextraktor
+        automatisierung_untergrenze: 0.5,   // Automatisierung senkt den Arbeiterbedarf höchstens auf 50 %
+        xeno_synthese_ausbeute: 0.65,   // Xenoextraktor ohne natürliches Vorkommen
+        xeno_synthese_rezept: {deuterium: 12.0, kristall: 20.0, legierung: 8.0, elektronik: 4.0},   // je Xenokristall
+        xeno_synthese_energie: 4.0,     // Strombedarf des Xenoextraktors im Synthesebetrieb
+        baumasse_legierung: 2,          // Bauzeit = (Erz + Kristall + 2 × Legierung) × 3600 / Teiler
+    ),
+
+    // Flugzeit = max(flug.min_sekunden, flug.zeitfaktor × (Grundzeit + Zeitkonstante / s × √(10 × d / v))) Sekunden,
+    // d Entfernung, v Tempo des langsamsten Schiffs, s Geschwindigkeitsstufe 0,1–1,0 (online-v1.ron: flug).
+    flug: (
+        grundzeit: 10,
+        zeitkonstante: 350,
+        orbitflotten: true,             // 0.4.8: „kein Rückflug“, gestrandete Flotten, Start vom Orbit
+    ),
+
+    // Bodentruppen (Kaserne), Kontermatrix, Belagerung und Volksmiliz (Invasion v1).
+    boden: (
+        typen: {
+            "infanterie":            (plaetze: 1,  fertigungsplaetze: 1, personal: 1, dauer_sekunden: 120, angriff: 10,  struktur: 50,  kaserne: 1, ab_stufe: 3, kosten: {legierung: 20, elektronik: 10}),
+            "panzer":                (plaetze: 10, fertigungsplaetze: 3, personal: 3, dauer_sekunden: 600, angriff: 75,  struktur: 395, kaserne: 3, ab_stufe: 4, kosten: {legierung: 200, elektronik: 80, deuterium: 20}),
+            "drohnen":               (plaetze: 2,  fertigungsplaetze: 2, personal: 0, dauer_sekunden: 300, angriff: 55,  struktur: 195, kaserne: 2, ab_stufe: 3, kosten: {legierung: 50, elektronik: 100, deuterium: 10}),
+            "infanterie_schwer":     (plaetze: 2,  fertigungsplaetze: 2, personal: 1, dauer_sekunden: 240, angriff: 18,  struktur: 140, kaserne: 2, ab_stufe: 3, kosten: {legierung: 50, elektronik: 25}),
+            "infanterie_pionier":    (plaetze: 2,  fertigungsplaetze: 2, personal: 1, dauer_sekunden: 480, angriff: 38,  struktur: 135,  kaserne: 3, ab_stufe: 4, kosten: {legierung: 70, elektronik: 50, deuterium: 5}),
+            "infanterie_praezision": (plaetze: 1,  fertigungsplaetze: 2, personal: 1, dauer_sekunden: 300, angriff: 85,  struktur: 145,  kaserne: 3, ab_stufe: 4, kosten: {legierung: 45, elektronik: 60}),
+            "panzer_schwer":         (plaetze: 15, fertigungsplaetze: 4, personal: 4, dauer_sekunden: 900, angriff: 125, struktur: 1075, kaserne: 5, ab_stufe: 4, kosten: {legierung: 400, elektronik: 150, deuterium: 60}),
+            "panzer_belagerung":     (plaetze: 12, fertigungsplaetze: 4, personal: 3, dauer_sekunden: 900, angriff: 235, struktur: 535, kaserne: 6, ab_stufe: 5, kosten: {legierung: 350, elektronik: 160, deuterium: 50}),
+            "panzer_flugabwehr":     (plaetze: 10, fertigungsplaetze: 3, personal: 3, dauer_sekunden: 660, angriff: 115,  struktur: 800, kaserne: 4, ab_stufe: 4, kosten: {legierung: 240, elektronik: 140, deuterium: 30}),
+            "drohnen_aufklaerung":   (plaetze: 1,  fertigungsplaetze: 1, personal: 0, dauer_sekunden: 180, angriff: 4,   struktur: 45,  kaserne: 2, ab_stufe: 3, kosten: {legierung: 20, elektronik: 40, deuterium: 5}),
+            "drohnen_brecher":       (plaetze: 3,  fertigungsplaetze: 3, personal: 0, dauer_sekunden: 480, angriff: 150,  struktur: 290,  kaserne: 5, ab_stufe: 4, kosten: {legierung: 100, elektronik: 160, deuterium: 20}),
+            "drohnen_reparatur":     (plaetze: 2,  fertigungsplaetze: 2, personal: 0, dauer_sekunden: 360, angriff: 0,   struktur: 90,  kaserne: 4, ab_stufe: 4, kosten: {legierung: 80, elektronik: 130, deuterium: 10}),
+        },
+        // Trefferfaktor in Promille je Angreifer → Ziel; nicht genannt = 1000 (×1).
+        konter: {
+            "infanterie":            {"drohnen": 2000, "drohnen_aufklaerung": 2000, "drohnen_reparatur": 2000},
+            "panzer":                {"infanterie": 2000, "infanterie_schwer": 2000, "infanterie_praezision": 2000, "miliz": 2000},
+            "drohnen":               {"panzer": 2000, "panzer_schwer": 2000, "panzer_belagerung": 2000, "panzer_flugabwehr": 2000},
+            "infanterie_schwer":     {"infanterie": 2000, "infanterie_pionier": 2000, "infanterie_praezision": 2000, "miliz": 2000},
+            "infanterie_pionier":    {"panzer": 2000, "panzer_schwer": 3000, "panzer_belagerung": 3000, "panzer_flugabwehr": 2000},
+            "infanterie_praezision": {"infanterie": 3000, "infanterie_schwer": 3000, "infanterie_pionier": 3000, "infanterie_praezision": 3000, "miliz": 3000,
+                                    "panzer": 250, "panzer_schwer": 250, "panzer_belagerung": 250, "panzer_flugabwehr": 250,
+                                    "drohnen": 500, "drohnen_aufklaerung": 500, "drohnen_brecher": 500, "drohnen_reparatur": 500},
+            "panzer_schwer":         {"infanterie": 2000, "infanterie_schwer": 2000, "infanterie_praezision": 2000, "miliz": 2000, "infanterie_pionier": 500,
+                                    "panzer": 1500, "panzer_schwer": 1500, "panzer_belagerung": 1500, "panzer_flugabwehr": 1500,
+                                    "drohnen": 500, "drohnen_aufklaerung": 500, "drohnen_brecher": 500, "drohnen_reparatur": 500},
+            "panzer_belagerung":     {"infanterie_schwer": 2500, "infanterie_pionier": 2500, "panzer_schwer": 2500,
+                                    "drohnen": 250, "drohnen_aufklaerung": 250, "drohnen_brecher": 250, "drohnen_reparatur": 250},
+            "panzer_flugabwehr":     {"infanterie": 750, "infanterie_schwer": 750, "infanterie_pionier": 750, "infanterie_praezision": 750, "miliz": 750,
+                                    "panzer": 500, "panzer_schwer": 500, "panzer_belagerung": 500, "panzer_flugabwehr": 500,
+                                    "drohnen": 3000, "drohnen_aufklaerung": 3000, "drohnen_brecher": 3000, "drohnen_reparatur": 3000},
+            "drohnen_brecher":       {"panzer_schwer": 3000, "panzer_belagerung": 3000,
+                                    "infanterie": 500, "infanterie_schwer": 500, "infanterie_pionier": 500, "infanterie_praezision": 500, "miliz": 500},
+        },
+        transporter_plaetze: 100,               // Truppenplätze je Truppentransporter
+        koordination_je_drohne_promille: 100,   // +10 % Schaden je Aufklärungsdrohne …
+        koordination_max_drohnen: 3,            // … höchstens für drei Drohnen (+30 %)
+        reparatur_je_drohne: 25,                // Struktur je Reparaturdrohne und Bodenrunde
+        miliz_waffen_promille: 300,             // Volksmiliz: Waffenwert 0,3 je Bewohner
+        miliz_ruestung: 5,                      // Rüstwert (Struktur) 5 je Bewohner
+        miliz_kapitulation_promille: 300,       // kapituliert nach 30 % Gefallenen
+        miliz_dienst_promille: 500,             // die Hälfte steht im Dienst und fehlt in Produktion und Forschung
+        miliz_legierung_je_bewohner: 1,
+        belagerung_stunden: 48,                 // Landung bis frühestens Übernahme
+        runde_minuten: 15,                      // Bodenrunde und Bombardement-Takt
+        bombardement_struktur_je_stufe: 700,    // Strukturpunkte je Gebäudestufe gegen Bomben
+        bombenlast_je_schacht: 50,              // Bomber 2 Schächte, Strategischer Bomber 3
+        integritaet_grenze_promille: 300,       // Bomben senken die Integrität bis 30 %
+        // 0.4.8 (Karl 24.10.2026): Miliz je Volk – Krath kämpfen alle, Veyari 90 %, Syntheten 80 %, Aurelianer 70 %.
+        miliz_anteil_promille: {"krath": 1000, "veyari": 900, "syntheten": 800, "aurelianer": 700},
+        miliz_jederzeit: true,                  // ab Kaserne 1 auch vor einer Belagerung ausrufen, jederzeit entlassen
+        reparatur_stufe_promille: 750,          // Reparatur: 75 % der Baukosten der aktuellen Stufe (bei 30 % Integrität)
+        // Invasion v2 (Karl 24.10.2026): vier Verteidigungslinien (die letzte = Rückhalt), Angriffswellen alle 12 Spielstunden,
+        // je Welle höchstens 6 Bodenrunden; Miliz nach Soziologie 2 + Kaserne 1, Ausbildung 5 min je 1.000 Bewohner,
+        // Kaserne während einer Invasion halb so schnell.
+        wellen: 4,
+        wellen_abstand_stunden: 12,
+        wellen_runden_max: 6,
+        miliz_forschung: {soziologie: 2},
+        miliz_ausbildung_sekunden_je_1000: 300,
+        invasion_ausbildung_promille: 500,
+    ),
+
+    // Mondzerstörung durch Weltenkrümmer.
+    mond: (
+        truemmer_je_km_erz: 20,         // Trümmerring: Erz je km Monddurchmesser …
+        truemmer_je_km_kristall: 10,    // … und Kristall (dazu 50 % des Mondlagers, 10 % der Gebäudekosten, Wracks)
+        ueberlebende_promille: 500,     // Besatzung stationierter Schiffe, die überlebt und geborgen werden kann
+        zerstoerung_wurzel_grenze: 100, // Zerstörung % = (100 − √Durchmesser) × √Anzahl Weltenkrümmer
+        verlust_teiler: 20,             // Verlust der Weltenkrümmer % = √Durchmesser × 10 / 20
+    ),
+
+    // Zielwahl im Raumkampf: Schadensfaktor gegen Primär- und Sekundärziele der Flottendoktrin.
+    kampf: (
+        primaer_faktor: 2.0,
+        sekundaer_faktor: 1.5,
+        // Mehrfachfeuer (Karl 24.10.2026): Schnellfeuer springt nach einem Abschuss auf ein neues Ziel derselben Art.
+        schnellfeuer_springt: true,
+    ),
+
+    // Soforthandel (eigenes System, ohne Markt).
+    handel: (
+        soforthandel_kurse: {"erz": 1.0, "kristall": 1.5, "deuterium": 3.0, "nahrung": 0.5, "credits": 1.0},
+        soforthandel_gebuehr: 0.02,
+        handelsabkommen_faktor: 0.5,    // Marktgebühr mit Handelsabkommen × 0,5
+        topf_rueckbuchung: true,        // Rollenbudget einer Kauforder bei Storno/Preisdifferenz zurück (25.10.2026)
+    ),
+
+    // Industrie neuer Welten (ersetzt die Werte der Flottendatei für das Kolonieschiff und das Habitatmodul).
+    industrie: (
+        kaserne_ab_stufe: 3,
+        kolonieschiff_kosten: {legierung: 1000, elektronik: 500, habitatmodul: 1},
+        kolonieschiff_ab_stufe: 3,
+        kolonieschiff_werft: 3,
+        kolonieschiff_braucht: {},      // nötige Gebäude außer der Werft (neue Welten: keine Orbitalwerft)
+        kolonieschiff_forschung: {impulsantrieb: 2},   // Karl 25.10.2026: Impulsantrieb 2 reicht, keine Astrophysik
+        habitatmodul_kosten: {legierung: 400, elektronik: 250},
+    ),
+
+    // Expeditionsschiffe (Pathfinder, Bergungsschiff).
+    expedition: (
+        pathfinder: (kosten: {erz: 18000, kristall: 9000, legierung: 4500, elektronik: 3600}, struktur: 18000, schild: 100, angriff: 40,
+            ladung: 5000, tempo: 12000, antrieb: impulsantrieb, verbrauch: 100, besatzung: 20, ab_stufe: 3, werft: 4,
+            wirkung: "Pathfinder: Aufklärung, 20 wiederverwendbare Bordsonden und Expeditionsnavigation"),
+        bergungsschiff: (kosten: {erz: 14000, kristall: 7000, legierung: 3500, elektronik: 2800}, struktur: 18000, schild: 100, angriff: 40,
+            ladung: 7500, tempo: 7000, antrieb: impulsantrieb, verbrauch: 100, besatzung: 30, ab_stufe: 3, werft: 4,
+            wirkung: "Bergungsschiff: 200 zusätzliche Personenplätze, 7.500 Fracht und begrenzte Notreparatur"),
+        bergungsschiff_personenplaetze: 200,
+        forschung: {impulsantrieb: 2, astrophysik: 2},
+    ),
+
+    // Kolonieplätze (0.4.7, Karl 24.10.2026): erlaubt = min(14, frei + Stufe der Forschung). Neue Welten: 2 Plätze frei ab
+    // Start, ab der 3. Kolonie je Stufe Terraforming einer. Fehlt der Block (laufende Welten): je Astrophysikstufe eine Kolonie.
+    kolonien: (
+        frei: 2,
+        forschung: terraforming,
+    ),
+
+    // Terraformer-Schiffe (0.4.7, Karl 24.10.2026; Rechnung in crates/kern/src/terraform.rs, Handbuch „Terraforming“).
+    // Feldgrenze = felder_max − felder_abzug × Klimalücke (40 im Klimaoptimum, 30 auf dem ungünstigsten Platz des Volkes).
+    // schiffe: Terraformer für das volle Projekt auf dem ungünstigsten Platz je Terraforming-Stufe 0, 1, 2 … 10
+    // (Karl: Bahn 13 als Aurelier ca. 60–70 bei Stufe 8, 55–65 bei 9, ca. 50 bei 10). Davon klima_anteil_promille fürs Klima,
+    // der Rest für die Felder (bezogen auf felder_bezug Felder).
+    terraform: (
+        aktiv: true,
+        felder_max: 40,
+        felder_abzug: 10,
+        schiffe: [185, 163, 143, 125, 110, 96, 84, 74, 65, 57, 50],
+        klima_anteil_promille: 600,
+        felder_bezug: 30,
+    ),
+
+    // Eigene Werte einzelner Einheiten je Volk, zusätzlich zu den Volksfaktoren in online-v1.ron (voelker.<volk>).
+    // Faktor 1 = wie die Einheitenregel. Beispiel: aurelianer: {kreuzer: (angriff: 1.1, tempo: 0.95)}.
+    // Felder: angriff, schild, struktur, ladung, tempo, verbrauch, kosten (Kosten wirken auch auf Bauzeit und Unterhalt).
+    volk_einheiten: {},
+)

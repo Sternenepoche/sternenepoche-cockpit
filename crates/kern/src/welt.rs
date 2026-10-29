@@ -119,6 +119,7 @@ pub struct Planet {
     #[serde(with = "crate::snapshot_layout::buildings")]
     pub gebaeude: [u8; GEBAEUDE],
     /// Schiffe und Verteidigung auf dem Planeten.
+    #[serde(with="crate::snapshot_layout::units")]
     pub einheiten: [i64; EINHEITEN],
     /// Silo ammunition: interceptor, interplanetary. Work in progress is in the event queue.
     pub raketen: [i64; 2],
@@ -291,6 +292,7 @@ pub struct Flotte {
     pub start_koord: Koord,
     pub ziel: Koord,
     pub mission: Mission,
+    #[serde(with="crate::snapshot_layout::ships")]
     pub schiffe: [i64; SCHIFFE],
     pub ladung: [i64; GUETER],
     /// Siedler an Bord (Tausendstel).
@@ -326,6 +328,8 @@ pub enum EreignisArt {
     MarktlieferungGebunden { planet: PlanetId, empfaenger: SpielerId, gut: Gut, menge: i64 },
     SensorKontakt { flotte: FlottenId },
     InterneLieferung { angebot: u64 },
+    ExpeditionSchritt { flotte:FlottenId },
+    TaktischeRakete { salve:u64 },
 }
 
 /// Ereignis in der Prioritätswarteschlange. Der Schlüssel aus Zeit, Priorität und
@@ -445,7 +449,9 @@ pub enum Sieger {
 pub struct Kampfteilnehmer {
     pub flotte: FlottenId,
     pub spieler: SpielerId,
+    #[serde(with="crate::snapshot_layout::units")]
     pub vorher: [i64; EINHEITEN],
+    #[serde(with="crate::snapshot_layout::units")]
     pub nachher: [i64; EINHEITEN],
 }
 
@@ -461,9 +467,13 @@ pub struct Kampfbericht {
     pub verteidiger: Vec<SpielerId>,
     pub runden: u8,
     pub sieger: Sieger,
+    #[serde(with="crate::snapshot_layout::units")]
     pub ang_vorher: [i64; EINHEITEN],
+    #[serde(with="crate::snapshot_layout::units")]
     pub ang_nachher: [i64; EINHEITEN],
+    #[serde(with="crate::snapshot_layout::units")]
     pub vert_vorher: [i64; EINHEITEN],
+    #[serde(with="crate::snapshot_layout::units")]
     pub vert_nachher: [i64; EINHEITEN],
     pub beute: [i64; GUETER],
     pub truemmer: [i64; 2],
@@ -497,6 +507,8 @@ pub struct Tageswerte {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Welt {
     #[serde(skip)]
+    pub ausbau: crate::ausbau::Ausbau,
+    #[serde(skip)]
     pub kommunikation: crate::kommunikation::Kommunikation,
     #[serde(skip)]
     pub ausscheiden: crate::ausscheiden::AusscheidenZustand,
@@ -509,6 +521,12 @@ pub struct Welt {
     pub kolonisation: crate::kolonisation::Kolonisationszustand,
     #[serde(skip)]
     pub fachereignisse: Vec<serde_json::Value>,
+    /// Mondgeneration; lebt in der STERNE13-Hülle, nie im historischen bincode-Layout.
+    #[serde(skip)]
+    pub monde: crate::monde::Mondzustand,
+    /// Gemerkte Werksbilanzen für `werk_ruht` (nur Laufzeit, nie im Spielstand; siehe `industrie::WerkMerk`).
+    #[serde(skip)]
+    pub werk_merk: crate::industrie::WerkMerk,
     pub regeln: Arc<Regelwerk>,
     pub startwert: u64,
     pub zeit: SimZeit,
@@ -633,12 +651,15 @@ impl Welt {
         mischen(&mut rng, &mut voelker);
 
         let mut welt = Welt {
+            ausbau: Default::default(),
             kommunikation: Default::default(),
             ausscheiden: Default::default(),
             aufklaerung: crate::aufklaerung::Aufklaerungszustand::neu(regeln.gebaeude.contains_key(&Gebaeude::Geheimdienst)),
             kolonisation: Default::default(),
             scans: Default::default(),
             fachereignisse: Vec::new(),
+            monde: Default::default(),
+            werk_merk: Default::default(),
             regeln: regeln.clone(),
             startwert,
             zeit: 0,
@@ -823,13 +844,14 @@ impl Welt {
 
     pub fn plane(&mut self, zeit: SimZeit, art: EreignisArt) {
         let prio = match art {
+            EreignisArt::ExpeditionSchritt{..} => 8,
             EreignisArt::SensorKontakt { .. } => 0,
             EreignisArt::InterneLieferung { .. } => 4,
             EreignisArt::BauFertig { .. } => 1,
             EreignisArt::FertigungFertig { .. } | EreignisArt::RaketenFertig { .. } => 2,
             EreignisArt::FlotteRueckkehr { .. } => 3,
             EreignisArt::OrbitEnde { .. } => 4,
-            EreignisArt::FlotteAnkunft { .. } | EreignisArt::RaketenAnkunft { .. } => 5,
+            EreignisArt::FlotteAnkunft { .. } | EreignisArt::RaketenAnkunft { .. } | EreignisArt::TaktischeRakete {..} => 5,
             EreignisArt::Marktlieferung { .. } | EreignisArt::MarktlieferungGebunden { .. } => 6,
             EreignisArt::VertragEnde { .. } => 7,
             EreignisArt::Tick => 8,

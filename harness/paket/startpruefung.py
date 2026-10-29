@@ -184,13 +184,17 @@ def pruefen(ordner: Path):
 
 def main():
     if not EXE.is_file(): sys.exit(f"FEHLT: {EXE}")
-    ordner = Path(tempfile.mkdtemp(prefix="cockpit-startpruefung-"))
+    test_root=Path(os.environ.get("STERN_COCKPIT_TEST_TMP",tempfile.gettempdir())).resolve()
+    test_root.mkdir(parents=True,exist_ok=True)
+    ordner = Path(tempfile.mkdtemp(prefix="cockpit-startpruefung-",dir=test_root)).resolve()
     sieger = threading.Timer(ZEIT, lambda: (print(f"FEHLER: Gesamtzeit {ZEIT} s überschritten", flush=True), os._exit(3)))
     sieger.daemon = True; sieger.start()
     try:
         pruefen(ordner)
     except SystemExit as e:
         print(e, flush=True); print(f"Prüfordner bleibt zur Ansicht: {ordner}"); sys.exit(1)
+    if ordner.parent!=test_root or not ordner.name.startswith("cockpit-startpruefung-"):
+        raise SystemExit("Prüfordner außerhalb des vorgesehenen Testverzeichnisses")
     shutil.rmtree(ordner, ignore_errors=True)
     print("PASS: Startprüfung bestanden", flush=True)
 

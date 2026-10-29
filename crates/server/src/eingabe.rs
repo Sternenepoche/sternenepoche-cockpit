@@ -116,10 +116,35 @@ const MEHRZEILIG: [&str; 2] = ["text", "notiz"];
 /// werden auf unsichtbare Zeichen geprüft.
 pub fn aktion_pruefen(v: &Value, nr: usize) -> Result<(), String> {
     let o = v.as_object().ok_or_else(|| format!("Aktion {nr}: Objekt erwartet"))?;
-    let gelesen: Aktion = serde_json::from_value(v.clone()).map_err(|e| format!("Aktion {nr} nicht lesbar: {e}"))?;
+    let typ = o.get("typ").and_then(Value::as_str).unwrap_or("");
+    // Dyson- und Mondaktionen sind keine Varianten des Kern-Enums (eigene Verteilung im Kern): gleiche Grenze über
+    // ihre Agenten-Schemas – nur bekannte Felder, Texte ohne unsichtbare Zeichen.
+    let eigene = if kern::dyson::DYSON_AKTIONEN.contains(&typ) { Some(kern::dyson::dyson_aktionsschemas(kern::Rolle::Alle)) }
+        else if kern::monde::MOND_AKTIONEN.contains(&typ) { Some(kern::monde::mond_aktionsschemas(kern::Rolle::Alle)) } else { None };
+    if let Some(schemas) = eigene {
+        let schema = schemas.into_iter().find(|s| s["properties"]["typ"]["enum"][0] == typ).ok_or_else(|| format!("Aktion {nr} ({typ}): kein Schema"))?;
+        let felder = schema["properties"].as_object().ok_or_else(|| format!("Aktion {nr} ({typ}): kein Schema"))?;
+        if let Some(k) = o.keys().find(|k| !felder.contains_key(*k)) { return Err(format!("Aktion {nr} ({typ}): unbekanntes Feld „{k}“")); }
+        for (k, wert) in o { texte_pruefen(wert, &format!("Aktion {nr}, Feld {k}"), MEHRZEILIG.contains(&k.as_str()))?; }
+        return Ok(());
+    }
+    // Flüge und Raketen mit Start-/Zielart (Mondgeneration): die Art liest der Kern selbst, das Enum kennt sie nicht.
+    let mut ohne_art = v.clone();
+    if matches!(typ, "flotte_senden" | "raketen_starten") {
+        if let Some(m) = ohne_art.as_object_mut() {
+            for k in ["zielart", "startart"] {
+                match m.get(k).and_then(Value::as_str) { Some("planet") | Some("mond") => { m.remove(k); } Some(_) => return Err(format!("Aktion {nr}: {k} ist planet oder mond")), None => {} }
+            }
+        }
+    }
+    let o_pruef = ohne_art.as_object().cloned().unwrap_or_default();
+    let gelesen: Aktion = serde_json::from_value(ohne_art).map_err(|e| format!("Aktion {nr} nicht lesbar: {e}"))?;
     let bekannt = serde_json::to_value(&gelesen).map_err(|_| format!("Aktion {nr} nicht lesbar"))?;
     let bekannt = bekannt.as_object().ok_or_else(|| format!("Aktion {nr} nicht lesbar"))?;
-    if let Some(k) = o.keys().find(|k| !bekannt.contains_key(*k)) {
+    // Optionale Felder, die beim Serialisieren wegfallen (skip_serializing_if), dürfen im strengen Schema als null
+    // kommen – sonst lehnte die Prüfung jeden flotte_senden mit "siedler_mischung": null als unbekanntes Feld ab.
+    const NULLBAR: [&str; 1] = ["siedler_mischung"];
+    if let Some(k) = o_pruef.iter().find(|(k, v)| !bekannt.contains_key(*k) && !(v.is_null() && NULLBAR.contains(&k.as_str()))).map(|(k, _)| k) {
         return Err(format!("Aktion {nr} ({}): unbekanntes Feld „{k}“", gelesen.typ()));
     }
     for (k, wert) in o {
@@ -199,6 +224,14 @@ mod tests {
         assert!(aktion_pruefen(&versteckt, 2).is_err());
         let flotte = json!({"typ":"flotte_senden","start":"1:2:3","ziel":"1:2:4","mission":"transport","schiffe":{"kleiner_transporter":1},"ladung":{"erz":5.0}});
         aktion_pruefen(&flotte, 1).unwrap();
+        // Dyson- und Mondaktionen: gegen ihre Schemas, fremde Felder abgelehnt; Flug mit Zielart Mond lesbar.
+        aktion_pruefen(&json!({"typ":"dyson_einzahlen","projekt":1,"von":"1:2:3","erz":5}), 1).unwrap();
+        assert!(aktion_pruefen(&json!({"typ":"dyson_einzahlen","von":"1:2:3","heimlich":1}), 1).unwrap_err().contains("unbekanntes Feld"));
+        aktion_pruefen(&json!({"typ":"mond_bauen","mond":"1:2:3","gebaeude":"mondbasis"}), 1).unwrap();
+        let mut mondflug = flotte.clone(); mondflug["zielart"] = json!("mond");
+        aktion_pruefen(&mondflug, 1).unwrap();
+        mondflug["zielart"] = json!("sonne");
+        assert!(aktion_pruefen(&mondflug, 1).is_err());
         assert!(aktion_pruefen(&json!({"typ":"bauen","planet":"1:2:3"}), 1).is_err());
     }
 

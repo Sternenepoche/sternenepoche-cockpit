@@ -5,10 +5,14 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
 pub const ROLLEN: [&str; 4] = ["stratege", "verwalter", "feldherr", "diplomat"];
-/// Lesende Werkzeuge des Servers und eigene, lokale Werkzeuge des Harness.
-pub const SERVER_WERKZEUGE: [&str; 7] = ["kosten", "flugzeit", "kampfsimulator", "regel", "galaxie", "kolonieplan", "briefarchiv"];
-/// Werkzeuge, die der Harness selbst beantwortet (ohne Serveranfrage).
-pub const LOKALE_WERKZEUGE: [&str; 4] = ["gedaechtnis_suche", "analyse", "inventur", "wissen"];
+/// Lesende Werkzeuge des Servers (`Welt::werkzeug_als` im Spielkern) und eigene, lokale Werkzeuge des Harness.
+pub const SERVER_WERKZEUGE: [&str; 23] = ["kosten", "flugzeit", "kampfsimulator", "kampfszenario", "regel", "galaxie", "kolonieplan", "briefarchiv",
+    "koloniebedarf", "raketenplan", "terraformbedarf", "habitabilitaet", "missionsplan", "marktplan", "ablaufplan", "regelkontext", "wirtschaftsdiagnose",
+    "kostenplan", "planet_aufgeben", "soforthandel", "raketensimulator", "wiederaufbau", "flugkoordination"];
+/// Werkzeuge, die der Harness selbst beantwortet (ohne Serverabfrage bzw. über die Lage).
+pub const LOKALE_WERKZEUGE: [&str; 6] = ["gedaechtnis_suche", "analyse", "inventur", "wissen", "planet_detail", "lage_teil"];
+/// Missionsnamen früherer Fassungen und ihr heutiges Gegenstück im Spielkern.
+pub const ALTE_MISSIONEN: [(&str, &str); 2] = [("flotte_senden:pluenderung", "flotte_senden:angriff"), ("flotte_senden:belagerung", "flotte_senden:blockade")];
 /// Ereignisse, die eine Rolle außerhalb ihres Takts wecken.
 pub const AUSLOESER: [&str; 4] = ["angriff", "brief", "bauschleife_leer", "aufgabe"];
 pub const RECHTE: [&str; 3] = ["erlauben", "fragen", "verbieten"];
@@ -29,11 +33,16 @@ fn kontext_tokens() -> u32 { 16384 }
 fn timeout_modell() -> u64 { 180 }
 fn budget() -> f64 { 1.0 }
 fn modus() -> String { "bestaetigen".into() }
-fn riskant() -> Vec<String> {
-    ["schenken", "vertrag_anbieten", "vertrag_kuendigen", "abreissen", "schleife_leeren", "allianz_verlassen", "allianz_ausschliessen", "raketen_starten",
-     "flotte_senden:angriff", "flotte_senden:pluenderung", "flotte_senden:belagerung", "flotte_senden:blockade", "flotte_senden:kolonisieren", "intern_anbieten", "markt_order"]
-        .iter().map(|s| s.to_string()).collect()
-}
+/// Grundeinstellung riskanter Züge (fragen im Modus „bestaetigen“): feindliche Missionen, Unumkehrbares,
+/// Abgaben an andere Reiche und große Marktaufträge (`markt_order:gross`, Grenze `markt_frage_ab`).
+pub const RISKANT: [&str; 28] = ["flotte_senden:angriff", "flotte_senden:blockade", "flotte_senden:invasion", "flotte_senden:bombardieren",
+    "flotte_senden:kampfkolonisieren", "flotte_senden:mond_zerstoeren", "flotte_senden:kolonisieren", "raketen_starten", "orbitflotte_angreifen", "boden_senden",
+    "planet_aufgeben", "abreissen", "schleife_leeren", "allianz_verlassen", "allianz_ausschliessen", "allianz_gruenden", "vertrag_anbieten", "vertrag_kuendigen",
+    "allianz_pakt_kuendigen", "schenken", "schiffangebot", "orbitflotte_anbieten", "intern_anbieten", "markt_order:gross", "hyperraumloch_oeffnen", "dyson_bau_starten", "dyson_auszahlen", "dyson_austreten"];
+fn riskant() -> Vec<String> { RISKANT.iter().map(|s| s.to_string()).collect() }
+fn markt_frage_ab() -> f64 { 50_000.0 }
+fn regel_zeichen() -> usize { 12_000 }
+fn skills_zeichen() -> usize { 14_000 }
 fn vier() -> usize { 4 }
 fn eins() -> u8 { 1 }
 fn max_zeichen() -> usize { 24_000 }
@@ -295,9 +304,12 @@ pub struct WachpostenKonfig {
     pub probe_vor_zug: bool,
     #[serde(default = "eins")]
     pub korrekturrunden: u8,
+    /// Marktaufträge ab diesem Wert (Menge × Preis, ohne Preis die Menge) gelten als „markt_order:gross“.
+    #[serde(default = "markt_frage_ab")]
+    pub markt_frage_ab: f64,
 }
 impl Default for WachpostenKonfig {
-    fn default() -> Self { Self { modus: modus(), riskant: riskant(), max_aktionen_je_zug: 4, max_geschenk_credits_je_tag: 0.0, probe_vor_zug: true, korrekturrunden: 1 } }
+    fn default() -> Self { Self { modus: modus(), riskant: riskant(), max_aktionen_je_zug: 4, max_geschenk_credits_je_tag: 0.0, probe_vor_zug: true, korrekturrunden: 1, markt_frage_ab: markt_frage_ab() } }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -309,9 +321,15 @@ pub struct KontextKonfig {
     pub notizen: usize,
     #[serde(default = "fuenf")]
     pub letzte_zuege: usize,
+    /// Budget für den Regeltext (nach Abschnitten; die Aktionsliste der Rolle zählt nicht dazu und wird nie gekürzt).
+    #[serde(default = "regel_zeichen")]
+    pub regel_zeichen: usize,
+    /// Budget für die Skills des Server-Pakets je Rolle.
+    #[serde(default = "skills_zeichen")]
+    pub skills_zeichen: usize,
 }
 impl Default for KontextKonfig {
-    fn default() -> Self { Self { max_zeichen: max_zeichen(), notizen: 8, letzte_zuege: 5 } }
+    fn default() -> Self { Self { max_zeichen: max_zeichen(), notizen: 8, letzte_zuege: 5, regel_zeichen: regel_zeichen(), skills_zeichen: skills_zeichen() } }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -393,9 +411,34 @@ pub fn sichere_adresse(url: &str, wofuer: &str) -> Result<(), String> {
 impl Konfig {
     pub fn laden(pfad: &Path) -> Result<Self, String> {
         let text = std::fs::read_to_string(pfad).map_err(|e| format!("{}: {e}", pfad.display()))?;
-        let k: Konfig = serde_json::from_str(&text).map_err(|e| format!("harness.json: {e}"))?;
+        let mut k: Konfig = serde_json::from_str(&text).map_err(|e| format!("harness.json: {e}"))?;
+        k.migrieren();
         k.pruefen()?;
         Ok(k)
+    }
+    /// Ältere Konfigurationen still anpassen: die erfundenen Missionen `pluenderung` und `belagerung`
+    /// heißen im Spielkern `angriff` und `blockade`. Bei doppelten Rechten gilt das strengere.
+    /// Gibt zurück, ob sich etwas geändert hat.
+    pub fn migrieren(&mut self) -> bool {
+        let rang = |r: &str| match r { "verbieten" => 2, "fragen" => 1, _ => 0 };
+        let mut geaendert = false;
+        for r in self.rollen.values_mut() {
+            for (alt, neu) in ALTE_MISSIONEN {
+                if let Some(recht) = r.rechte.remove(alt) {
+                    geaendert = true;
+                    let wert = match r.rechte.get(neu) { Some(v) if rang(v) >= rang(&recht) => v.clone(), _ => recht };
+                    r.rechte.insert(neu.to_string(), wert);
+                }
+            }
+        }
+        let vorher = self.wachposten.riskant.clone();
+        let mut riskant: Vec<String> = Vec::new();
+        for x in vorher.iter() {
+            let x = ALTE_MISSIONEN.iter().find(|(a, _)| a == x).map(|(_, n)| n.to_string()).unwrap_or_else(|| x.clone());
+            if !riskant.contains(&x) { riskant.push(x); }
+        }
+        if riskant != vorher { self.wachposten.riskant = riskant; geaendert = true; }
+        geaendert
     }
     pub fn speichern(&self, pfad: &Path) -> Result<(), String> {
         self.pruefen()?;
@@ -510,5 +553,35 @@ mod tests {
         assert!(serde_json::from_str::<Konfig>(r#"{"version":1,"name":"x","server":"https://a","rollen":{},"gedaechtnis":{"art":"sqlite","pfad":"x"},"geheim":1}"#).is_err());
         assert!(format!("{:?}", Geheimnisse { schluessel: "sep_x".into(), openrouter: String::new(), openai: "sk-lokal".into(), wissen: [("rag".to_string(), "Bearer geheim".to_string())].into() }).contains("***") && !format!("{:?}", Geheimnisse { schluessel: String::new(), openrouter: String::new(), openai: "sk-lokal".into(), wissen: [("rag".to_string(), "Bearer geheim".to_string())].into() }).contains("geheim")
             && !format!("{:?}", Geheimnisse { openai: "sk-lokal".into(), ..Default::default() }).contains("sk-lokal"));
+    }
+    #[test]
+    fn alte_missionen_werden_beim_laden_abgebildet() {
+        // harness.json einer früheren Fassung mit pluenderung/belagerung in Rechten und riskanten Zügen.
+        let alt = serde_json::json!({"version":1,"name":"Alt","server":"http://127.0.0.1:8892","gedaechtnis":{"art":"sqlite","pfad":"g.sqlite3"},
+            "rollen":{"feldherr":{"anbieter":"ollama","modell":"qwen3:8b","werkzeuge":["kosten","missionsplan","planet_detail"],
+                "rechte":{"flotte_senden:angriff":"fragen","flotte_senden:pluenderung":"erlauben","flotte_senden:belagerung":"verbieten"}}},
+            "wachposten":{"riskant":["schenken","flotte_senden:pluenderung","flotte_senden:angriff","flotte_senden:belagerung"]}});
+        let pfad = std::env::temp_dir().join(format!("harness-migration-{}.json", std::process::id()));
+        std::fs::write(&pfad, alt.to_string()).unwrap();
+        let k = Konfig::laden(&pfad).unwrap();
+        let _ = std::fs::remove_file(&pfad);
+        let r = &k.rollen["feldherr"].rechte;
+        assert_eq!(r.get("flotte_senden:angriff").map(String::as_str), Some("fragen"), "strengeres Recht gewinnt");
+        assert_eq!(r.get("flotte_senden:blockade").map(String::as_str), Some("verbieten"));
+        assert!(!r.keys().any(|x| x.contains("pluenderung") || x.contains("belagerung")));
+        assert_eq!(k.wachposten.riskant, vec!["schenken", "flotte_senden:angriff", "flotte_senden:blockade"]);
+        // Zweiter Lauf ändert nichts mehr; neue Werkzeuge sind gültig.
+        let mut k2 = k.clone();
+        assert!(!k2.migrieren());
+        k2.pruefen().unwrap();
+        // Grundeinstellung: alle feindlichen Missionen und Unumkehrbares fragen, keine erfundenen Missionen.
+        let w = WachpostenKonfig::default();
+        for m in ["angriff", "blockade", "invasion", "bombardieren", "kampfkolonisieren", "mond_zerstoeren"] { assert!(w.riskant.contains(&format!("flotte_senden:{m}")), "{m}"); }
+        for a in ["raketen_starten", "orbitflotte_angreifen", "planet_aufgeben", "abreissen", "allianz_verlassen", "allianz_ausschliessen", "vertrag_kuendigen", "allianz_pakt_kuendigen",
+            "schenken", "schiffangebot", "markt_order:gross", "hyperraumloch_oeffnen", "dyson_bau_starten", "dyson_auszahlen"] { assert!(w.riskant.iter().any(|x| x == a), "{a}"); }
+        assert!(!w.riskant.iter().any(|x| x.contains("pluenderung") || x.contains("belagerung")));
+        let mut k3 = beispiel();
+        k3.rollen.get_mut("verwalter").unwrap().werkzeuge = Some(vec!["gibtsnicht".into()]);
+        assert!(k3.pruefen().is_err(), "unbekannte Werkzeuge bleiben verboten");
     }
 }

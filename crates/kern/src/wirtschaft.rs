@@ -9,13 +9,9 @@ impl Welt {
         let mut capacity = self
             .regeln
             .lagergrenze(self.planeten[pid].gebaeude[Gebaeude::Lager.idx()]);
+        let integritaet = self.integritaet(pid, Gebaeude::Lager);
         for i in 0..GUETER {
-            capacity[i] = base[i]
-                + anteil(
-                    capacity[i] - base[i],
-                    self.integritaet(pid, Gebaeude::Lager),
-                    1000,
-                );
+            capacity[i] = base[i] + anteil(capacity[i] - base[i], integritaet, 1000);
         }
         capacity
     }
@@ -24,7 +20,7 @@ impl Welt {
     /// Produktion endet an der Lagergrenze, Bestände werden nie negativ.
     pub fn abrechnen(&mut self, pid: usize) {
         let jetzt = self.zeit;
-        if !self.spieler_aktiv(self.planeten[pid].besitzer) {
+        if !self.planet_aktiv(pid) {
             self.planeten[pid].stand = jetzt;
             return;
         }
@@ -34,28 +30,16 @@ impl Welt {
         if dt <= 0 {
             return;
         }
-        let mut verlust = [0i64; GUETER];
-        for g in 0..GUETER {
-            let delta = (p.rate[g] as i128 * dt as i128 / STUNDE as i128) as i64;
-            if delta >= 0 {
-                if p.bestand[g] < grenze[g] {
-                    let neu = p.bestand[g] + delta;
-                    if neu > grenze[g] {
-                        verlust[g] = neu - grenze[g];
-                        p.bestand[g] = grenze[g];
-                    } else {
-                        p.bestand[g] = neu;
-                    }
-                } else {
-                    verlust[g] = delta;
-                }
-            } else {
-                p.bestand[g] = (p.bestand[g] + delta).max(0);
-            }
-        }
+        let ergebnis = if self.ausbau.industrie_version>0 {
+            let rest=self.ausbau.bestandsrest.get(&p.id).copied().unwrap_or([0;GUETER]);
+            let (result,next)=crate::planer::bestand::fortschreiben_mit_rest(&p.bestand,&p.rate,&grenze,dt,&rest);
+            if next.iter().any(|n|*n!=0){self.ausbau.bestandsrest.insert(p.id,next);}else{self.ausbau.bestandsrest.remove(&p.id);}
+            result
+        }else{crate::planer::bestand::fortschreiben(&p.bestand, &p.rate, &grenze, dt)};
+        p.bestand = ergebnis.bestand;
         p.stand = jetzt;
         let besitzer = p.besitzer as usize;
-        let wert = self.regeln.wert(&verlust);
+        let wert = self.regeln.wert(&ergebnis.lagerverlust);
         self.spieler[besitzer].statistik.lagerverlust += wert;
     }
 
@@ -78,233 +62,31 @@ impl Welt {
 
     /// Rechnet Bestand ab und bestimmt alle Raten des Planeten neu.
     pub fn raten_neu(&mut self, pid: usize) {
-        if !self.spieler_aktiv(self.planeten[pid].besitzer) {
+        if !self.planet_aktiv(pid) {
             self.planeten[pid].rate = [0; GUETER];
             return;
         }
         self.abrechnen(pid);
-        let r = self.regeln.clone();
-        let w = &r.wirtschaft;
-        let st = &r.stabilitaet;
-        let p = &self.planeten[pid];
-        let sp = &self.spieler[p.besitzer as usize];
-        let volk = r.volk(sp.volk);
-        let t = |f: Forschung| sp.forschung[f.idx()] as f64;
-        let n = |g: Gebaeude| p.gebaeude[g.idx()];
-
-        // Arbeitskräfte und Fachkräfte nach Priorität verteilen.
-        let auto_f = (1.0 - w.automatisierung_bonus * t(Forschung::Automatisierung)).max(0.5);
-        let arbeit_verfuegbar = mal(p.bevoelkerung, w.arbeitsquote);
-        let mut frei = arbeit_verfuegbar;
-        let fk_verfuegbar = (w.fachkraefte_basis * M
-            + anteil(
-                r.stufenwert(w.fachkraefte_je_akademie, n(Gebaeude::Akademie)),
-                self.integritaet(pid, Gebaeude::Akademie),
-                1000,
-            ))
-        .min(frei);
-        let mut fk_frei = fk_verfuegbar;
-        let mut besetzung = [1000i64; GEBAEUDE];
-        let mut arbeit_bedarf = 0i64;
-        let mut fk_bedarf = 0i64;
-        for g in Self::reihenfolge(p) {
-            let stufe = n(g);
-            if stufe == 0 {
-                continue;
-            }
-            let gr = r.geb(g);
-            let b_a = mal(r.stufenwert(gr.arbeiter, stufe), auto_f);
-            let b_f = r.stufenwert(gr.fachkraefte, stufe);
-            arbeit_bedarf += b_a + b_f;
-            fk_bedarf += b_f;
-            let hat_f = b_f.min(fk_frei).min(frei);
-            fk_frei -= hat_f;
-            frei -= hat_f;
-            let hat_a = b_a.min(frei);
-            frei -= hat_a;
-            let q_a = if b_a > 0 { hat_a * 1000 / b_a } else { 1000 };
-            let q_f = if b_f > 0 { hat_f * 1000 / b_f } else { 1000 };
-            besetzung[g.idx()] = anteil(q_a.min(q_f), self.integritaet(pid, g), 1000);
+        self.personen_abgleichen(pid);
+        if self.ausbau.version>0 {
+            let p=&mut self.planeten[pid];
+            p.zone=crate::habitabilitaet::zone(p.koord.position,self.regeln.welt.plaetze_je_system);
+            p.faktor=crate::habitabilitaet::faktoren(&self.regeln,p);
         }
-
-        // Produktivität aus Stabilität.
-        let a_pm = milli(st.produktivitaet_basis)
-            + anteil(milli(st.produktivitaet_spanne), p.stabilitaet, 100 * M);
-        let voll = |g: Gebaeude| {
-            anteil(
-                r.stufenwert(r.geb(g).ertrag, n(g)),
-                besetzung[g.idx()],
-                1000,
-            )
-        };
-
-        // Energie: Erzeugung gegen Verbrauch, alle Verbraucher laufen mit demselben Faktor.
-        let e_f = (1.0 + w.energietechnik_bonus * t(Forschung::Energietechnik)) * volk.energie;
-        let solar = mal(
-            anteil(voll(Gebaeude::Solarkraftwerk), p.faktor[F_SOLAR], 1000),
-            e_f,
-        );
-        let fus_bedarf = anteil(
-            r.stufenwert(w.fusion_deuterium, n(Gebaeude::Fusionskraftwerk)),
-            besetzung[Gebaeude::Fusionskraftwerk.idx()],
-            1000,
-        );
-        let fus_q = if fus_bedarf > 0 {
-            (p.bestand[Gut::Deuterium.idx()] * 1000 / fus_bedarf).min(1000)
-        } else {
-            1000
-        };
-        let fusion = mal(anteil(voll(Gebaeude::Fusionskraftwerk), fus_q, 1000), e_f);
-        let fus_verbrauch = anteil(fus_bedarf, fus_q, 1000);
-        let energie_erzeugung = mal(
-            solar + fusion,
-            1.0 + r.zusatz.versorgungsnetz_energie_bonus
-                * n(Gebaeude::Versorgungsnetz) as f64
-                * self.integritaet(pid, Gebaeude::Versorgungsnetz) as f64
-                / 1000.0,
-        );
-        let mut energie_verbrauch = 0i64;
-        for g in Gebaeude::ALLE {
-            if n(g) > 0 {
-                energie_verbrauch += anteil(
-                    r.stufenwert(r.geb(g).energie, n(g)),
-                    besetzung[g.idx()],
-                    1000,
-                );
-            }
-        }
-        if volk.ohne_nahrung {
-            energie_verbrauch += mal(p.bevoelkerung, w.energie_je_1000_syntheten) / 1000;
-        }
-        let e_pm = if energie_verbrauch <= energie_erzeugung {
-            1000
-        } else {
-            energie_erzeugung * 1000 / energie_verbrauch
-        };
-
-        // Rohproduktion.
-        let leistung = |g: Gebaeude| anteil(anteil(voll(g), a_pm, 1000), e_pm, 1000);
-        let mut prod = [0i64; GUETER];
-        let mut verb = [0i64; GUETER];
-        prod[Gut::Erz.idx()] = anteil(leistung(Gebaeude::Erzmine), p.faktor[F_ERZ], 1000);
-        prod[Gut::Kristall.idx()] =
-            anteil(leistung(Gebaeude::Kristallmine), p.faktor[F_KRISTALL], 1000);
-        prod[Gut::Deuterium.idx()] = anteil(
-            leistung(Gebaeude::Deuteriumsynthesizer),
-            p.faktor[F_DEUTERIUM],
-            1000,
-        );
-        prod[Gut::Nahrung.idx()] = mal(
-            anteil(leistung(Gebaeude::Farm), p.faktor[F_NAHRUNG], 1000),
-            volk.nahrung * (1.0 + w.agrar_bonus * t(Forschung::Agrarwissenschaft)),
-        );
-        prod[Gut::Xenokristall.idx()] = mal(
-            leistung(Gebaeude::Xenoextraktor),
-            1.0 + w.xeno_bonus * t(Forschung::Xenomaterialkunde),
-        );
-        verb[Gut::Deuterium.idx()] += fus_verbrauch;
-
-        // Verarbeitung: nur so viel, wie Bestand plus Stundenproduktion an Eingängen hergeben.
-        let mut verf = [0i64; GUETER];
-        for g in 0..GUETER {
-            verf[g] = p.bestand[g] + prod[g];
-        }
-        verf[Gut::Deuterium.idx()] = (verf[Gut::Deuterium.idx()] - fus_verbrauch).max(0);
-        for (werk, gut) in [
-            (Gebaeude::Giesserei, Gut::Legierung),
-            (Gebaeude::Elektronikwerk, Gut::Elektronik),
-            (Gebaeude::Konsumgueterwerk, Gut::Konsumgut),
-        ] {
-            let aus = leistung(werk);
-            if aus == 0 {
-                continue;
-            }
-            let rezept = &w.rezepte[&gut];
-            let mut q = 1000i64;
-            for (ein, menge) in rezept {
-                let bedarf = mal(aus, *menge);
-                if bedarf > 0 {
-                    q = q.min(
-                        (verf[ein.idx()].max(0) as i128 * 1000 / bedarf as i128).min(1000) as i64,
-                    );
-                }
-            }
-            for (ein, menge) in rezept {
-                let v = anteil(mal(aus, *menge), q, 1000);
-                verf[ein.idx()] -= v;
-                verb[ein.idx()] += v;
-            }
-            let mut out = anteil(aus, q, 1000);
-            if gut == Gut::Legierung {
-                out = mal(
-                    out,
-                    1.0 + w.werkstoffkunde_bonus * t(Forschung::Werkstoffkunde),
-                );
-            }
-            prod[gut.idx()] += out;
-        }
-
-        // Verbrauch der Bevölkerung und Deckungsgrade.
-        let deckung = |gut: Gut, bedarf: i64| {
-            if bedarf <= 0 {
-                1000
-            } else {
-                ((p.bestand[gut.idx()] + prod[gut.idx()]) as i128 * 1000 / bedarf as i128).min(1000)
-                    as i64
-            }
-        };
-        let nahrung_bedarf = if volk.ohne_nahrung {
-            0
-        } else {
-            mal(p.bevoelkerung, w.nahrung_je_1000) / 1000
-        };
-        let nahrung_deckung = if volk.ohne_nahrung {
-            e_pm
-        } else {
-            deckung(Gut::Nahrung, nahrung_bedarf)
-        };
-        let konsum_bedarf = mal(p.bevoelkerung, w.konsum_je_1000) / 1000;
-        let konsum_deckung = deckung(Gut::Konsumgut, konsum_bedarf);
-        verb[Gut::Nahrung.idx()] += nahrung_bedarf;
-        verb[Gut::Konsumgut.idx()] += konsum_bedarf;
-
-        let mut rate = [0i64; GUETER];
-        for g in 0..GUETER {
-            rate[g] = prod[g] - verb[g];
-        }
-        let fp_rate = mal(
-            leistung(Gebaeude::Labor),
-            volk.forschung
-                * (1.0
-                    + r.zusatz.archiv_fp_bonus
-                        * n(Gebaeude::Forschungsarchiv) as f64
-                        * self.integritaet(pid, Gebaeude::Forschungsarchiv) as f64
-                        / 1000.0),
-        );
-        let wohnraum = p.grundwohnraum
-            + anteil(
-                r.stufenwert(r.geb(Gebaeude::Wohnblock).ertrag, n(Gebaeude::Wohnblock)),
-                self.integritaet(pid, Gebaeude::Wohnblock),
-                1000,
-            )
-            + anteil(
-                r.zusatz.orbitalring_wohnraum * M * n(Gebaeude::Orbitalring) as i64,
-                self.integritaet(pid, Gebaeude::Orbitalring),
-                1000,
-            );
-
+        let ergebnis = self.industrie_berechnen(&self.planeten[pid]);
         let p = &mut self.planeten[pid];
-        p.rate = rate;
-        p.energie_erzeugung = energie_erzeugung;
-        p.energie_verbrauch = energie_verbrauch;
-        p.arbeit_bedarf = arbeit_bedarf;
-        p.arbeit_verfuegbar = arbeit_verfuegbar;
-        p.fk_bedarf = fk_bedarf;
-        p.fk_verfuegbar = fk_verfuegbar;
-        p.nahrung_deckung = nahrung_deckung;
-        p.konsum_deckung = konsum_deckung;
-        p.fp_rate = fp_rate;
-        p.wohnraum = wohnraum;
+        p.rate = ergebnis.rate;
+        p.energie_erzeugung = ergebnis.energie_erzeugung;
+        p.energie_verbrauch = ergebnis.energie_verbrauch;
+        p.arbeit_bedarf = ergebnis.arbeit_bedarf;
+        p.arbeit_verfuegbar = ergebnis.arbeit_verfuegbar;
+        p.fk_bedarf = ergebnis.fk_bedarf;
+        p.fk_verfuegbar = ergebnis.fk_verfuegbar;
+        p.nahrung_deckung = ergebnis.nahrung_deckung;
+        p.konsum_deckung = ergebnis.konsum_deckung;
+        p.fp_rate = ergebnis.fp_rate;
+        p.wohnraum = ergebnis.wohnraum;
+        self.orbital_automatik(pid);
     }
 
     pub fn kolonien(&self, sid: SpielerId) -> usize {
@@ -324,6 +106,7 @@ impl Welt {
     }
 
     fn bevoelkerung_tick(&mut self, pid: usize) {
+        if self.ausbau.version>0 {self.personen_tick(pid);return;}
         let r = self.regeln.clone();
         let w = &r.wirtschaft;
         let st = &r.stabilitaet;
@@ -409,11 +192,12 @@ impl Welt {
 
     /// Wirtschaftstick einmal pro Spielstunde.
     pub fn tick(&mut self) {
+        self.klima_angleichen();
         let r = self.regeln.clone();
         let w = &r.wirtschaft;
         let mut einkommen = vec![0i64; self.spieler.len()];
         for pid in 0..self.planeten.len() {
-            if !self.spieler_aktiv(self.planeten[pid].besitzer) { continue; }
+            if !self.planet_aktiv(pid) { continue; }
             self.bevoelkerung_tick(pid);
             self.stabilitaet_tick(pid);
             let p = &self.planeten[pid];
@@ -425,10 +209,15 @@ impl Welt {
             );
             self.spieler[sid].credits += steuer;
             self.raten_neu(pid);
+            // Ablauf-Version 1: Was an der Lagergrenze verfällt, füllt keine Töpfe.
+            let grenze = if self.ablauf_v1() { Some(self.lagergrenze(pid)) } else { None };
             let p = &self.planeten[pid];
             let mut plus = [0i64; GUETER];
             for g in 0..GUETER {
                 plus[g] = p.rate[g].max(0);
+                if grenze.is_some_and(|gr| p.bestand[g] >= gr[g]) {
+                    plus[g] = 0;
+                }
             }
             einkommen[sid] += r.wert(&plus) + steuer;
         }
@@ -443,7 +232,7 @@ impl Welt {
             self.stufen_tick(sid as SpielerId);
         }
         for pid in 0..self.planeten.len() {
-            if !self.spieler_aktiv(self.planeten[pid].besitzer) { continue; }
+            if !self.planet_aktiv(pid) { continue; }
             self.bau_starten(pid);
         }
         self.eroberung_pruefen();
@@ -458,7 +247,7 @@ impl Welt {
         !self.sichtbare_angriffe(sid).is_empty()
     }
 
-    fn topf_guthaben(&self, sid: SpielerId, topf: Topf) -> i64 {
+    pub(crate) fn topf_guthaben(&self, sid: SpielerId, topf: Topf) -> i64 {
         let sp = &self.spieler[sid as usize];
         let mut g = sp.toepfe[topf.idx()];
         if topf == Topf::Militaer && self.warnung_aktiv(sid) {
@@ -481,6 +270,20 @@ impl Welt {
             };
             sp.toepfe[t.idx()] -= rest;
         }
+    }
+
+    /// Bucht vorhandenes Guthaben sofort zwischen zwei Töpfen um (Stratege; Karl 26.10.2026). `menge` in Tausendsteln.
+    pub(crate) fn topf_umbuchen(&mut self, sid: SpielerId, von: Topf, nach: Topf, menge: i64) -> Result<String, String> {
+        if von == nach { return Err("von und nach müssen verschiedene Töpfe sein".into()); }
+        if menge <= 0 { return Err("menge muss über 0 liegen".into()); }
+        let sp = &mut self.spieler[sid as usize];
+        let hat = sp.toepfe[von.idx()].max(0);
+        if menge > hat {
+            return Err(format!("Topf {von} hat nur {} Werteinheiten (lage.toepfe.{von}.guthaben)", ganz(hat)));
+        }
+        sp.toepfe[von.idx()] -= menge;
+        sp.toepfe[nach.idx()] += menge;
+        Ok(format!("{} Werteinheiten von {von} nach {nach} umgebucht; {nach} hat jetzt {}", ganz(menge), ganz(sp.toepfe[nach.idx()])))
     }
 
     /// Prüft Bestand und Topf. Der Fehlertext nennt genau, was fehlt.
@@ -506,9 +309,11 @@ impl Welt {
             let hat = self.topf_guthaben(p.besitzer, t);
             if wert > hat {
                 return Err(format!(
-                    "Topf {} reicht nicht: {} Werteinheiten nötig, {} vorhanden",
+                    "Topf {} reicht nicht: {} Werteinheiten nötig, {} vorhanden (lage.toepfe); der Stratege bucht mit topf_umbuchen sofort um oder ändert die Anteile mit doktrin – Anfrage an ihn über die Pinwand",
                     t,
-                    ganz(wert),
+                    // aufgerundet: eine Umbuchung über genau den genannten Fehlbetrag muss reichen (Rat-Probe 27.10.2026:
+                    // „63 nötig“ waren 63,4, die Umbuchung von 63 scheiterte erneut)
+                    (wert + M - 1) / M,
                     ganz(hat.max(0))
                 ));
             }
@@ -547,6 +352,8 @@ impl Welt {
         p.felder
             + terra * self.regeln.wirtschaft.terraforming_felder
             + p.gebaeude[Gebaeude::Orbitalring.idx()] as u16 * self.regeln.zusatz.orbitalring_felder
+            // Terraformer-Schiffe (0.4.7): geformte Felder über der Grundgröße (neue Welten; dort Forschungsterm 0).
+            + self.terraform_felder(p.koord)
     }
 
     pub fn felder_belegt(&self, pid: usize) -> u16 {
@@ -555,18 +362,16 @@ impl Welt {
     }
 
     /// Bauzeit in Spielsekunden.
+    pub fn zeitberechnung(&self, pid: usize, kosten: &[i64; GUETER], fertigung: Option<(usize,Volk)>) -> crate::planer::zeiten::ZeitBerechnung {
+        let mut plant=self.planeten[pid].clone();if self.ausbau.industrie_version>0{if let Some((n,_))=fertigung{plant.gebaeude[if n==0{Gebaeude::Werft}else{Gebaeude::Orbitalwerft}.idx()]=1;}}
+        let mut result=crate::planer::zeiten::berechnen(&self.regeln, &plant, kosten,
+            &std::array::from_fn(|i| self.integritaet(pid, Gebaeude::ALLE[i])), fertigung);
+        if fertigung.is_some()&&self.ausbau.industrie_version>0{result.sekunden=result.sekunden.faktor("produktionsleistung",100.0/self.werk_tempo(pid,result.werk) as f64).mindestens("minimum",1);}
+        result
+    }
+
     pub fn bauzeit(&self, pid: usize, kosten: &[i64; GUETER]) -> i64 {
-        let p = &self.planeten[pid];
-        let w = &self.regeln.wirtschaft;
-        let masse =
-            kosten[Gut::Erz.idx()] + kosten[Gut::Kristall.idx()] + 2 * kosten[Gut::Legierung.idx()];
-        let bauhof = p.gebaeude[Gebaeude::Bauhof.idx()] as i128;
-        let nano = p.gebaeude[Gebaeude::Nanofabrik.idx()] as u32;
-        let b = 1000 + bauhof * self.integritaet(pid, Gebaeude::Bauhof) as i128;
-        let n = 1000
-            + ((1i128 << nano.min(40)) - 1) * self.integritaet(pid, Gebaeude::Nanofabrik) as i128;
-        let teiler = (w.bauzeit_teiler as i128 * M as i128 * b * n / 1_000_000).max(1);
-        ((masse as i128 * STUNDE as i128 / teiler) as i64).max(w.min_bauzeit_sekunden)
+        self.zeitberechnung(pid, kosten, None).sekunden.wert
     }
 
     pub fn bauen(
@@ -589,7 +394,7 @@ impl Welt {
                 gr.ab_stufe
             ));
         }
-        if g == Gebaeude::Xenoextraktor && !self.system(k).map(|s| s.nebel).unwrap_or(false) {
+        if self.ausbau.version==0 && g == Gebaeude::Xenoextraktor && !self.system(k).map(|s| s.nebel).unwrap_or(false) {
             return Err("Xenoextraktor geht nur auf Planeten in Nebelsystemen".into());
         }
         let p = &self.planeten[pid];
@@ -624,7 +429,7 @@ impl Welt {
         }
         let topf = Self::topf_fuer(rolle, Topf::Wirtschaft);
         let kosten = r.kosten_gebaeude(g, ziel);
-        if self.planeten[pid].bauschleife.is_empty() {
+        if self.planeten[pid].bauschleife.is_empty() && self.ausbau.industrie_version == 0 {
             // Der Auftrag würde sofort beginnen: gleich genau sagen, woran es scheitert.
             if self.planeten[pid].stabilitaet < milli(r.stabilitaet.unruhen_unter) {
                 return Err(format!(
@@ -653,6 +458,7 @@ impl Welt {
 
     /// Startet den vordersten Auftrag, sobald er bezahlt werden kann.
     pub fn bau_starten(&mut self, pid: usize) {
+        if self.auftrag_pausiert("bau", self.planeten[pid].id) { return; }
         if self.kolonisationsregeln_v2()
             && self
                 .kolonisation
@@ -665,9 +471,7 @@ impl Welt {
         let Some(kopf) = self.planeten[pid].bauschleife.first().cloned() else {
             return;
         };
-        if kopf.fertig.is_some()
-            || self.planeten[pid].stabilitaet < milli(self.regeln.stabilitaet.unruhen_unter)
-        {
+        if kopf.fertig.is_some() || self.bau_ruht_unruhen(pid) {
             return;
         }
         let kosten = self.regeln.kosten_gebaeude(kopf.gebaeude, kopf.stufe);
@@ -708,6 +512,10 @@ impl Welt {
         p.bauschleife.remove(0);
         p.gebaeude[kopf.gebaeude.idx()] = kopf.stufe;
         let (besitzer, k) = (p.besitzer, p.koord);
+        if self.ausbau.industrie_version>0 {match kopf.gebaeude{
+            Gebaeude::Werft=>self.parallel_sync(pid,0),Gebaeude::Orbitalwerft=>self.parallel_sync(pid,1),
+            Gebaeude::Kaserne=>self.boden_verteilen(pid),Gebaeude::Raketensilo=>self.silo_parallel_sync(pid),_=>{}
+        }}
         self.vorfall(
             besitzer,
             "bau",
@@ -723,8 +531,20 @@ impl Welt {
         if p.gebaeude[g.idx()] == 0 {
             return Err(format!("{g} steht nicht auf {k}"));
         }
+        if self.ausbau.industrie_version>0{
+            let occupied=match g{Gebaeude::Werft=>self.parallel_sicht(pid,0)["belegt"].as_i64().unwrap(),Gebaeude::Orbitalwerft=>self.parallel_sicht(pid,1)["belegt"].as_i64().unwrap(),Gebaeude::Raketensilo=>self.silo_parallel_sicht(pid)["belegt"].as_i64().unwrap(),Gebaeude::Kaserne=>self.ausbau.boden.auftraege.get(&p.id).map(|q|q.iter().map(|a|a.lose.iter().map(|b|b.anzahl*self.regeln.kw().boden.fertigungsplaetze(a.art)).sum::<i64>()).sum()).unwrap_or(0),_=>0};
+            if occupied>p.gebaeude[g.idx()] as i64-1{return Err("Fertigungsplätze sind belegt; zuerst betroffene Aufträge fertigstellen oder abbrechen".into());}
+        }
         if p.bauschleife.iter().any(|a| a.gebaeude == g) {
             return Err(format!("{g} ist in der Bauschleife, Abriss nicht möglich"));
+        }
+        // Ablauf-Version 1: Voraussetzungen gelten bis zum Baubeginn – kein Abriss unter die Stufe, die ein Auftrag
+        // in der Bauschleife braucht (sonst entstünde z. B. eine Nanofabrik ohne Bauhof).
+        if self.ablauf_v1() {
+            let rest = p.gebaeude[g.idx()] - 1;
+            if let Some(a) = p.bauschleife.iter().find(|a| self.regeln.geb(a.gebaeude).braucht.iter().any(|(b, st)| *b == g && rest < *st)) {
+                return Err(format!("{g} wird von {} in der Bauschleife gebraucht, Abriss nicht möglich", a.gebaeude));
+            }
         }
         if g == Gebaeude::Raketensilo
             && self.raketen_belegt(pid)
@@ -776,27 +596,7 @@ impl Welt {
     // ---------------------------------------------------------------- Fertigung
 
     pub fn fertigungszeit(&self, pid: usize, kosten: &[i64; GUETER], schleife: usize) -> i64 {
-        let p = &self.planeten[pid];
-        let w = &self.regeln.wirtschaft;
-        let volk = self.regeln.volk(self.spieler[p.besitzer as usize].volk);
-        let masse =
-            kosten[Gut::Erz.idx()] + kosten[Gut::Kristall.idx()] + 2 * kosten[Gut::Legierung.idx()];
-        let werk = if schleife == 0 {
-            Gebaeude::Werft
-        } else {
-            Gebaeude::Orbitalwerft
-        };
-        let stufe = p.gebaeude[werk.idx()] as i128;
-        let nano = p.gebaeude[Gebaeude::Nanofabrik.idx()] as u32;
-        let b = 1000 + stufe * self.integritaet(pid, werk) as i128;
-        let n = 1000
-            + ((1i128 << nano.min(40)) - 1) * self.integritaet(pid, Gebaeude::Nanofabrik) as i128;
-        let teiler = (w.bauzeit_teiler as i128 * M as i128 * b * n / 1_000_000).max(1);
-        mal(
-            (masse as i128 * STUNDE as i128 / teiler) as i64,
-            volk.werftzeit,
-        )
-        .max(30)
+        self.zeitberechnung(pid, kosten, Some((schleife, self.spieler[self.planeten[pid].besitzer as usize].volk))).sekunden.wert
     }
 
     pub fn fertigen(
@@ -817,6 +617,15 @@ impl Welt {
         let p = &self.planeten[pid];
         let (stueck, schleife, besatzung, name, zweck) = match produkt {
             Produkt::Einheit(e) => {
+                if !r.einheiten.contains_key(&e){return Err("Einheit ist in dieser Partie nicht verfügbar".into());}
+                if e==Einheit::Weltentruemmer{return Err(match self.monde_regeln(){Some(m)=>format!("Weltenkrümmer entstehen nur im Werftdock (Stufe {}) eines Mondes: mond_fertigen",m.weltentruemmer_werftdock),None=>"Weltenkrümmer entstehen nur im Werftdock eines Mondes: mond_fertigen".into()});}
+                let fehlt=self.einheit_forschung_fehlend(sid,e);
+                if !fehlt.is_empty(){return Err(format!("{e} benötigt {}",fehlt.join(", ")));}
+                if !r.flottendoktrin.is_empty() && matches!(e,Einheit::Planetenschild|Einheit::PlanetenschildII|Einheit::PlanetenschildIII){
+                    let shields=[Einheit::Planetenschild,Einheit::PlanetenschildII,Einheit::PlanetenschildIII];
+                    if shields.iter().any(|s|s.idx()>=e.idx()&&p.einheiten[s.idx()]>0){return Err("Gleiche oder höhere Planetenschildstufe bereits aktiv".into());}
+                    if p.fertigung[0].iter().any(|a|matches!(a.produkt,Produkt::Einheit(t)if shields.contains(&t))){return Err("Ein Planetenschild ist bereits in Fertigung".into());}
+                }
                 let er = r.einh(e);
                 if stufe < er.ab_stufe {
                     return Err(format!(
@@ -848,14 +657,7 @@ impl Welt {
                         ));
                     }
                 }
-                let zivil = matches!(
-                    e,
-                    Einheit::KleinerTransporter
-                        | Einheit::GrosserTransporter
-                        | Einheit::Bergbauschiff
-                        | Einheit::Recycler
-                        | Einheit::Kolonieschiff
-                );
+                let zivil = zivile_einheit(e);
                 if rolle == Rolle::Verwalter && !zivil {
                     return Err(format!("{e} bestellt der Feldherr, nicht der Verwalter"));
                 }
@@ -876,20 +678,28 @@ impl Welt {
                 let Some(kosten) = r.kosten_bauteil(g) else {
                     return Err(format!("{g} ist kein Bauteil der Orbitalwerft"));
                 };
-                if p.gebaeude[Gebaeude::Orbitalwerft.idx()] < 1 {
-                    return Err(format!("Bauteile brauchen eine Orbitalwerft auf {k}"));
+                let frueh=self.ausbau.version>0 && g==Gut::Habitatmodul && p.gebaeude[Gebaeude::Orbitalwerft.idx()]==0;
+                if frueh {
+                    if stufe<3 || p.gebaeude[Gebaeude::Werft.idx()]<3 {return Err("Habitatmodule benötigen Stufe III und Werft 3".into());}
+                    if p.einheiten[Einheit::Recycler.idx()]<anzahl {return Err("Ein vorhandener Recycler je Habitatmodul wird umgebaut".into());}
+                } else if p.gebaeude[Gebaeude::Orbitalwerft.idx()] < 1 {
+                    return Err(format!("Antriebskerne brauchen eine Orbitalwerft auf {k}"));
                 }
-                (kosten, 1usize, 0, g.name(), Topf::Wirtschaft)
+                (kosten, usize::from(!frueh), 0, g.name(), Topf::Wirtschaft)
             }
         };
         if p.fertigung[schleife].len() >= r.wirtschaft.warteschlange {
             return Err(format!("Fertigungsschleife auf {k} ist voll"));
         }
+        let work=if schleife==1 {Gebaeude::Orbitalwerft}else{Gebaeude::Werft};
+        if self.ausbau.industrie_version>0 && crate::parallel::platzbedarf(produkt)>self.fertigungsplaetze(pid,schleife){return Err(format!("Dieses Produkt belegt {} Fertigungsplätze; {work} ausbauen",crate::parallel::platzbedarf(produkt)));}
+        let paid_stueck=self.produktionskosten(pid,work,stueck);
         let mut kosten = [0i64; GUETER];
         for g in 0..GUETER {
-            kosten[g] = stueck[g].saturating_mul(anzahl);
+            kosten[g] = paid_stueck[g].saturating_mul(anzahl);
         }
         let crew = besatzung * anzahl;
+        if self.ausbau.version>0 && self.ausbau.personen.get(&(pid as PlanetId)).is_none_or(|p|p.auswahl(crew).gesamt()!=crew){return Err("Nicht genügend ganze Personen für die Besatzung".into());}
         if crew > 0 && p.bevoelkerung - crew < 500 * M {
             return Err(format!(
                 "Besatzung von {} fehlt: auf {k} müssen mindestens 500 Einwohner bleiben",
@@ -900,6 +710,10 @@ impl Welt {
         self.abrechnen(pid);
         self.zahlbar(pid, &kosten, topf)?;
         self.zahlen(pid, &kosten, topf);
+        if produkt==Produkt::Bauteil(Gut::Habitatmodul) && schleife==0 {self.planeten[pid].einheiten[Einheit::Recycler.idx()]-=anzahl;}
+        self.crew_reservieren(pid,produkt,crew);
+        if self.ausbau.industrie_version>0 {self.ausbau.fertigung_zahlung.entry(format!("{pid}:{schleife}")).or_default().push((topf,paid_stueck));}
+        if self.ausbau.industrie_version>0{self.parallel_sync(pid,schleife);}
         let dauer = self.fertigungszeit(pid, &stueck, schleife);
         let p = &mut self.planeten[pid];
         p.bevoelkerung -= crew;
@@ -909,7 +723,7 @@ impl Welt {
             rest: anzahl,
             dauer,
         });
-        if leer {
+        if leer && self.ausbau.industrie_version==0 {
             let fertig = self.zeit + dauer;
             self.planeten[pid].fertigung_naechste[schleife] = fertig;
             let id = self.planeten[pid].id;
@@ -921,30 +735,45 @@ impl Welt {
                 },
             );
         }
+        if self.ausbau.industrie_version>0{self.parallel_sync(pid,schleife);}
         self.raten_neu(pid);
         Ok(format!(
-            "{anzahl} x {name} auf {k} bestellt, {} min je Stück",
-            (dauer + 59) / 60
+            "{anzahl} x {name} auf {k} bestellt, {dauer} s je Stück"
         ))
     }
 
     pub fn fertigung_fertig(&mut self, pid: usize, schleife: usize) {
+        if self.ausbau.industrie_version>0{if !self.ausbau.parallel.contains_key(&crate::parallel::key(pid,schleife)){self.parallel_sync(pid,schleife);}self.parallel_fertig(pid,schleife);return;}
         let jetzt = self.zeit;
-        if self.planeten[pid].fertigung_naechste[schleife] != jetzt
+        let naechste = self.planeten[pid].fertigung_naechste[schleife];
+        if naechste > jetzt && !self.planeten[pid].fertigung[schleife].is_empty() {
+            // Pause hat die Fertigstellung verschoben: Ereignis erst beim Verbrauch ersetzen.
+            let id = self.planeten[pid].id;
+            self.plane(naechste, EreignisArt::FertigungFertig { planet: id, schleife: schleife as u8 });
+            return;
+        }
+        if naechste != jetzt
             || self.planeten[pid].fertigung[schleife].is_empty()
         {
             return;
         }
         self.abrechnen(pid);
+        let produkt = self.planeten[pid].fertigung[schleife][0].produkt;
+        self.crew_fertig(pid,produkt);
         let p = &mut self.planeten[pid];
-        let produkt = p.fertigung[schleife][0].produkt;
         match produkt {
-            Produkt::Einheit(e) => p.einheiten[e.idx()] += 1,
+            Produkt::Einheit(e) => {
+                if !self.regeln.flottendoktrin.is_empty()&&matches!(e,Einheit::Planetenschild|Einheit::PlanetenschildII|Einheit::PlanetenschildIII){
+                    for t in [Einheit::Planetenschild,Einheit::PlanetenschildII,Einheit::PlanetenschildIII]{p.einheiten[t.idx()]=0;}
+                }
+                p.einheiten[e.idx()]+=1;
+            },
             Produkt::Bauteil(g) => p.bestand[g.idx()] += M,
         }
         p.fertigung[schleife][0].rest -= 1;
         if p.fertigung[schleife][0].rest <= 0 {
             p.fertigung[schleife].remove(0);
+            if let Some(paid)=self.ausbau.fertigung_zahlung.get_mut(&format!("{pid}:{schleife}")){if !paid.is_empty(){paid.remove(0);}}
             let (besitzer, k) = (p.besitzer, p.koord);
             let name = match produkt {
                 Produkt::Einheit(e) => e.name(),
@@ -971,6 +800,7 @@ impl Welt {
         } else {
             p.fertigung_naechste[schleife] = -1;
         }
+        self.raten_neu(pid);
     }
 
     // ---------------------------------------------------------------- Forschung
@@ -990,9 +820,17 @@ impl Welt {
             .any(|p|self.planeten[*p as usize].gebaeude[Gebaeude::Geheimdienst.idx()] > 0) {
             return Err("Überwachungstechnik benötigt einen eigenen Geheimdienst".into());
         }
+        if f == Forschung::Plasmatechnik {
+            let fehlt = self.plasmatechnik_fehlt(sid);
+            if !fehlt.is_empty() { return Err(format!("Plasmatechnik benötigt {}", fehlt.join(", "))); }
+        }
         let r = self.regeln.clone();
         let fr = r.forsch(f);
         let sp = &self.spieler[sid as usize];
+        let geplant = u16::from(sp.forschung[f.idx()])
+            + u16::from(sp.forschung_aktiv.as_ref().is_some_and(|a|a.forschung==f))
+            + sp.forschung_schlange.iter().filter(|(t,_,_)|*t==f).count() as u16;
+        if geplant >= crate::regeln::MAX_FORSCHUNG as u16 { return Err("Höchste Forschungsstufe bereits erreicht oder eingeplant".into()); }
         if sp.stufe < fr.ab_stufe {
             return Err(format!(
                 "{f} gibt es erst ab Zivilisationsstufe {}",
@@ -1008,6 +846,14 @@ impl Welt {
             return Err(format!("{f} braucht Labor Stufe {} auf {k}", fr.labor));
         }
         let topf = Self::topf_fuer(rolle, Topf::Forschung);
+        if self.ausbau.industrie_version > 0 {
+            if sp.forschung_schlange.len() >= r.wirtschaft.forschung_warteschlange {
+                return Err("Forschungsschlange ist voll".into());
+            }
+            self.spieler[sid as usize].forschung_schlange.push((f, self.planeten[pid].id, topf));
+            self.forschung_schlange_starten(sid);
+            return Ok(format!("Forschung {f} eingereiht; startet automatisch, sobald der vorherige Auftrag abgeschlossen ist und die Mittel reichen"));
+        }
         if sp.forschung_aktiv.is_none() {
             self.forschung_starten(sid, f, pid, topf)?;
             let stufe = self.spieler[sid as usize].forschung[f.idx()] + 1;
@@ -1044,12 +890,14 @@ impl Welt {
                 ));
             }
         }
+        if self.spieler[sid as usize].forschung[f.idx()] >= crate::regeln::MAX_FORSCHUNG { return Err("Höchste Forschungsstufe erreicht".into()); }
         let stufe = self.spieler[sid as usize].forschung[f.idx()] + 1;
         let kosten = self.regeln.kosten_forschung(f, stufe);
         self.abrechnen(pid);
         self.zahlbar(pid, &kosten, topf)?;
         self.zahlen(pid, &kosten, topf);
         let fp_rest = self.regeln.fp_forschung(f, stufe);
+        self.ausbau.forschung_zahlung.insert(sid,(pid as PlanetId,topf,kosten));
         self.spieler[sid as usize].forschung_aktiv = Some(Forschungsauftrag {
             forschung: f,
             stufe,
@@ -1068,6 +916,7 @@ impl Welt {
     }
 
     fn forschung_tick(&mut self, sid: SpielerId) {
+        if self.auftrag_pausiert("forschung", sid as u32) { return; }
         let fp = self.fp_rate(sid);
         let sp = &mut self.spieler[sid as usize];
         let fertig = match &mut sp.forschung_aktiv {
@@ -1084,6 +933,7 @@ impl Welt {
         if let Some((f, stufe)) = fertig {
             sp.forschung[f.idx()] = stufe;
             sp.forschung_aktiv = None;
+            self.ausbau.forschung_zahlung.remove(&sid);
             self.vorfall(
                 sid,
                 "forschung",
@@ -1093,21 +943,22 @@ impl Welt {
                 self.raten_neu(pid as usize);
             }
         }
-        // Nächstes Projekt aus der Schlange. Was nicht bezahlbar ist, fällt mit Meldung heraus.
-        while self.spieler[sid as usize].forschung_aktiv.is_none()
-            && !self.spieler[sid as usize].forschung_schlange.is_empty()
-        {
-            let (f, planet, topf) = self.spieler[sid as usize].forschung_schlange.remove(0);
+        self.forschung_schlange_starten(sid);
+    }
+
+    pub(crate) fn forschung_schlange_starten(&mut self, sid: SpielerId) {
+        if self.auftrag_pausiert("forschung", sid as u32) { return; }
+        // Keep unpaid/unavailable projects in order and retry after supply changes.
+        // A queue is a plan, not a collection of disposable requests.
+        if self.spieler[sid as usize].forschung_aktiv.is_none()
+            && !self.spieler[sid as usize].forschung_schlange.is_empty() {
+            let (f, planet, topf) = self.spieler[sid as usize].forschung_schlange[0];
             let mut pid = planet as usize;
-            if self.planeten[pid].besitzer != sid {
+            if self.planeten.get(pid).is_none_or(|p|p.besitzer != sid) {
                 pid = self.spieler[sid as usize].heimat as usize;
             }
-            if let Err(e) = self.forschung_starten(sid, f, pid, topf) {
-                self.vorfall(
-                    sid,
-                    "forschung",
-                    format!("Forschung {f} nicht begonnen: {e}"),
-                );
+            if self.forschung_starten(sid, f, pid, topf).is_ok() {
+                self.spieler[sid as usize].forschung_schlange.remove(0);
             }
         }
     }
@@ -1197,12 +1048,18 @@ impl Welt {
         let vorher = self.spieler[sid as usize].stufen_zaehler;
         let jetzt = if erfuellt { vorher + STUNDE } else { 0 };
         self.spieler[sid as usize].stufen_zaehler = jetzt;
-        if vorher < haltezeit && jetzt >= haltezeit {
-            self.vorfall(
-                sid,
-                "stufe",
-                "Alle Bedingungen für den Stufenaufstieg sind seit 48 Stunden erfüllt".into(),
-            );
+        // Ohne Haltezeit meldet der erste Tick, in dem alles erfüllt ist; mit Haltezeit (alte Welten) wie bisher.
+        let schwelle = haltezeit.max(STUNDE);
+        if vorher < schwelle && jetzt >= schwelle {
+            let text = if haltezeit == 0 {
+                "Alle Bedingungen für den Stufenaufstieg sind erfüllt: Aufstieg jetzt möglich".to_string()
+            } else {
+                format!(
+                    "Alle Bedingungen für den Stufenaufstieg sind seit {} Stunden erfüllt",
+                    self.regeln.stufen_haltezeit_stunden
+                )
+            };
+            self.vorfall(sid, "stufe", text);
             self.wecke(sid, Rolle::Stratege, "Stufenaufstieg möglich", false);
             self.wecke(sid, Rolle::Verwalter, "Stufenaufstieg möglich", false);
         }
@@ -1252,7 +1109,7 @@ impl Welt {
         self.punkte_neu();
         Ok(format!(
             "Zivilisationsstufe {} erreicht (Stufe {stufe}). Neu: {}",
-            regel.name, regel.schaltet_frei
+            regel.name, self.regeln.freischaltungen(stufe)
         ))
     }
 
@@ -1298,7 +1155,14 @@ impl Welt {
             sp.meldungen.retain(|m| m.zeit >= grenze);
             if !self.spieler_aktiv(sid) { continue; }
             // Unterhalt für Schiffe und Verwaltung der Kolonien.
-            let kosten = mal(self.flottenwert(sid), w.unterhalt_schiffe_je_tag)
+            // Ablauf-Version 1: auch Schiffe auf Monden kosten Unterhalt (Punkte zählen sie über mond_punkte).
+            let mondschiffe = if self.ablauf_v1() && self.monde.aktiv {
+                let volk = self.spieler[sid as usize].volk;
+                self.monde.monde.values().filter(|m| m.besitzer == sid)
+                    .map(|m| Einheit::ALLE.iter().filter(|e| e.ist_schiff()).map(|e| m.einheiten[e.idx()] * self.regeln.wert(&self.regeln.kosten_einheit(*e, volk))).sum::<i64>())
+                    .sum::<i64>()
+            } else { 0 };
+            let kosten = mal(self.flottenwert(sid) + mondschiffe, w.unterhalt_schiffe_je_tag)
                 + self.kolonien(sid) as i64 * w.verwaltung_je_kolonie_tag * M;
             let sp = &mut self.spieler[sid as usize];
             sp.nachrichten_heute = 0;
@@ -1357,28 +1221,71 @@ impl Welt {
         let f = self.regeln.wirtschaft.desertion_anteil;
         let weg = |n: i64| if n > 0 { mal(n, f).max(1) } else { 0 };
         let mut summe = 0i64;
+        let mut je_typ = [0i64; SCHIFFE];
         for pid in self.spieler[sid as usize].planeten.clone() {
             for e in 0..SCHIFFE {
                 let d = weg(self.planeten[pid as usize].einheiten[e]);
                 self.planeten[pid as usize].einheiten[e] -= d;
                 summe += d;
+                je_typ[e] += d;
             }
         }
+        let mut gekappt = [0i64; GUETER];
+        let mut fids = Vec::new();
         for fl in self.flotten.values_mut().filter(|f| f.besitzer == sid) {
             for e in 0..SCHIFFE {
                 // Das letzte Schiff einer Flotte bleibt, damit sie heimkehren kann.
                 let d = weg(fl.schiffe[e]).min((fl.schiffe.iter().sum::<i64>() - 1).max(0));
                 fl.schiffe[e] -= d;
                 summe += d;
+                je_typ[e] += d;
+            }
+            fids.push(fl.id);
+        }
+        // Weniger Schiffe tragen weniger: Fracht über dem neuen Laderaum geht mit den Deserteuren verloren.
+        for fid in fids {
+            let f = self.flotten[&fid].clone();
+            let kap = self.flugplan(f.besitzer, f.start as usize, f.ziel, &f.schiffe, 1000).map_or(i64::MAX, |p| p.kapazitaet);
+            let mut frei = kap;
+            let fl = self.flotten.get_mut(&fid).unwrap();
+            for g in 0..GUETER {
+                let behalten = fl.ladung[g].min(frei.max(0));
+                gekappt[g] += fl.ladung[g] - behalten;
+                fl.ladung[g] = behalten;
+                frei -= behalten;
             }
         }
         if summe > 0 {
+            let typen: Vec<String> = (0..SCHIFFE).filter(|e| je_typ[*e] > 0).map(|e| format!("{} {}", je_typ[e], Einheit::ALLE[e])).collect();
             self.vorfall(
                 sid,
                 "unterhalt",
-                format!("{summe} Schiffe desertiert, weil der Unterhalt seit Tagen fehlt"),
+                format!(
+                    "{summe} Schiffe desertiert, weil der Unterhalt seit Tagen fehlt: {}{}",
+                    typen.join(", "),
+                    if gekappt.iter().any(|n| *n >= M) { format!("; mitgenommene Fracht: {}", crate::berichte::fracht_text(&gekappt)) } else { String::new() }
+                ),
             );
             self.wecke(sid, Rolle::Stratege, "Desertion", false);
         }
     }
+}
+
+/// Zivile Einheiten: Verwalter dürfen sie fertigen und zahlen dafür aus dem Topf Wirtschaft (auch das Antwortschema
+/// des Verwalters bietet nur sie an).
+pub fn zivile_einheit(e: Einheit) -> bool {
+    matches!(
+        e,
+        Einheit::KleinerTransporter
+            | Einheit::GrosserTransporter
+            | Einheit::Bergbauschiff
+            | Einheit::Recycler
+            | Einheit::Kolonieschiff
+            | Einheit::GrossesKolonieschiff
+            | Einheit::Schnellfrachter
+            | Einheit::Schwerlastfrachter
+            | Einheit::Handelsfrachter
+            | Einheit::Solarsonde
+            | Einheit::Terraformer
+    )
 }

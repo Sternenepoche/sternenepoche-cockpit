@@ -7,13 +7,14 @@ pub(crate) struct Waiting {
     pub mode: String,
     pub volk: Volk,
     pub joined: i64,
+    #[serde(default)] pub anfaengerschutz: bool,
 }
 pub(crate) fn legacy_admission_limit() -> u16 { SEATS }
 
 impl Game {
     pub fn me(&self, a: &Account) -> Value {
         let waiting = self.runtime.waitlist.iter().enumerate().find(|(_, w)| w.account == a.id)
-            .map(|(i, w)| json!({"position":i+1,"mode":w.mode,"volk":w.volk,"seit":w.joined}));
+            .map(|(i, w)| json!({"position":i+1,"mode":w.mode,"volk":w.volk,"seit":w.joined,"anfaengerschutz":w.anfaengerschutz}));
         json!({"name":a.name,"mode":a.mode,"spieler":a.sid,"world_id":self.runtime.world_id,"warteliste":waiting,"reich_status":a.sid.map(|sid|self.world.reich_status(sid)),"authenticator_enabled":self.authenticator_enabled(a.id),"fairplay":self.fairplay_konto(a.id)})
     }
     pub(crate) fn available_admissions(&self) -> usize {
@@ -24,7 +25,7 @@ impl Game {
     pub(crate) fn private_waitlist(&self) -> Vec<Value> {
         self.runtime.waitlist.iter().enumerate().map(|(i, w)| {
             let name = self.db.query_row("SELECT name FROM accounts WHERE id=?1", [w.account], |r| r.get::<_, String>(0)).ok();
-            json!({"id":w.account,"name":name,"position":i+1,"mode":w.mode,"volk":w.volk,"seit":w.joined})
+            json!({"id":w.account,"name":name,"position":i+1,"mode":w.mode,"volk":w.volk,"seit":w.joined,"anfaengerschutz":w.anfaengerschutz})
         }).collect()
     }
     // Called only inside a transaction. Queue order cannot be bypassed by a new claim.
@@ -36,6 +37,7 @@ impl Game {
             let Some(a) = a.filter(|a| !a.banned && a.sid.is_none()) else { continue; };
             let sid = *self.world.aufklaerung.inaktive_spieler.iter().next().ok_or_else(|| err(409,"Kein Startplatz frei"))?;
             self.world.startplatz_aktivieren(sid,a.name,w.volk).map_err(|e| err(409,&e))?;
+            self.world.spieler[sid as usize].schutz_bis=if w.anfaengerschutz{self.world.zeit+self.world.regeln.diplomatie.anfaengerschutz_tage*TAG}else{self.world.zeit};
             self.db.execute("UPDATE accounts SET sid=?1,mode=?2 WHERE id=?3",params![sid,w.mode,a.id])
                 .map_err(|_| err(503,"Platz nicht gespeichert"))?;
         }
@@ -68,10 +70,10 @@ impl Game {
             } else {
                 if g.world.beendet() { return Err(err(409,"Epoche beendet")); }
                 if let Some(w) = g.runtime.waitlist.iter_mut().find(|w| w.account == current.id) {
-                    w.mode = mode.into(); w.volk = volk;
+                    w.mode = mode.into(); w.volk = volk; w.anfaengerschutz=v["anfaengerschutz"].as_bool().unwrap_or(false);
                 } else {
                     if g.runtime.waitlist.len() >= 1000 { return Err(err(409,"Warteliste voll; später erneut versuchen")); }
-                    g.runtime.waitlist.push(Waiting { account:current.id,mode:mode.into(),volk,joined:now() });
+                    g.runtime.waitlist.push(Waiting { account:current.id,mode:mode.into(),volk,joined:now(),anfaengerschutz:v["anfaengerschutz"].as_bool().unwrap_or(false) });
                 }
                 g.admit_waiting()?;
             }
@@ -87,6 +89,14 @@ mod tests {
     fn user(g: &mut Game,name: &str) -> Account {
         let raw=g.register(&json!({"name":name}),"test-hash".into()).unwrap();
         g.authenticate(raw["token"].as_str().unwrap()).unwrap()
+    }
+    #[test]
+    fn protection_requires_explicit_start_choice_and_cannot_be_reenabled(){
+        let root=std::env::temp_dir().join(format!("protection-{}",token()));let mut g=Game::open(&root,83).unwrap();
+        let a=user(&mut g,"Unprotected");g.claim(&a,&json!({"mode":"mensch","volk":"aurelianer"})).unwrap();let sid=g.account_by_name(&a.name).unwrap().sid.unwrap();assert_eq!(g.world.spieler[sid as usize].schutz_bis,g.world.zeit);
+        g.claim(&a,&json!({"mode":"mensch","volk":"aurelianer","anfaengerschutz":true})).unwrap();assert_eq!(g.world.spieler[sid as usize].schutz_bis,g.world.zeit);
+        let b=user(&mut g,"Protected");g.claim(&b,&json!({"mode":"mensch","volk":"aurelianer","anfaengerschutz":true})).unwrap();let sid=g.account_by_name(&b.name).unwrap().sid.unwrap();assert!(g.world.spieler[sid as usize].schutz_bis>g.world.zeit);
+        drop(g);let g=Game::open(&root,83).unwrap();assert!(g.world.spieler[sid as usize].schutz_bis>g.world.zeit);
     }
     #[test]
     fn three_seats_fifo_duplicate_cancel_restart_and_reset() {

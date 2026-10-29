@@ -3,18 +3,21 @@ use crate::{regeln::preis_array, typen::*, welt::*};
 
 impl Welt {
     pub fn raketen_belegt(&self, pid: usize) -> i64 {
+        if self.ausbau.version>0{return self.taktisch_belegt(pid);}
         let p=&self.planeten[pid];
         p.raketen.iter().sum::<i64>() + self.ereignisse.iter().filter_map(|e|match e.art {
             EreignisArt::RaketenFertig{planet,besitzer,anzahl,..} if planet==p.id && besitzer==p.besitzer=>Some(anzahl),_=>None
         }).sum::<i64>()
     }
     pub fn raketen_kosten(&self,art:u8,anzahl:i64)->Result<[i64;GUETER],String> {
+        if self.ausbau.version>0{return self.taktisch_kosten(art,anzahl);}
         if art>1 || anzahl<=0 || anzahl>1_000_000 {return Err("Raketenart oder Anzahl ungültig".into());}
         let mut costs=preis_array(&self.regeln.zusatz.raketen_kosten[art as usize]);
         for c in &mut costs {*c=c.checked_mul(anzahl).ok_or("Raketenkosten zu groß")?;}
         Ok(costs)
     }
     pub fn raketen_bauen(&mut self,sid:SpielerId,rolle:Rolle,k:Koord,art:&str,anzahl:i64)->Result<String,String> {
+        if self.ausbau.version>0{return self.taktisch_bauen(sid,rolle,k,art,anzahl);}
         let art=match art {"abfang"=>0,"interplanetar"=>1,_=>return Err("Raketenart muss abfang oder interplanetar sein".into())};
         let pid=self.eigener_planet(sid,k)?;
         let costs=self.raketen_kosten(art,anzahl)?;
@@ -35,6 +38,7 @@ impl Welt {
         Ok(format!("{anzahl} Raketen auf {k} im Bau; fertig {}",zeittext(done)))
     }
     pub fn raketen_fertig(&mut self,pid:usize,besitzer:SpielerId,art:u8,anzahl:i64) {
+        if self.ausbau.version>0{self.taktisch_fertig(pid,besitzer,art,anzahl);return;}
         let Some(p)=self.planeten.get_mut(pid) else{return;};
         if p.besitzer!=besitzer || art>1 || anzahl<=0{return;}
         let capacity=p.gebaeude[Gebaeude::Raketensilo.idx()] as i64*self.regeln.zusatz.silo_plaetze_je_stufe;
@@ -45,6 +49,7 @@ impl Welt {
         self.wecke(besitzer,Rolle::Feldherr,"Raketen fertig",false);
     }
     pub fn raketen_starten(&mut self,sid:SpielerId,start:Koord,ziel:Koord,anzahl:i64,zieltyp:Einheit)->Result<String,String> {
+        if self.ausbau.version>0{return self.taktisch_starten(sid,start,ziel,anzahl,zieltyp,"interplanetar",None);}
         if self.aufklaerungsregeln() && self.planetenwissen(sid,ziel)["bekannt"]!=true {
             return Err("Ziel zuerst mit einer eigenen Planetensonde aufklären".into());
         }
@@ -88,7 +93,7 @@ impl Welt {
         self.planeten[zp].raketen[0]-=intercepted;
         let attack=mal(r.zusatz.raketen_schaden,1.0+r.kampf.tech_je_stufe*self.spieler[von as usize].forschung[Forschung::Waffentechnik.idx()] as f64);
         let owner=&self.spieler[defender as usize];
-        let armor=mal(r.einh(zieltyp).struktur,(1.0+r.kampf.tech_je_stufe*owner.forschung[Forschung::Panzerung.idx()] as f64)*r.volk(owner.volk).panzerung).max(1);
+        let armor=crate::raketen::panzerung(&r,zieltyp,owner.forschung[Forschung::Panzerung.idx()],owner.volk);
         let destroyed=(((anzahl-intercepted) as i128*attack as i128)/armor as i128).min(self.planeten[zp].einheiten[zieltyp.idx()] as i128) as i64;
         let loss=r.wert(&r.kosten_einheit(zieltyp,owner.volk))*destroyed + r.wert(&preis_array(&r.zusatz.raketen_kosten[0]))*intercepted;
         self.planeten[zp].einheiten[zieltyp.idx()]-=destroyed;

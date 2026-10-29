@@ -39,7 +39,7 @@
     const fields=Object.fromEntries(new FormData(e.target));
     if(fields.password!==fields.confirm_password)throw Error('Die Passwörter stimmen nicht überein.');
     delete fields.confirm_password;
-    session=await api('/api/register',{...fields,registration_token:grant,world_id:world.world_id},false);
+    session=await api('/api/register',{...fields,anfaengerschutz:!!e.target.elements.anfaengerschutz.checked,registration_token:grant,world_id:world.world_id},false);
     grant=null;challenge=null;sessionStorage.setItem('sternenepoche-session',JSON.stringify({server:base,...session}));e.target.reset();await refresh();
   }));
   $('authenticator-settings').addEventListener('submit',guard(async e=>{

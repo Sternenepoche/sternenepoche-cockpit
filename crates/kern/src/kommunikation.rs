@@ -219,7 +219,7 @@ impl Welt {
                 beantwortet: Vec::new(),
             },
         );
-        if kanal=="privat"&&!automatisch&&antwort_auf.is_none(){if let Some(index)=self.kommunikation.offene_index.get_mut(){index.insert(id);}}
+        if kanal=="privat"&&!automatisch{if let Some(index)=self.kommunikation.offene_index.get_mut(){index.insert(id);}}
         if kanal=="privat"{if let Some(index)=self.kommunikation.kontakt_index.get_mut(){for e in &empfaenger{index.insert((sid,*e));}}}
         self.kommunikationsereignis(sid,"communication.sent",json!({"message_id":id,"channel":kanal,"recipients":empfaenger,"alliances":allianzen,"reply_to":antwort_auf,"automatic":automatisch,"subject":betreff,"text":text.trim()}));
         for bid in beantwortete {
@@ -340,7 +340,7 @@ impl Welt {
     /// Only root letters require an answer. Replies and automatic receipts never ping-pong.
     fn offene_brief_ids(&self)->Vec<u64> {
         let mut index=self.kommunikation.offene_index.borrow_mut();
-        if index.is_none(){*index=Some(self.kommunikation.briefe.iter().filter(|(id,b)|b.kanal=="privat"&&!b.automatisch&&b.antwort_auf.is_none()&&self.nachrichten[**id as usize-1].an.iter().any(|sid|!b.beantwortet.contains(sid))).map(|(id,_)|*id).collect());}
+        if index.is_none(){*index=Some(self.kommunikation.briefe.iter().filter(|(id,b)|b.kanal=="privat"&&!b.automatisch&&self.nachrichten[**id as usize-1].an.iter().any(|sid|!b.beantwortet.contains(sid))).map(|(id,_)|*id).collect());}
         index.as_ref().unwrap().iter().copied().collect()
     }
     /// Has `von` ever written a private letter to `an` in this epoch? O(log n) after the first call.
@@ -364,13 +364,18 @@ impl Welt {
     /// never call this and keep complete tables. Returns (reports, daily rows) removed.
     pub fn berichte_auslagern(&mut self, vor_zeit: SimZeit) -> (usize, usize) {
         let k=self.kampfberichte.iter().take_while(|b|b.zeit<vor_zeit).count();
-        self.kampfberichte.drain(..k);
+        for b in self.kampfberichte.drain(..k){self.ausbau.kampfrunden.remove(&b.nr);self.ausbau.kampf_herkunft.remove(&b.nr);self.ausbau.kampf_technik.remove(&b.nr);self.ausbau.kampf_zusatz.remove(&b.nr);}
         let tag=vor_zeit.div_euclid(TAG);
         let t=self.tageswerte.iter().take_while(|z|z.tag<tag).count();
         self.tageswerte.drain(..t);
         (k,t)
     }
     pub fn offene_antworten(&self, sid: SpielerId) -> Vec<u64> {
+        self.dialogantworten(sid).into_iter().filter(|id|self.kommunikation.briefe[id].antwort_auf.is_none()).collect()
+    }
+    /// Pending private turns, including a human's follow-up to a bot answer.
+    /// Controllers must filter their own script registry to prevent bot reply loops.
+    pub fn dialogantworten(&self, sid: SpielerId) -> Vec<u64> {
         self.offene_brief_ids().into_iter().filter(|id|!self.kommunikation.briefe[id].beantwortet.contains(&sid)&&self.nachrichten[*id as usize-1].an.contains(&sid)).collect()
     }
     pub fn kommunikation_tick(&mut self) {
@@ -656,6 +661,12 @@ impl Welt {
             return Err("Anderes Mitglied angeben".into());
         }
         self.allianz_verlassen(ziel)?;
+        // Im öffentlichen Register als Ausschluss durch die Leitung führen, nicht als freiwilliger Austritt (Funktionsprüfung 25.10.2026).
+        let leitung = self.spieler[sid as usize].name.clone();
+        if let Some(e) = self.register.last_mut().filter(|e| e.art == "allianz" && e.vorgang.starts_with("Austritt aus der Allianz")) {
+            e.vorgang = e.vorgang.replacen("Austritt aus der Allianz", "Ausschluss aus der Allianz", 1) + " durch die Leitung";
+            e.a = leitung;
+        }
         self.kommunikationsereignis(
             sid,
             "alliance.expelled",
@@ -992,10 +1003,13 @@ impl Welt {
                 if let Some(id) = a.vertrag {
                     if let Some(t) = self.vertraege.iter().find(|t| t.id == id) {
                         if t.status != Vertragsstatus::Angeboten {
+                            // Wie die Verträge-Liste: gekündigt mit Ende, gebrochen (Funktionsprüfung 25.10.2026: beides hieß „beendet“).
                             v["status"] = json!(match t.status {
-                                Vertragsstatus::Aktiv => "angenommen",
-                                Vertragsstatus::Abgelehnt => "abgelehnt",
-                                _ => "beendet",
+                                Vertragsstatus::Aktiv => "angenommen".to_string(),
+                                Vertragsstatus::Abgelehnt => "abgelehnt".to_string(),
+                                Vertragsstatus::Gekuendigt { ende } => format!("gekündigt, endet {}", zeittext(ende)),
+                                Vertragsstatus::Gebrochen => "gebrochen".to_string(),
+                                _ => "beendet".to_string(),
                             });
                         }
                     }
@@ -1010,7 +1024,7 @@ impl Welt {
             let hilfe=self.kommunikation.hilfe.iter().filter(|h|h.allianz==a.id).rev().take(100).map(|h|json!({"id":h.id,"von":self.spieler[h.von as usize].name,"planet":h.planet,"text":h.text,"status":h.status,"helfer":h.helfer.iter().map(|s|&self.spieler[*s as usize].name).collect::<Vec<_>>()})).collect::<Vec<_>>();
             json!({"id":a.id,"name":a.name,"tag":self.allianz_tag(a.id),"leitung":self.allianz_leitung(sid,a.id),"gruender":self.allianz_rang(sid,a.id)==Some(0),"mitglieder":members,"angebote":angebote,"hilfe":hilfe})
         });
-        json!({"version":1,"kontakte":self.spieler.iter().filter(|s|!self.aufklaerung.inaktive_spieler.contains(&s.id)).map(|s|self.beziehung(sid,s.id)).collect::<Vec<_>>(),"allianzanfragen":self.kommunikation.anfragen.iter().filter(|a|a.zielallianz.is_some()&&(a.allianz.is_some_and(|id|self.allianz_leitung(sid,id))||a.zielallianz.is_some_and(|id|self.allianz_leitung(sid,id)))).map(|a|{let mut v=json!(a);v["empfangsberechtigt"]=json!(a.zielallianz.is_some_and(|id|self.allianz_leitung(sid,id)));v}).collect::<Vec<_>>(),"briefkasten":self.briefkasten(sid).into_iter().take(100).collect::<Vec<_>>(),"anfragen":anfragen,"allianzbereich":allianz,"antworten_offen":self.offene_antworten(sid),
+        json!({"version":1,"kontakte":self.spieler.iter().filter(|s|!self.aufklaerung.inaktive_spieler.contains(&s.id)).map(|s|self.beziehung(sid,s.id)).collect::<Vec<_>>(),"allianzanfragen":self.kommunikation.anfragen.iter().filter(|a|a.zielallianz.is_some()&&(a.allianz.is_some_and(|id|self.allianz_leitung(sid,id))||a.zielallianz.is_some_and(|id|self.allianz_leitung(sid,id)))).map(|a|{let mut v=json!(a);v["empfangsberechtigt"]=json!(a.zielallianz.is_some_and(|id|self.allianz_leitung(sid,id)));let name=|id:Option<u32>|id.and_then(|i|self.allianzen.iter().find(|x|x.id==i)).map(|x|x.name.clone());v["von_allianz"]=json!(name(a.allianz));v["ziel_allianz"]=json!(name(a.zielallianz));if a.status=="gekuendigt"{v["status"]=json!(match a.kuendigung_ende{Some(t) if self.zeit<t=>format!("gekündigt, endet {}",zeittext(t)),_=>"beendet".to_string()});}v}).collect::<Vec<_>>(),"briefkasten":self.briefkasten(sid).into_iter().take(100).collect::<Vec<_>>(),"anfragen":anfragen,"allianzbereich":allianz,"antworten_offen":self.offene_antworten(sid),
             "allianzen":self.allianz_verzeichnis(sid)})
     }
 }

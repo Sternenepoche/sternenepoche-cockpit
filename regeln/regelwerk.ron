@@ -12,8 +12,8 @@
         plaetze_je_system: 12,
         nebel_abstand: 10,          // Nebelsysteme: 5, 15, 25, ... (sechs pro Sektor)
         nebel_versatz: 5,
-        guertel_abstand: 5,         // Asteroidengürtel: 3, 8, 13, ... (jedes fünfte System)
-        guertel_versatz: 3,
+        guertel_abstand: 1,         // Asteroidengürtel in jedem System (Karl 20.10.2026; vorher 3, 8, 13 … jedes fünfte)
+        guertel_versatz: 0,
         reichtum_min: 0.7,
         reichtum_max: 1.4,
         epoche_tage: 365,
@@ -45,13 +45,15 @@
     },
 
     wirtschaft: (
-        wachstum_je_tag: 0.12,              // logistisch gebremst: bei halb vollem Wohnraum 6 Prozent
+        wachstum_je_tag: 0.168,             // +40 % (Karl 17.10.2026); logistisch gebremst: bei halb vollem Wohnraum 8,4 Prozent
         arbeitsquote: 0.6,
         fachkraefte_basis: 30,
         fachkraefte_je_akademie: 60.0,
         nahrung_je_1000: 40.0,              // je Stunde
         konsum_je_1000: 3.0,                // je Stunde
-        energie_je_1000_syntheten: 25.0,    // Balance 04.10.: mit 30 lagen die Syntheten 15 Prozent zurück
+        energie_je_1000_syntheten: 48.0,    // 18.10.: nach Solar +20 % lagen die Syntheten über 365 Tage vorn (Strom 30: Völker 1,21,
+                                            // 35: 1,13); 40 = Nahrungsbedarf der anderen Völker, Völker 1,05 (WACHSTUM-UND-HABITABILITAET.md §8).
+                                            // 21.10.: nach Energie +10 % (Karl) wieder Völker 1,22 (Syntheten 126.029, Veyari 103.720) → 48
         hunger_min: -0.5,
         steuer_je_einwohner_stunde: 0.03,   // Credits bei 100 Prozent Steuersatz
         unterhalt_schiffe_je_tag: 0.005,      // Balance 04.10.: Flotten kosten spürbar Credits
@@ -122,9 +124,9 @@
             wirkung: "erzeugt Deuterium"),
         farm: (kosten: {erz: 40, kristall: 10}, faktor: 1.5, arbeiter: 15.0, energie: 4.0, ab_stufe: 1, ertrag: 45.0,
             wirkung: "erzeugt Nahrung"),
-        solarkraftwerk: (kosten: {erz: 75, kristall: 30}, faktor: 1.5, arbeiter: 4.0, ab_stufe: 1, ertrag: 22.0,
+        solarkraftwerk: (kosten: {erz: 75, kristall: 30}, faktor: 1.5, arbeiter: 4.0, ab_stufe: 1, ertrag: 29.04,  // +20 % (Karl 17.10.2026), +10 % (Karl 20.10.2026)
             wirkung: "erzeugt Strom"),
-        fusionskraftwerk: (kosten: {erz: 900, kristall: 360, deuterium: 180}, faktor: 1.8, arbeiter: 10.0, fachkraefte: 2.0, ab_stufe: 2, ertrag: 50.0,
+        fusionskraftwerk: (kosten: {erz: 900, kristall: 360, deuterium: 180}, faktor: 1.8, arbeiter: 10.0, fachkraefte: 2.0, ab_stufe: 2, ertrag: 55.0,   // +10 % (Karl 20.10.2026)
             wirkung: "erzeugt viel Strom, verbraucht Deuterium"),
         giesserei: (kosten: {erz: 600, kristall: 200}, faktor: 1.6, arbeiter: 40.0, energie: 20.0, ab_stufe: 2, ertrag: 4.0,
             wirkung: "verarbeitet Erz zu Legierung"),
@@ -140,7 +142,7 @@
             wirkung: "schützt je Stufe eine feste Menge jedes Guts vor Plünderung"),
         wohnblock: (kosten: {erz: 120, kristall: 40}, faktor: 1.4, arbeiter: 3.0, energie: 3.0, ab_stufe: 1, ertrag: 700.0,
             wirkung: "schafft Wohnraum"),
-        akademie: (kosten: {erz: 800, kristall: 600}, faktor: 1.8, arbeiter: 10.0, energie: 10.0, ab_stufe: 2,
+        akademie: (kosten: {erz: 800, kristall: 600}, faktor: 1.8, arbeiter: 10.0, energie: 10.0, ab_stufe: 1,
             wirkung: "bildet Fachkräfte aus"),
         markt: (kosten: {erz: 2000, kristall: 1000, legierung: 50}, faktor: 1.8, arbeiter: 10.0, energie: 5.0, ab_stufe: 3,
             wirkung: "erlaubt Marktorders von diesem Planeten"),
@@ -265,25 +267,30 @@
             wirkung: "sehr starker Schild, nur einer je Planet"),
     },
 
-    // Aufstieg zur Stufe II, III, IV und V. Alle Bedingungen müssen 48 Spielstunden
-    // ohne Unterbrechung erfüllt sein, dann kostet der Aufstieg die angegebenen Güter.
-    // Balance 04.10.: IV mit 32.000 und V mit 700.000 Einwohnern, damit die Medianzeiten in den Zielfenstern
-    // Tag 60 bis 110 und 150 bis 250 liegen (gemessen mit `sternenepoche balance --abnahme`).
+    // Aufstieg zur Stufe II, III, IV und V. Sobald alle Bedingungen erfüllt sind, ist der Aufstieg sofort
+    // möglich (keine Haltezeit, Karl 17.10.2026) und kostet die angegebenen Güter.
+    // Stufentempo 18.10.2026 (Wachstum +40 %; Zielfenster II 5–10, III 15–28, IV 35–60, V 100–140 Tage, gemessen mit
+    // `sternenepoche balance --abnahme`): V mit 500.000 statt 700.000 Einwohnern, II bis IV unverändert
+    // (II 8,5 / III 25 / IV 43 Tage liegen schon in den neuen Fenstern). docs/WACHSTUM-UND-HABITABILITAET.md §8.
+    // 20.10.2026 (Bots Teil 2): die Bots bauen Wohnraum rechtzeitig und siedeln früher – Einwohner am Tag 45 jetzt
+    // 64.000–75.000 statt 39.000, Stufe IV am Tag 33–34, Stufe V der Räuber am Tag 91. IV daher bei 60.000 statt 32.000
+    // Einwohnern (gemessen Tag 42–44), V bei 600.000 statt 500.000 (mit IV bei 60.000: Räuber erreichen 550.000 am Tag 96, 600.000 am Tag 101, Igel
+    // am Tag 128 und 141). Messungen laeufe/bots-entwicklung/epoche-r25-s1 bis -r29-s1.
     stufen: [
         (name: "II Industrie", einwohner: 2000, gebaeude: {erzmine: 5, kristallmine: 5}, versorgung_plus: true,
             kosten: {erz: 2000, kristall: 1000},
-            schaltet_frei: "Gießerei, Elektronikwerk, Konsumgüterwerk, Fusionskraftwerk, Akademie, Bunker, leichte Jäger, kleine Transporter, Raketenwerfer, Lasergeschütz"),
+            schaltet_frei: "Gießerei, Elektronikwerk, Konsumgüterwerk, Fusionskraftwerk, Bunker, leichte Jäger, kleine Transporter, Raketenwerfer, Lasergeschütz"),
         (name: "III Orbit", einwohner: 8000, gebaeude: {giesserei: 3, elektronikwerk: 2}, forschung: {energietechnik: 3}, stabilitaet: 55.0,
             kosten: {erz: 10000, kristall: 6000, legierung: 500, elektronik: 200},
             schaltet_frei: "Markt, Sensorphalanx, Raketensilo, große Transporter, Bergbauschiffe, Ionengeschütz"),
-        (name: "IV Sternenflug", einwohner: 32000, gebaeude: {werft: 4}, forschung: {impulsantrieb: 3, astrophysik: 1}, stabilitaet: 60.0, konsum_deckung: 0.8,
+        (name: "IV Sternenflug", einwohner: 60000, gebaeude: {werft: 4}, forschung: {impulsantrieb: 3, astrophysik: 1}, stabilitaet: 60.0, konsum_deckung: 0.8,
             kosten: {erz: 40000, kristall: 25000, deuterium: 10000, legierung: 2000, elektronik: 1000},
             schaltet_frei: "Orbitalwerft, Kolonieschiff, Kreuzer, Recycler, Truppentransporter, Kaserne, Verwaltungszentrum, Nanofabrik, Xenoextraktor, Gaußkanone"),
-        (name: "V Imperium", einwohner: 700000, forschung: {hyperraumantrieb: 1}, kolonien: 3,
+        (name: "V Imperium", einwohner: 600000, forschung: {hyperraumantrieb: 1}, kolonien: 3,
             kosten: {erz: 200000, kristall: 150000, deuterium: 50000, legierung: 10000, elektronik: 5000, xenokristall: 5000},
             schaltet_frei: "Orbitalring, Forschungsarchiv, Versorgungsnetz, Schlachtschiff, Bomber, Zerstörer, Plasmawerfer, Planetenschild"),
     ],
-    stufen_haltezeit_stunden: 48,
+    stufen_haltezeit_stunden: 0,          // 0 = Aufstieg sofort, sobald alle Bedingungen erfüllt sind
 
     flug: (
         zeitfaktor: 4,

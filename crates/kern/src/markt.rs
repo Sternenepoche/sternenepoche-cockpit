@@ -14,7 +14,7 @@ impl Welt {
                 .marktgebuehr;
         if let Some(p) = partner {
             if self.vertrag_zwischen(sid, p, Vertragsart::Handelsabkommen) {
-                g *= 0.5;
+                g *= self.regeln.kw().handel.handelsabkommen_faktor;
             }
         }
         g
@@ -41,6 +41,7 @@ impl Welt {
         gut: Gut,
         menge: i64,
         preis: i64,
+        kaeufer_topf: Option<usize>,
     ) {
         let wert = Self::handelswert(menge, preis);
         let geb_k = mal(wert, self.gebuehr(kaeufer, Some(verkaeufer)));
@@ -48,6 +49,7 @@ impl Welt {
         // Der Käufer hat zum eigenen Limit hinterlegt und bekommt die Differenz zurück.
         let zurueck = self.hinterlegung(kaeufer, menge, kaeufer_limit) - (wert + geb_k);
         self.spieler[kaeufer as usize].credits += zurueck.max(0);
+        if let Some(t) = kaeufer_topf { self.spieler[kaeufer as usize].toepfe[t] += zurueck.max(0); }
         self.spieler[verkaeufer as usize].credits += wert - geb_v;
         let d = self.entfernung(
             self.planeten[verkaeufer_planet as usize].koord,
@@ -144,12 +146,14 @@ impl Welt {
         self.abrechnen(pid);
         let mut rest = menge;
         let mut gehandelt = 0i64;
+        let rueckbuchung = self.regeln.kw().handel.topf_rueckbuchung;
+        let mut order_topf: Option<usize> = None;
         match seite {
             Marktseite::Kauf => {
                 let hinterlegt = self.hinterlegung(sid, menge, preis);
                 if self.spieler[sid as usize].credits < hinterlegt {
                     return Err(format!(
-                        "für die Order fehlen Credits: {} nötig einschließlich Gebühr",
+                        "Für die Order fehlen Credits: {} nötig einschließlich Gebühr",
                         ganz(hinterlegt)
                     ));
                 }
@@ -161,6 +165,7 @@ impl Welt {
                         ));
                     }
                     self.spieler[sid as usize].toepfe[t.idx()] -= hinterlegt;
+                    if rueckbuchung { order_topf = Some(t.idx()); }
                 }
                 self.spieler[sid as usize].credits -= hinterlegt;
                 // Günstigste Verkaufsorder zuerst, bei gleichem Preis die ältere.
@@ -183,7 +188,7 @@ impl Welt {
                     let o = self.orders[i].clone();
                     let m = rest.min(o.menge);
                     self.handel_ausfuehren(
-                        sid, planet_id, preis, o.spieler, o.planet, gut, m, o.preis,
+                        sid, planet_id, preis, o.spieler, o.planet, gut, m, o.preis, order_topf,
                     );
                     rest -= m;
                     gehandelt += m;
@@ -196,7 +201,7 @@ impl Welt {
             Marktseite::Verkauf => {
                 if self.planeten[pid].bestand[gut.idx()] < menge {
                     return Err(format!(
-                        "auf {k} liegen nur {} {gut}",
+                        "Auf {k} liegen nur {} {gut}",
                         ganz(self.planeten[pid].bestand[gut.idx()])
                     ));
                 }
@@ -220,19 +225,22 @@ impl Welt {
                     };
                     let o = self.orders[i].clone();
                     let m = rest.min(o.menge);
+                    let topf = self.ausbau.order_toepfe.get(&o.id).map(|t| *t as usize);
                     self.handel_ausfuehren(
-                        o.spieler, o.planet, o.preis, sid, planet_id, gut, m, o.preis,
+                        o.spieler, o.planet, o.preis, sid, planet_id, gut, m, o.preis, topf,
                     );
                     rest -= m;
                     gehandelt += m;
                     self.orders[i].menge -= m;
                     if self.orders[i].menge <= 0 {
                         self.orders.remove(i);
+                        self.ausbau.order_toepfe.remove(&o.id);
                     }
                 }
             }
         }
-        let mut text = format!("{} {gut} sofort gehandelt", ganz(gehandelt));
+        // „0 erz sofort gehandelt“ nur, wenn wirklich gehandelt wurde (Funktionsprüfung 25.10.2026).
+        let mut text = if gehandelt > 0 || rest <= 0 { format!("{} {gut} sofort gehandelt", ganz(gehandelt)) } else { String::new() };
         if rest > 0 {
             let id = self.naechste_order;
             self.naechste_order += 1;
@@ -246,8 +254,10 @@ impl Welt {
                 preis,
                 zeit: self.zeit,
             });
+            if let (Marktseite::Kauf, Some(t)) = (seite, order_topf) { self.ausbau.order_toepfe.insert(id, t as u8); }
             text.push_str(&format!(
-                ", Order {id} über {} {gut} steht im Buch",
+                "{}Order {id} über {} {gut} steht im Buch",
+                if text.is_empty() { "" } else { ", " },
                 ganz(rest)
             ));
         }
@@ -259,6 +269,7 @@ impl Welt {
             Marktseite::Kauf => {
                 let zurueck = self.hinterlegung(o.spieler, o.menge, o.preis);
                 self.spieler[o.spieler as usize].credits += zurueck;
+                if let Some(t) = self.ausbau.order_toepfe.remove(&o.id) { self.spieler[o.spieler as usize].toepfe[t as usize] += zurueck; }
             }
             Marktseite::Verkauf => {
                 let pid = o.planet as usize;
@@ -299,8 +310,13 @@ impl Welt {
 
     pub fn marktlieferung(&mut self, pid: usize, gut: Gut, menge: i64) {
         if self.planeten[pid].blockade.is_some() {
-            // Die neutrale Handelsflotte wartet, bis die Blockade endet.
+            // Die neutrale Handelsflotte wartet, bis die Blockade endet – einmal melden, nicht jede Stunde.
             let id = self.planeten[pid].id;
+            let (besitzer, k) = (self.planeten[pid].besitzer, self.planeten[pid].koord);
+            let text = format!("Marktlieferung {} {gut} für {k} wartet: Der Planet ist blockiert; Zustellung nach Ende der Blockade", ganz(menge));
+            if !self.spieler[besitzer as usize].vorfaelle.iter().rev().take(60).any(|v| v.text == text) {
+                self.vorfall(besitzer, "markt", text);
+            }
             self.plane(
                 self.zeit + STUNDE,
                 EreignisArt::Marktlieferung {

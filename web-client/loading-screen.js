@@ -8,23 +8,27 @@
   let still=reduced.matches,started=performance.now(),finishTimer,fadeTimer,deadline,finished=false;
   try{still=still||localStorage.getItem('sternenepoche-loading-motion')==='paused';}catch{}
   let restore=[];
-  let renderer,requested=false,frame=0,playedAt=0,elapsed=0,lastTick=0;
+  let renderer,requested=false,frame=0,playedAt=0,elapsed=0,completed=false;
   function stopMotion(){
     cancelAnimationFrame(frame);frame=0;
     if(playedAt){elapsed+=performance.now()-playedAt;playedAt=0;}
   }
   function tick(now){
-    if(now-lastTick>=1000/30){renderer.draw(((elapsed+now-playedAt)/1000)%renderer.duration);lastTick=now;}
+    frame=0;
+    const time=(elapsed+now-playedAt)/1000;
+    renderer.draw(Math.min(time,renderer.duration));
+    if(time>=renderer.duration){completed=true;stopMotion();return;}
     frame=requestAnimationFrame(tick);
   }
   async function prepareMotion(){
     requested=true;
     try{
-      const texture=new Image();texture.src=canvas.dataset.neuralSource;
-      try{await texture.decode();}catch{texture.src=canvas.dataset.neuralFallback;await texture.decode();}
-      const size=Math.min(1280,Math.max(512,Math.ceil(canvas.parentElement.clientWidth*(window.devicePixelRatio||1))));
-      renderer=window.createNeuralStar(canvas,texture,size);await renderer.ready;
-      renderer.draw(0);updateMotion();
+      const texture=await window.loadNeuralStarTexture(canvas.dataset.neuralSource,canvas.dataset.neuralFallback);
+      if(finished||screen.hidden){requested=false;return;}
+      const size=Math.min(768,Math.max(256,Math.ceil(canvas.parentElement.clientWidth*(window.devicePixelRatio||1))));
+      const prepared=window.createNeuralStar(canvas,texture,size);await prepared.ready;
+      if(finished||screen.hidden){requested=false;return;}
+      renderer=prepared;renderer.draw(0);updateMotion();
     }catch{ /* The small JPEG remains usable if Canvas or either texture fails. */ }
   }
   function updateMotion(){
@@ -32,8 +36,9 @@
     screen.classList.toggle('is-still',still);
     if(running&&renderer){
       canvas.hidden=false;image.hidden=true;
-      if(!frame){playedAt=performance.now();frame=requestAnimationFrame(tick);}
+      if(!frame&&!completed){playedAt=performance.now();frame=requestAnimationFrame(tick);}
     }else stopMotion();
+    if(still){canvas.hidden=true;image.hidden=false;}
     if(running&&!requested&&window.createNeuralStar)prepareMotion();
     pause.textContent=still?'Animation starten':'Animation pausieren';pause.setAttribute('aria-pressed',String(still));
   }
@@ -46,14 +51,14 @@
     stopMotion();
     release();screen.classList.add('is-leaving');
     if(screen.contains(document.activeElement)){const main=document.querySelector('main');if(main){main.tabIndex=-1;main.focus({preventScroll:true});}}
-    fadeTimer=setTimeout(()=>{screen.hidden=true;screen.classList.remove('is-leaving');},reduced.matches?0:400);
+    fadeTimer=setTimeout(()=>{screen.hidden=true;screen.classList.remove('is-leaving');},reduced.matches?0:180);
   }
   function ready(){clearTimeout(finishTimer);finishTimer=setTimeout(hide,0);}
   function start(message){
     clearTimeout(finishTimer);clearTimeout(fadeTimer);clearTimeout(deadline);started=performance.now();finished=false;
     stopMotion();
     screen.hidden=false;screen.classList.remove('is-leaving');if(message)status.textContent=message;
-    elapsed=0;playedAt=0;if(renderer)renderer.draw(0);
+    elapsed=0;playedAt=0;completed=false;if(renderer)renderer.draw(0);
     if(!restore.length)restore=[...document.querySelectorAll('main,header,footer')].map(node=>{const previous=node.inert;node.inert=true;node.setAttribute('aria-busy','true');return [node,previous];});
     updateMotion();deadline=setTimeout(hide,18000);
   }

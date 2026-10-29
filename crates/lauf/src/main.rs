@@ -50,6 +50,22 @@ struct Lauf {
 impl Lauf {
     fn neu(regeln: Regelwerk, startwert: u64, spieler: usize, ki: Option<Vec<SpielerId>>, typen: &[Bottyp]) -> Result<Lauf, String> {
         let mut welt = Welt::neu(regeln, startwert, spieler)?;
+        // Online-Regeln wie eine neue Serverwelt (server::fresh_with): Generation 12, Monde, Invasion v1, Allianzen bis
+        // 50, Dysonsphäre, Technik v1, volksgerechte Heimat. Das klassische Regelwerk bleibt ohne diese Schritte.
+        if welt.regeln.version.contains("online") {
+            welt.ausbau_aktivieren()?;
+            welt.monde_aktivieren()?;
+            welt.invasion_aktivieren()?;
+            welt.allianz_v2_aktivieren()?;
+            welt.dyson_aktivieren()?;
+            welt.technik_aktivieren()?;
+            for sid in 0..welt.spieler.len() {
+                welt.heimat_anpassen(sid as SpielerId);
+            }
+            for pid in 0..welt.planeten.len() {
+                welt.raten_neu(pid);
+            }
+        }
         let ki: Vec<SpielerId> = ki.unwrap_or_else(|| (0..spieler as SpielerId).collect());
         let mut bots = BTreeMap::new();
         let mut i = 0usize;
@@ -629,7 +645,10 @@ Volk         Punkte  Tag II  Tag III  Tag IV  Tag V (erreicht)");
         ri_n,
         ri_siege
     );
-    let fenster = [(2, 10.0, 20.0), (3, 30.0, 50.0), (4, 60.0, 110.0), (5, 150.0, 250.0)];
+    // Zielfenster seit 18.10.2026 (Ablauf-Version 1, Wachstum +40 %, Karl): Stufe V um Tag 120 (100 bis 140) in der
+    // 365-Tage-Epoche, damit ein Drittel der Epoche im Imperium gespielt wird (Großprojekte, Monde, Dyson);
+    // II/III/IV gestaffelt um Tag 7/20/45. Vorher: 10–20 / 30–50 / 60–110 / 150–250.
+    let fenster = [(2, 5.0, 10.0), (3, 15.0, 28.0), (4, 35.0, 60.0), (5, 100.0, 140.0)];
     for (st, von, bis) in fenster {
         let mindest = if st == 5 { 0.8 } else { 0.9 };
         // Stufe V braucht Xenokristall, und der ist plünderbar: sie gilt für die wehrhaften Strategien.
@@ -978,7 +997,7 @@ fn bruecke_befehl(lauf: &mut Option<Lauf>, b: &Value) -> Result<Value, String> {
             let welt = l.w();
             let rolle = rolle.unwrap_or(Rolle::Alle);
             Ok(json!({"text": regeltext::regeltext(&welt.regeln, rolle), "aktionstypen": kern::aktion::erlaubte_typen(rolle),
-                "schema": kern::aktion::antwortschema(rolle),
+                "schema": kern::aktion::antwortschema_fuer(&welt.regeln,rolle),
                 "limits": {"aktionen": welt.regeln.agenten.aktionen_je_aufruf, "abfragen": welt.regeln.agenten.abfragen_je_aufruf,
                     "notiz_zeichen": welt.regeln.agenten.notiz_zeichen, "doktrin_zeichen": welt.regeln.agenten.doktrin_zeichen}}))
         }

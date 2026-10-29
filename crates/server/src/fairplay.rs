@@ -148,6 +148,12 @@ pub(crate) fn setup(db: &Connection, root: &Path) -> Result<Stolperdraht, String
         CREATE INDEX IF NOT EXISTS fairplay_vorfaelle_konto ON fairplay_vorfaelle(account,id);
         CREATE TABLE IF NOT EXISTS fairplay_meldungen(id INTEGER PRIMARY KEY,zeit INTEGER NOT NULL,account INTEGER,art TEXT NOT NULL,text TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS fairplay_anonym(id INTEGER PRIMARY KEY,zeit INTEGER NOT NULL,ip TEXT NOT NULL,pfad TEXT NOT NULL,quelle TEXT);").map_err(|e| e.to_string())?;
+    // 20.10.2026: Spielerart des Kontos zum Zeitpunkt des Vorfalls. Ältere Datenbanken bekommen die Spalte nachgerüstet
+    // (feste Anweisung, kein zusammengesetztes SQL); alte Vorfälle behalten den leeren Wert „unbekannt“.
+    let spalten: Vec<String> = db.prepare("PRAGMA table_info(fairplay_vorfaelle)").and_then(|mut s| s.query_map([], |r| r.get(1))?.collect()).map_err(|e| e.to_string())?;
+    if !spalten.iter().any(|c| c == "art") {
+        db.execute_batch("ALTER TABLE fairplay_vorfaelle ADD COLUMN art TEXT NOT NULL DEFAULT ''").map_err(|e| e.to_string())?;
+    }
     let pfad = root.join("fairplay-key.txt");
     if !pfad.exists() { write_private(&pfad, token().as_bytes()).map_err(|e| e.to_string())?; }
     let schluessel = std::fs::read_to_string(&pfad).map_err(|e| e.to_string())?.trim().to_string();
@@ -163,6 +169,18 @@ pub(crate) fn setup(db: &Connection, root: &Path) -> Result<Stolperdraht, String
     }).map_err(|e| e.to_string())?;
     for z in zeilen { let (k, eimer) = z.map_err(|e| e.to_string())?; d.einfuegen(k, eimer); }
     Ok(d)
+}
+
+/// Über welchen Zugang kam die Anfrage? Harness-API und MCP sind der Maschinenzugang, der Köderlink die Falle selbst,
+/// alles andere die Browseroberfläche (20.10.2026).
+fn zugang(kanal: &str) -> &'static str {
+    if kanal.starts_with("/api/harness/") {
+        "harness"
+    } else if kanal.starts_with("/api/intern/") {
+        "koederlink"
+    } else {
+        "browser"
+    }
 }
 
 fn punkt(n: u32) -> String {
@@ -291,6 +309,8 @@ impl Game {
     /// Verstoß eines angemeldeten Kontos. Die Anfrage wird nie ausgeführt.
     pub fn fairplay_verstoss(&mut self, a: &Account, t: &Treffer, kanal: &str) -> (u16, String) {
         let name = a.name.clone();
+        // 20.10.2026: Der Befund nennt die Art des Verursachers (Bot, Agent, Mensch, Mensch mit Agent) und woher er kam.
+        let art = self.konto_art(a);
         let ergebnis = self.transaction(|g| {
             let status = g.fairplay_status(a.id).map(|(s, _)| s);
             let (neu, folge, meldung) = match status.as_deref() {
@@ -300,8 +320,8 @@ impl Game {
             };
             g.db.execute("INSERT INTO fairplay_status(account,status,verstoesse,erster) VALUES(?1,?2,1,?3) ON CONFLICT(account) DO UPDATE SET status=excluded.status,verstoesse=verstoesse+1,gesperrt=CASE WHEN excluded.status='gesperrt' THEN ?3 ELSE gesperrt END",
                 params![a.id, neu, now()]).map_err(|_| err(503, "Fair-Play-Status nicht gespeichert"))?;
-            g.db.execute("INSERT INTO fairplay_vorfaelle(zeit,account,quelle_konto,flaeche,kanal,fundstelle,wert,folge) VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",
-                params![now(), a.id, t.koeder.empfaenger, t.koeder.flaeche, kanal.chars().take(80).collect::<String>(), t.fundstelle, t.wert, folge]).map_err(|_| err(503, "Vorfall nicht gespeichert"))?;
+            g.db.execute("INSERT INTO fairplay_vorfaelle(zeit,account,quelle_konto,flaeche,kanal,fundstelle,wert,folge,art) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+                params![now(), a.id, t.koeder.empfaenger, t.koeder.flaeche, kanal.chars().take(80).collect::<String>(), t.fundstelle, t.wert, folge, art.name()]).map_err(|_| err(503, "Vorfall nicht gespeichert"))?;
             if let Some(text) = &meldung {
                 g.db.execute("INSERT INTO fairplay_meldungen(zeit,account,art,text) VALUES(?1,?2,?3,?4)", params![now(), a.id, folge, text]).map_err(|_| err(503, "Meldung nicht gespeichert"))?;
             }
@@ -313,7 +333,7 @@ impl Game {
                 g.db.execute("UPDATE accounts SET banned=1 WHERE id=?1", [a.id]).map_err(|_| err(503, "Sperre nicht gespeichert"))?;
                 g.runtime.waitlist.retain(|w| w.account != a.id);
             }
-            g.identity_event(Some(a.id), "fairplay_verstoss", json!({"folge":folge,"kanal":kanal,"flaeche":t.koeder.flaeche,"quelle_konto":t.koeder.empfaenger}))?;
+            g.identity_event(Some(a.id), "fairplay_verstoss", json!({"folge":folge,"kanal":kanal,"flaeche":t.koeder.flaeche,"quelle_konto":t.koeder.empfaenger,"art":art,"zugang":zugang(kanal)}))?;
             Ok(json!({"folge":folge}))
         });
         match ergebnis.as_ref().ok().and_then(|v| v["folge"].as_str()) {
@@ -324,12 +344,18 @@ impl Game {
     }
 
     pub(crate) fn fairplay_admin(&self) -> Value {
-        let vorfaelle = self.db.prepare("SELECT v.zeit,v.account,a.name,v.quelle_konto,q.name,v.flaeche,v.kanal,v.fundstelle,v.wert,v.folge FROM fairplay_vorfaelle v LEFT JOIN accounts a ON a.id=v.account LEFT JOIN accounts q ON q.id=v.quelle_konto ORDER BY v.id DESC LIMIT 100")
-            .and_then(|mut s| s.query_map([], |r| Ok(json!({"zeit":r.get::<_, i64>(0)?,"konto":r.get::<_, i64>(1)?,"name":r.get::<_, Option<String>>(2)?,"quelle_konto":r.get::<_, Option<i64>>(3)?,"quelle_name":r.get::<_, Option<String>>(4)?,
-                "flaeche":r.get::<_, String>(5)?,"kanal":r.get::<_, String>(6)?,"fundstelle":r.get::<_, String>(7)?,"wert":r.get::<_, String>(8)?,"folge":r.get::<_, String>(9)?})))?.collect::<Result<Vec<_>, _>>())
+        // 20.10.2026: Jeder Befund nennt die Art des Verursachers: „art“ zum Zeitpunkt des Vorfalls (leer bei Altfällen:
+        // „unbekannt“), „art_jetzt“ heute, „quelle_art“ des Kontos, dem der Köder gezeigt wurde, und den „zugang“.
+        let vorfaelle = self.db.prepare("SELECT v.zeit,v.account,a.name,v.quelle_konto,q.name,v.flaeche,v.kanal,v.fundstelle,v.wert,v.folge,v.art FROM fairplay_vorfaelle v LEFT JOIN accounts a ON a.id=v.account LEFT JOIN accounts q ON q.id=v.quelle_konto ORDER BY v.id DESC LIMIT 100")
+            .and_then(|mut s| s.query_map([], |r| {
+                let (konto, quelle, kanal, art) = (r.get::<_, i64>(1)?, r.get::<_, Option<i64>>(3)?, r.get::<_, String>(6)?, r.get::<_, String>(10)?);
+                Ok(json!({"zeit":r.get::<_, i64>(0)?,"konto":konto,"name":r.get::<_, Option<String>>(2)?,"quelle_konto":quelle,"quelle_name":r.get::<_, Option<String>>(4)?,
+                    "flaeche":r.get::<_, String>(5)?,"kanal":kanal,"fundstelle":r.get::<_, String>(7)?,"wert":r.get::<_, String>(8)?,"folge":r.get::<_, String>(9)?,
+                    "art":if art.is_empty() { "unbekannt".to_string() } else { art },"art_jetzt":self.konto_art_nach_id(konto),"quelle_art":quelle.map(|q| self.konto_art_nach_id(q)),"zugang":zugang(&kanal)}))
+            })?.collect::<Result<Vec<_>, _>>())
             .unwrap_or_default();
         let status = self.db.prepare("SELECT s.account,a.name,s.status,s.verstoesse,s.erster,s.bestaetigt,s.gesperrt FROM fairplay_status s LEFT JOIN accounts a ON a.id=s.account ORDER BY s.erster DESC")
-            .and_then(|mut s| s.query_map([], |r| Ok(json!({"konto":r.get::<_, i64>(0)?,"name":r.get::<_, Option<String>>(1)?,"status":r.get::<_, String>(2)?,"verstoesse":r.get::<_, i64>(3)?,"erster":r.get::<_, i64>(4)?,"bestaetigt":r.get::<_, Option<i64>>(5)?,"gesperrt":r.get::<_, Option<i64>>(6)?})))?.collect::<Result<Vec<_>, _>>())
+            .and_then(|mut s| s.query_map([], |r| { let konto = r.get::<_, i64>(0)?; Ok(json!({"konto":konto,"art":self.konto_art_nach_id(konto),"name":r.get::<_, Option<String>>(1)?,"status":r.get::<_, String>(2)?,"verstoesse":r.get::<_, i64>(3)?,"erster":r.get::<_, i64>(4)?,"bestaetigt":r.get::<_, Option<i64>>(5)?,"gesperrt":r.get::<_, Option<i64>>(6)?})) })?.collect::<Result<Vec<_>, _>>())
             .unwrap_or_default();
         let anonym = self.db.prepare("SELECT zeit,ip,pfad,quelle FROM fairplay_anonym ORDER BY id DESC LIMIT 30")
             .and_then(|mut s| s.query_map([], |r| Ok(json!({"zeit":r.get::<_, i64>(0)?,"ip":r.get::<_, String>(1)?,"pfad":r.get::<_, String>(2)?,"quelle":r.get::<_, Option<String>>(3)?})))?.collect::<Result<Vec<_>, _>>())

@@ -119,29 +119,73 @@ aufzaehlung!(Forschung, FORSCHUNGEN, [
     Waffentechnik = "waffentechnik", Schildtechnik = "schildtechnik", Panzerung = "panzerung",
     Spionagetechnik = "spionagetechnik", Xenomaterialkunde = "xenomaterialkunde",
     Terraforming = "terraforming", Ueberwachungstechnik = "ueberwachungstechnik", Abschirmtechnik = "abschirmtechnik",
+    // Technik v1 (neue Welten ab 18.10.2026): nur in Regelwerken nach `Welt::technik_aktivieren`, siehe `technik.rs`.
+    Plasmatechnik = "plasmatechnik",
 ]);
 
-aufzaehlung!(
-    /// Schiffe und Verteidigungsanlagen in einer Aufzählung. Die ersten `SCHIFFE` sind Schiffe.
-    Einheit, EINHEITEN, [
-    Spionagesonde = "spionagesonde", KleinerTransporter = "kleiner_transporter",
-    GrosserTransporter = "grosser_transporter", LeichterJaeger = "leichter_jaeger",
-    Bergbauschiff = "bergbauschiff", Kreuzer = "kreuzer", Recycler = "recycler",
-    Kolonieschiff = "kolonieschiff", Truppentransporter = "truppentransporter",
-    Schlachtschiff = "schlachtschiff", Bomber = "bomber", Zerstoerer = "zerstoerer",
-    Raketenwerfer = "raketenwerfer", Lasergeschuetz = "lasergeschuetz",
-    Ionengeschuetz = "ionengeschuetz", Gausskanone = "gausskanone",
-    Plasmawerfer = "plasmawerfer", Planetenschild = "planetenschild",
-]);
-
-/// Anzahl der Schiffstypen am Anfang von `Einheit`.
-pub const SCHIFFE: usize = 12;
-
-impl Einheit {
-    pub fn ist_schiff(self) -> bool {
-        self.idx() < SCHIFFE
-    }
+/// Historical enum discriminants stay append-only; array positions group all ships first.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[repr(u8)]
+pub enum Einheit {
+    #[serde(rename = "spionagesonde")] Spionagesonde,
+    #[serde(rename = "kleiner_transporter")] KleinerTransporter,
+    #[serde(rename = "grosser_transporter")] GrosserTransporter,
+    #[serde(rename = "leichter_jaeger")] LeichterJaeger,
+    #[serde(rename = "bergbauschiff")] Bergbauschiff,
+    #[serde(rename = "kreuzer")] Kreuzer,
+    #[serde(rename = "recycler")] Recycler,
+    #[serde(rename = "kolonieschiff")] Kolonieschiff,
+    #[serde(rename = "truppentransporter")] Truppentransporter,
+    #[serde(rename = "schlachtschiff")] Schlachtschiff,
+    #[serde(rename = "bomber")] Bomber,
+    #[serde(rename = "zerstoerer")] Zerstoerer,
+    #[serde(rename = "raketenwerfer")] Raketenwerfer,
+    #[serde(rename = "lasergeschuetz")] Lasergeschuetz,
+    #[serde(rename = "ionengeschuetz")] Ionengeschuetz,
+    #[serde(rename = "gausskanone")] Gausskanone,
+    #[serde(rename = "plasmawerfer")] Plasmawerfer,
+    #[serde(rename = "planetenschild")] Planetenschild,
+    #[serde(rename = "abfangjaeger")] Abfangjaeger,
+    #[serde(rename = "schwerer_jaeger")] SchwererJaeger,
+    #[serde(rename = "sturmjaeger")] Sturmjaeger,
+    #[serde(rename = "schnellfrachter")] Schnellfrachter,
+    #[serde(rename = "schwerlastfrachter")] Schwerlastfrachter,
+    #[serde(rename = "raketenkreuzer")] Raketenkreuzer,
+    #[serde(rename = "schildkreuzer")] Schildkreuzer,
+    #[serde(rename = "flottenkreuzer")] Flottenkreuzer,
+    #[serde(rename = "sturmschlachtschiff")] Sturmschlachtschiff,
+    #[serde(rename = "traegerschlachtschiff")] Traegerschlachtschiff,
+    #[serde(rename = "belagerungsschlachtschiff")] Belagerungsschlachtschiff,
+    #[serde(rename = "strategischer_bomber")] StrategischerBomber,
+    #[serde(rename = "abfangzerstoerer")] Abfangzerstoerer,
+    #[serde(rename = "schwerer_zerstoerer")] SchwererZerstoerer,
+    #[serde(rename = "grosses_kolonieschiff")] GrossesKolonieschiff,
+    #[serde(rename = "planetenschild_ii")] PlanetenschildII,
+    #[serde(rename = "planetenschild_iii")] PlanetenschildIII,
+    #[serde(rename = "handelsfrachter")] Handelsfrachter,
+    #[serde(rename = "pathfinder")] Pathfinder,
+    #[serde(rename = "bergungsschiff")] Bergungsschiff,
+    // Mondgeneration (STERNE13): stationäre Solarsonde (Anlage), Megaschiff und Schlachtkreuzer-Klasse.
+    #[serde(rename = "solarsonde")] Solarsonde,
+    #[serde(rename = "weltentruemmer")] Weltentruemmer,
+    #[serde(rename = "schlachtkreuzer")] Schlachtkreuzer,
+    #[serde(rename = "abfang_schlachtkreuzer")] AbfangSchlachtkreuzer,
+    #[serde(rename = "schwerer_schlachtkreuzer")] SchwererSchlachtkreuzer,
+    // Terraforming-Generation (STERNE14, Karl 24.10.2026): Terraformer, nur in Welten mit diesem Schiff im Regelwerk.
+    #[serde(rename = "terraformer")] Terraformer,
 }
+pub const EINHEITEN: usize = 44;
+pub const SCHIFFE: usize = 35;
+impl Einheit {
+    pub const ALLE: [Self; EINHEITEN] = [Self::Spionagesonde, Self::KleinerTransporter, Self::GrosserTransporter, Self::LeichterJaeger, Self::Bergbauschiff, Self::Kreuzer, Self::Recycler, Self::Kolonieschiff, Self::Truppentransporter, Self::Schlachtschiff, Self::Bomber, Self::Zerstoerer, Self::Abfangjaeger, Self::SchwererJaeger, Self::Sturmjaeger, Self::Schnellfrachter, Self::Schwerlastfrachter, Self::Raketenkreuzer, Self::Schildkreuzer, Self::Flottenkreuzer, Self::Sturmschlachtschiff, Self::Traegerschlachtschiff, Self::Belagerungsschlachtschiff, Self::StrategischerBomber, Self::Abfangzerstoerer, Self::SchwererZerstoerer, Self::GrossesKolonieschiff, Self::Handelsfrachter, Self::Pathfinder, Self::Bergungsschiff, Self::Weltentruemmer, Self::Schlachtkreuzer, Self::AbfangSchlachtkreuzer, Self::SchwererSchlachtkreuzer, Self::Terraformer, Self::Raketenwerfer, Self::Lasergeschuetz, Self::Ionengeschuetz, Self::Gausskanone, Self::Plasmawerfer, Self::Planetenschild, Self::PlanetenschildII, Self::PlanetenschildIII, Self::Solarsonde];
+    pub fn idx(self) -> usize { let n=self as usize; if n==35 {27} else if n==36 || n==37 {n-8} else if n==38 {43} else if n==43 {34} else if n>=39 {n-9} else if (12..18).contains(&n) {n+23} else if (18..33).contains(&n) {n-6} else if n>=33 {n+8} else {n} }
+    pub fn name(self) -> &'static str { match self {Self::Pathfinder=>"pathfinder",Self::Bergungsschiff=>"bergungsschiff",Self::Spionagesonde=>"spionagesonde",Self::KleinerTransporter=>"kleiner_transporter",Self::GrosserTransporter=>"grosser_transporter",Self::LeichterJaeger=>"leichter_jaeger",Self::Bergbauschiff=>"bergbauschiff",Self::Kreuzer=>"kreuzer",Self::Recycler=>"recycler",Self::Kolonieschiff=>"kolonieschiff",Self::Truppentransporter=>"truppentransporter",Self::Schlachtschiff=>"schlachtschiff",Self::Bomber=>"bomber",Self::Zerstoerer=>"zerstoerer",Self::Raketenwerfer=>"raketenwerfer",Self::Lasergeschuetz=>"lasergeschuetz",Self::Ionengeschuetz=>"ionengeschuetz",Self::Gausskanone=>"gausskanone",Self::Plasmawerfer=>"plasmawerfer",Self::Planetenschild=>"planetenschild",Self::Abfangjaeger=>"abfangjaeger",Self::SchwererJaeger=>"schwerer_jaeger",Self::Sturmjaeger=>"sturmjaeger",Self::Schnellfrachter=>"schnellfrachter",Self::Schwerlastfrachter=>"schwerlastfrachter",Self::Raketenkreuzer=>"raketenkreuzer",Self::Schildkreuzer=>"schildkreuzer",Self::Flottenkreuzer=>"flottenkreuzer",Self::Sturmschlachtschiff=>"sturmschlachtschiff",Self::Traegerschlachtschiff=>"traegerschlachtschiff",Self::Belagerungsschlachtschiff=>"belagerungsschlachtschiff",Self::StrategischerBomber=>"strategischer_bomber",Self::Abfangzerstoerer=>"abfangzerstoerer",Self::SchwererZerstoerer=>"schwerer_zerstoerer",Self::GrossesKolonieschiff=>"grosses_kolonieschiff",Self::PlanetenschildII=>"planetenschild_ii",Self::Handelsfrachter=>"handelsfrachter",Self::PlanetenschildIII=>"planetenschild_iii",Self::Solarsonde=>"solarsonde",Self::Weltentruemmer=>"weltentruemmer",Self::Schlachtkreuzer=>"schlachtkreuzer",Self::AbfangSchlachtkreuzer=>"abfang_schlachtkreuzer",Self::SchwererSchlachtkreuzer=>"schwerer_schlachtkreuzer",Self::Terraformer=>"terraformer"} }
+    pub fn aus_name(s:&str)->Option<Self>{ match s {"pathfinder"=>Some(Self::Pathfinder),"bergungsschiff"=>Some(Self::Bergungsschiff),"spionagesonde"=>Some(Self::Spionagesonde),"kleiner_transporter"=>Some(Self::KleinerTransporter),"grosser_transporter"=>Some(Self::GrosserTransporter),"leichter_jaeger"=>Some(Self::LeichterJaeger),"bergbauschiff"=>Some(Self::Bergbauschiff),"kreuzer"=>Some(Self::Kreuzer),"recycler"=>Some(Self::Recycler),"kolonieschiff"=>Some(Self::Kolonieschiff),"truppentransporter"=>Some(Self::Truppentransporter),"schlachtschiff"=>Some(Self::Schlachtschiff),"bomber"=>Some(Self::Bomber),"zerstoerer"=>Some(Self::Zerstoerer),"raketenwerfer"=>Some(Self::Raketenwerfer),"lasergeschuetz"=>Some(Self::Lasergeschuetz),"ionengeschuetz"=>Some(Self::Ionengeschuetz),"gausskanone"=>Some(Self::Gausskanone),"plasmawerfer"=>Some(Self::Plasmawerfer),"planetenschild"=>Some(Self::Planetenschild),"abfangjaeger"=>Some(Self::Abfangjaeger),"schwerer_jaeger"=>Some(Self::SchwererJaeger),"sturmjaeger"=>Some(Self::Sturmjaeger),"schnellfrachter"=>Some(Self::Schnellfrachter),"schwerlastfrachter"=>Some(Self::Schwerlastfrachter),"raketenkreuzer"=>Some(Self::Raketenkreuzer),"schildkreuzer"=>Some(Self::Schildkreuzer),"flottenkreuzer"=>Some(Self::Flottenkreuzer),"sturmschlachtschiff"=>Some(Self::Sturmschlachtschiff),"traegerschlachtschiff"=>Some(Self::Traegerschlachtschiff),"belagerungsschlachtschiff"=>Some(Self::Belagerungsschlachtschiff),"strategischer_bomber"=>Some(Self::StrategischerBomber),"abfangzerstoerer"=>Some(Self::Abfangzerstoerer),"schwerer_zerstoerer"=>Some(Self::SchwererZerstoerer),"grosses_kolonieschiff"=>Some(Self::GrossesKolonieschiff),"planetenschild_ii"=>Some(Self::PlanetenschildII),"handelsfrachter"=>Some(Self::Handelsfrachter),"planetenschild_iii"=>Some(Self::PlanetenschildIII),"solarsonde"=>Some(Self::Solarsonde),"weltentruemmer"=>Some(Self::Weltentruemmer),"schlachtkreuzer"=>Some(Self::Schlachtkreuzer),"abfang_schlachtkreuzer"=>Some(Self::AbfangSchlachtkreuzer),"schwerer_schlachtkreuzer"=>Some(Self::SchwererSchlachtkreuzer),"terraformer"=>Some(Self::Terraformer),_=>None} }
+    pub fn ist_schiff(self)->bool {self.idx()<SCHIFFE}
+    /// Inhalte der Mondgeneration: nur nach `monde_aktivieren` im Regelwerk.
+    pub fn ist_mondinhalt(self)->bool {(38..43).contains(&(self as u8))}
+}
+impl fmt::Display for Einheit {fn fmt(&self,f:&mut fmt::Formatter)->fmt::Result{f.write_str(self.name())}}
 
 aufzaehlung!(Volk, VOELKER, [
     Aurelianer = "aurelianer", Krath = "krath", Veyari = "veyari", Syntheten = "syntheten",
@@ -167,11 +211,14 @@ aufzaehlung!(Mission, MISSIONEN, [
     Recyceln = "recyceln", Abbau = "abbau", Blockade = "blockade", Invasion = "invasion",
     Bombardieren = "bombardieren", Kampfkolonisieren = "kampfkolonisieren",
     Saven = "saven", FlottenSpionage = "flotten_spionage", SystemErkunden = "system_erkunden",
+    MondZerstoeren = "mond_zerstoeren",
+    // Terraforming-Generation (STERNE14): Terraformer formen Klima und Kruste eines Platzes (crate::terraform).
+    Terraformen = "terraformen",
 ]);
 
 impl Mission {
     pub fn feindlich(self) -> bool {
-        matches!(self, Mission::Angriff | Mission::Blockade | Mission::Invasion | Mission::Bombardieren | Mission::Kampfkolonisieren)
+        matches!(self, Mission::Angriff | Mission::Blockade | Mission::Invasion | Mission::Bombardieren | Mission::Kampfkolonisieren | Mission::MondZerstoeren)
     }
 }
 
@@ -228,6 +275,17 @@ impl<'de> Deserialize<'de> for Koord {
 }
 
 /// Zeit als "Tag 12, 08:15" für Texte.
+/// Ganze Zahl mit deutschem Tausenderpunkt („1.234“) für Spielertexte.
+pub fn tausender(n: i64) -> String {
+    let s = n.unsigned_abs().to_string();
+    let mut aus = String::new();
+    for (i, c) in s.chars().enumerate() { if i > 0 && (s.len() - i) % 3 == 0 { aus.push('.'); } aus.push(c); }
+    if n < 0 { format!("-{aus}") } else { aus }
+}
+
+/// „1 Runde“ / „n Runden“ für Spielertexte (Nachprüfung 25.10.2026: „nach 1 Runden“).
+pub fn runden_text(n: impl Into<i64>) -> String { let n = n.into(); if n == 1 { "1 Runde".into() } else { format!("{n} Runden") } }
+
 pub fn zeittext(t: SimZeit) -> String {
     let tag = t / TAG + 1;
     let rest = t % TAG;

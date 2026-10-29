@@ -26,8 +26,11 @@ impl Welt {
                         militaer += p.einheiten[e] * r.wert(&r.kosten_einheit(Einheit::ALLE[e], sp.volk));
                     }
                 }
-                for art in 0..2 {militaer += p.raketen[art] * r.wert(&crate::regeln::preis_array(&r.zusatz.raketen_kosten[art]));}
+                if self.ausbau.version>0 {for art in 0..5 {militaer+=self.raketen_bestand(*pid as usize,art)*r.wert(&self.taktisch_kosten(art,1).unwrap());}}else{for art in 0..2 {militaer += p.raketen[art] * r.wert(&crate::regeln::preis_array(&r.zusatz.raketen_kosten[art]));}}
             }
+            if self.monde.aktiv { let (w, m) = self.mond_punkte(sid as SpielerId); wirtschaft += w; militaer += m; }
+            // Invasion v1 (neue Welten): Bodentruppen zählen mit ihrem Güterwert zum Militär (D6, 18.10.2026).
+            if self.invasion_v1() { militaer += self.bodentruppen_wert(sid as SpielerId); }
             let forschung: i64 = Forschung::ALLE.iter().map(|f| r.wert_forschung_bis(*f, sp.forschung[f.idx()])).sum();
             let zivilisation = self.einwohner(sid as SpielerId) / (r.wertung.einwohner_je_punkt * M)
                 + r.wertung.stufenbonus[(sp.stufe as usize - 1).min(4)];
@@ -44,6 +47,19 @@ impl Welt {
         for (rang, (_, _, sid)) in ordnung.iter().enumerate() {
             self.spieler[*sid as usize].rang = rang as u16 + 1;
         }
+    }
+
+    /// Güterwert (Tausendstel Werteinheiten) aller fertigen Bodentruppen eines Spielers: Garnisonen auf eigenen
+    /// Planeten und verladene Truppen in eigenen Flotten. Aufträge in der Kaserne zählen wie Werftaufträge noch nicht.
+    pub fn bodentruppen_wert(&self, sid: SpielerId) -> i64 {
+        let r = &self.regeln;
+        let wert = |truppen: &[i64; crate::boden::ANZAHL]| -> i64 {
+            (0..crate::boden::ANZAHL).map(|t| truppen[t].max(0) * r.wert(&crate::boden::kosten(t))).sum()
+        };
+        let b = &self.ausbau.boden;
+        let planeten: i64 = b.bestand.iter().filter(|(pid, _)| self.planeten.get(**pid as usize).is_some_and(|p| p.besitzer == sid)).map(|(_, t)| wert(t)).sum();
+        let flotten: i64 = b.flotten.iter().filter(|(fid, _)| self.flotten.get(fid).is_some_and(|f| f.besitzer == sid)).map(|(_, t)| wert(t)).sum();
+        planeten + flotten
     }
 
     /// Rangliste: Name, Gesamtpunkte, Stufe, nach Rang sortiert.

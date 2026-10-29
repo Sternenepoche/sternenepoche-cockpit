@@ -1,0 +1,8 @@
+// Allianzen v2 (Karl, 18.10.2026: „Allianzen sollen bis 50 Spieler haben können!“). Nur neue Welten über
+// Welt::allianz_v2_aktivieren; laufende Welten behalten diplomatie.allianz_max aus ihrem Regelprofil (8).
+// Folgen und Begründung: docs/DYSONSPHAERE.md, Abschnitt "Allianzgröße 50".
+(
+    version: 1,
+    allianz_max: 50,
+    bot_allianz_max: 12,                // Bots laden nur bis zu dieser Größe ein (Menschen bis allianz_max)
+)

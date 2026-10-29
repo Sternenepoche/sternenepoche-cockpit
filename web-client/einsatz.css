@@ -1,0 +1,434 @@
+/* Einsatzplanung (einsatz.js): ein Blatt für alle Aufträge. Ruhiges Weltraum-Epos, Farbe = Auftragsgruppe (R8),
+   Grün = ausführen, Orange/Rot = Mangel. Alles im ID-Bereich #einsatz-blatt (cockpit-look.css färbt sonst jeden Knopf).
+   Handy zuerst: Tippziele ≥ 44 px, Schrift 13/15 px mit --text-scale, Namen umbrechen statt „…“. */
+#einsatz-blatt{--es-grund:#060c18;--es-glas:rgba(10,21,36,.8);--es-glas2:rgba(16,31,50,.78);--es-rand:rgba(150,190,230,.18);--es-rand2:rgba(150,190,230,.34);
+ --es-text:#dbe6f0;--es-leise:#8ea4b8;--es-gruen:#3fae5f;--es-gruen2:#56d27c;--es-orange:#f2a43a;--es-rot:#ff6464;--es-blau:#8fd0ff;--es-akzent:#8fd0ff;
+ --es-s:var(--text-scale,1);--button-art:none;--button-wash:transparent;position:fixed;inset:0;z-index:1500;display:flex;justify-content:flex-end;background:rgba(2,6,13,.55);
+ font-family:Oxanium,"Segoe UI",system-ui,sans-serif;color:var(--es-text);font-size:calc(14px * var(--es-s));line-height:1.45}
+#einsatz-blatt[hidden]{display:none!important}
+body.einsatz-offen{overflow:hidden}
+#einsatz-blatt *{box-sizing:border-box}
+#einsatz-blatt .es-flaeche{position:relative;display:flex;flex-direction:column;width:min(640px,100%);height:100%;background:
+ linear-gradient(180deg,rgba(143,208,255,.05),transparent 220px),var(--es-grund);border-left:1px solid var(--es-rand2);box-shadow:-24px 0 60px rgba(0,0,0,.55)}
+#einsatz-blatt .es-innen{flex:1;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;padding:12px 16px 24px;-webkit-overflow-scrolling:touch}
+#einsatz-blatt .es-kopfbereich{flex:none}
+/* Gruppenfarben (docs/FLOTTENFUEHRUNG.md §2) als Akzent des ganzen Blatts */
+#einsatz-blatt .auftrag-kampf{--es-akzent:#ff5a5f}#einsatz-blatt .auftrag-boden{--es-akzent:#ff9d3c}#einsatz-blatt .auftrag-aufklaerung{--es-akzent:#b48cff}
+#einsatz-blatt .auftrag-fracht{--es-akzent:#f2c94c}#einsatz-blatt .auftrag-verlegung{--es-akzent:#7bd88f}#einsatz-blatt .auftrag-schutz{--es-akzent:#4fa8ff}
+#einsatz-blatt .auftrag-rohstoffe{--es-akzent:#2fd0c0}#einsatz-blatt .auftrag-ausbreitung{--es-akzent:#f472b6}
+
+/* ---------- Kopf und Schritte ---------- */
+#einsatz-blatt .es-kopf{position:relative;padding:14px 16px 0;border-bottom:1px solid var(--es-rand);background:linear-gradient(180deg,color-mix(in srgb,var(--es-akzent) 12%,transparent),transparent)}
+#einsatz-blatt .es-kopf::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--es-akzent);opacity:.85}
+#einsatz-blatt .es-kopf-zeile{display:flex;gap:12px;align-items:center}
+#einsatz-blatt .es-kopf-leer{width:30px;height:30px;border-radius:50%;border:1px dashed var(--es-rand2);flex:none}
+#einsatz-blatt .es-kopf-text{flex:1;min-width:0}
+#einsatz-blatt .es-eyebrow{display:block;font-size:calc(11px * var(--es-s));letter-spacing:.14em;text-transform:uppercase;color:var(--es-akzent)}
+#einsatz-blatt .es-kopf h2{margin:0;font-size:calc(20px * var(--es-s));font-weight:700;letter-spacing:.02em;color:#f1f6fb}
+#einsatz-blatt .es-kopf p{margin:2px 0 0;color:var(--es-leise);font-size:calc(13px * var(--es-s));overflow-wrap:anywhere}
+#einsatz-blatt .koord{color:var(--es-blau);font-variant-numeric:tabular-nums}
+#einsatz-blatt button.es-x{flex:none;width:44px;height:44px;min-height:44px;padding:0;border-radius:50%;border:1px solid var(--es-rand2);--button-wash:transparent;color:var(--es-text);font-size:18px;line-height:1}
+#einsatz-blatt .es-schritte{list-style:none;display:flex;gap:4px;margin:12px 0 0;padding:0 0 10px;counter-reset:none}
+#einsatz-blatt .es-schritte li{flex:1;min-width:0;position:relative}
+#einsatz-blatt .es-schritte li::after{content:"";position:absolute;left:0;right:0;bottom:-10px;height:2px;background:var(--es-rand)}
+#einsatz-blatt .es-schritte li.fertig::after{background:color-mix(in srgb,var(--es-gruen2) 70%,transparent)}
+#einsatz-blatt .es-schritte li.aktiv::after{background:var(--es-akzent);height:3px}
+#einsatz-blatt .es-schritte button{display:flex;align-items:center;gap:6px;width:100%;min-height:44px;padding:4px 2px;border:0;border-radius:6px;--button-wash:transparent;color:var(--es-leise);font:inherit;font-size:calc(12px * var(--es-s));justify-content:center;white-space:nowrap}
+#einsatz-blatt .es-schritte button span{display:inline-grid;place-items:center;flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--es-rand2);font-size:11px;font-variant-numeric:tabular-nums}
+#einsatz-blatt .es-schritte li.fertig button{color:var(--es-text)}
+#einsatz-blatt .es-schritte li.fertig button span{background:color-mix(in srgb,var(--es-gruen) 55%,transparent);border-color:transparent;color:#fff}
+#einsatz-blatt .es-schritte li.aktiv button{color:#fff;font-weight:600}
+#einsatz-blatt .es-schritte li.aktiv button span{background:var(--es-akzent);border-color:transparent;color:#0a1422}
+#einsatz-blatt .es-schritte button:disabled{opacity:.45;cursor:default}
+
+/* ---------- Teile, Überschriften, Texte ---------- */
+#einsatz-blatt .es-teil{margin:14px 0 0}
+#einsatz-blatt .es-teil-titel,#einsatz-blatt .es-gruppe h3{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:0 0 8px;font-size:calc(13px * var(--es-s));font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#c8d6e4}
+#einsatz-blatt .es-teil-titel small{text-transform:none;letter-spacing:0;font-weight:400;color:var(--es-leise)}
+#einsatz-blatt .es-leise{color:var(--es-leise);font-size:calc(13px * var(--es-s));margin:6px 0}
+#einsatz-blatt .es-hinweis{margin:8px 0;padding:8px 10px;border-left:3px solid var(--es-orange);background:rgba(242,164,58,.08);font-size:calc(13px * var(--es-s))}
+#einsatz-blatt .es-schlecht{color:var(--es-rot)}
+#einsatz-blatt .es-fehler{margin:12px 0 0;padding:10px 12px;border:1px solid rgba(255,100,100,.5);border-radius:6px;background:rgba(255,100,100,.1);color:#ffc9c9}
+#einsatz-blatt h4{margin:12px 0 6px;font-size:calc(12px * var(--es-s));font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--es-leise)}
+#einsatz-blatt details>summary{list-style:none;cursor:pointer}
+#einsatz-blatt details>summary::-webkit-details-marker{display:none}
+#einsatz-blatt .es-klapp>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;padding:8px 12px;border:1px solid var(--es-rand);border-radius:8px;background:var(--es-glas2);color:var(--es-text);font-weight:600}
+#einsatz-blatt .es-klapp>summary small{font-weight:400;color:var(--es-leise);text-align:right}
+#einsatz-blatt .es-klapp>summary::after{content:"";flex:none;width:9px;height:9px;border-right:2px solid var(--es-leise);border-bottom:2px solid var(--es-leise);transform:rotate(45deg);margin-top:-4px;transition:transform .15s}
+#einsatz-blatt .es-klapp[open]>summary::after{transform:rotate(225deg);margin-top:4px}
+#einsatz-blatt .es-klapp[open]>summary{margin-bottom:8px}
+
+/* ---------- Knöpfe ---------- */
+/* command-deck.css legt mit !important ein Kunstmotiv auf jeden Knopf (--button-art) – hier neutralisiert, Knöpfe bleiben ruhig. */
+#einsatz-blatt button{background-color:transparent!important;box-shadow:none;font-family:inherit;line-height:1.3;overflow-wrap:normal;text-shadow:none;backdrop-filter:none}
+#einsatz-blatt button.es-mini{min-height:44px;padding:8px 12px;border-radius:8px;border:1px solid var(--es-rand2);--button-wash:rgba(143,208,255,.06);color:var(--es-text);font-size:calc(13px * var(--es-s));font-weight:500;display:inline-flex;align-items:center;gap:6px}
+#einsatz-blatt button.es-mini:active{transform:scale(.98)}
+#einsatz-blatt button.es-link{min-height:0;padding:0;border:0;--button-wash:transparent;color:var(--es-blau);text-decoration:underline;text-underline-offset:3px;font-size:inherit;font-weight:500}
+@media (max-width:767px),(pointer:coarse){#einsatz-blatt button.es-link{padding-block:13px;margin-block:-13px}}
+#einsatz-blatt .es-vorlagen{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+#einsatz-blatt button.es-chip{display:inline-flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;min-height:44px;padding:7px 12px;border-radius:10px;border:1px solid var(--es-rand2);--button-wash:rgba(143,208,255,.05);color:var(--es-text);text-align:left;font-size:calc(13px * var(--es-s))}
+#einsatz-blatt button.es-chip b{font-weight:600}
+#einsatz-blatt button.es-chip small{color:var(--es-leise);font-size:calc(11.5px * var(--es-s))}
+/* Gewählt sichtbar (Karl 24.10.: aktive Schnellwahl war vom globalen Knopfstil überdeckt) */
+#einsatz-blatt button.es-chip[aria-pressed="true"]{border-color:var(--es-akzent);--button-wash:color-mix(in srgb,var(--es-akzent) 18%,transparent);box-shadow:inset 0 0 0 1px var(--es-akzent);color:#fff}
+#einsatz-blatt button.es-chip[aria-pressed="true"] b::before{content:"✓ ";color:var(--es-akzent)}
+#einsatz-blatt button.es-chip:active{transform:scale(.98)}
+
+/* ---------- Zielsuche ---------- */
+#einsatz-blatt .es-suche{display:flex;flex-direction:column;gap:6px;min-width:0;margin:4px 0 6px}
+#einsatz-blatt .es-suche-titel{font-size:calc(12px * var(--es-s));letter-spacing:.08em;text-transform:uppercase;color:var(--es-leise)}
+#einsatz-blatt .es-suche input{width:100%;min-height:48px;padding:10px 14px;border-radius:10px;border:1px solid var(--es-rand2);background:#081322;color:#fff;font:inherit;font-size:calc(16px * var(--es-s))}
+#einsatz-blatt .es-suche input:focus{outline:2px solid var(--es-akzent);outline-offset:1px}
+#einsatz-blatt .es-gruppe{margin:14px 0 0}
+#einsatz-blatt .es-zielliste{display:flex;flex-direction:column;gap:6px}
+#einsatz-blatt button.es-zielzeile{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:10px;width:100%;min-height:52px;padding:6px 10px;border-radius:10px;border:1px solid var(--es-rand);--button-wash:var(--es-glas2);color:var(--es-text);text-align:left}
+#einsatz-blatt button.es-zielzeile.gewaehlt{border-color:var(--es-akzent);box-shadow:inset 0 0 0 1px var(--es-akzent)}
+#einsatz-blatt .es-zielzeile-text{display:flex;flex-direction:column;min-width:0}
+#einsatz-blatt .es-zielzeile-text b{font-weight:600;overflow-wrap:anywhere}
+#einsatz-blatt .es-zielzeile-text small{color:var(--es-leise);font-size:calc(12px * var(--es-s));overflow-wrap:anywhere}
+#einsatz-blatt .es-pfeil{color:var(--es-leise);font-size:20px}
+#einsatz-blatt .es-zielbild{width:40px;height:40px;object-fit:contain;border-radius:50%;flex:none}
+#einsatz-blatt .es-zielbild-leer{display:block;border:1px dashed var(--es-rand2);background:radial-gradient(circle at 35% 35%,rgba(143,208,255,.12),transparent 70%)}
+#einsatz-blatt .es-zielbild-guertel{border-style:dotted;border-width:2px}
+/* Gestrandete Flotte als Ziel (0.4.8): dasselbe Zeichen wie in der Galaxie, rot fremd, grün eigen. */
+#einsatz-blatt .es-zielbild-flotte{display:grid;place-items:center;border:1px solid rgba(255,122,122,.45);background:rgba(255,122,122,.08);color:#ff7a7a}
+#einsatz-blatt .es-zielbild-flotte.eigen{border-color:rgba(111,227,154,.45);background:rgba(111,227,154,.08);color:#6fe39a}
+#einsatz-blatt .es-zielbild-flotte svg{width:60%;height:60%}
+
+/* ---------- Zielkarte ---------- */
+#einsatz-blatt .es-zielkarte{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:start;margin:10px 0 4px;padding:12px;border:1px solid var(--es-rand);border-radius:12px;background:var(--es-glas)}
+#einsatz-blatt .es-zielkarte .es-zielbild{width:64px;height:64px}
+#einsatz-blatt .es-zielkarte-kopf{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+#einsatz-blatt .es-zielkarte-kopf b{font-size:calc(16px * var(--es-s))}
+#einsatz-blatt .es-zielart{font-size:calc(12px * var(--es-s));padding:2px 8px;border-radius:999px;border:1px solid var(--es-rand2);color:var(--es-leise)}
+#einsatz-blatt .es-zielkarte-knoepfe{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+#einsatz-blatt .es-fakten{display:grid;grid-template-columns:1fr;gap:4px;margin:8px 0 0}
+#einsatz-blatt .es-fakten>div{display:grid;grid-template-columns:minmax(92px,34%) 1fr;gap:10px}
+#einsatz-blatt .es-fakten dt{color:var(--es-leise);font-size:calc(13px * var(--es-s))}
+#einsatz-blatt .es-fakten dd{margin:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+#einsatz-blatt .es-fakten .warn dd{color:var(--es-orange)}
+
+/* ---------- Aufträge ---------- */
+#einsatz-blatt .es-auftraege{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+#einsatz-blatt button.es-auftrag{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;min-height:64px;padding:10px 12px;border-radius:12px;border:1px solid var(--es-rand);border-left:3px solid var(--es-akzent);--button-wash:var(--es-glas2);color:var(--es-text);text-align:left}
+#einsatz-blatt button.es-auftrag.gewaehlt{box-shadow:inset 0 0 0 1px var(--es-akzent);--button-wash:color-mix(in srgb,var(--es-akzent) 10%,var(--es-glas2))}
+#einsatz-blatt button.es-auftrag.gesperrt{border-left-color:rgba(150,190,230,.25)}
+#einsatz-blatt button.es-auftrag.gesperrt .auftrag-badge{filter:saturate(.35);opacity:.75}
+#einsatz-blatt .es-auftrag-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+#einsatz-blatt .es-auftrag-text b{font-size:calc(15px * var(--es-s));font-weight:600}
+#einsatz-blatt .es-auftrag-text small{color:var(--es-leise);font-size:calc(12.5px * var(--es-s))}
+#einsatz-blatt .es-auftrag-text em{font-style:normal;font-size:calc(12px * var(--es-s))}
+#einsatz-blatt .es-ok{color:var(--es-gruen2)}
+#einsatz-blatt .es-grund{color:var(--es-orange)}
+#einsatz-blatt .es-aussen{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+#einsatz-blatt .es-auftraege-andere button.es-auftrag{opacity:.82}
+
+/* ---------- Regelkarte: So läuft es ab ---------- */
+#einsatz-blatt .es-regel{margin:4px 0 0;border:1px solid var(--es-rand);border-left:3px solid var(--es-akzent);border-radius:12px;background:var(--es-glas)}
+#einsatz-blatt .es-regel>summary{color:#f1f6fb;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px;min-height:48px;padding:10px 14px;font-weight:600}
+#einsatz-blatt .es-regel>summary small{font-weight:400;color:var(--es-leise)}
+#einsatz-blatt .es-ablauf{list-style:none;margin:0;padding:2px 14px 4px;position:relative}
+#einsatz-blatt .es-ablauf li{position:relative;display:grid;grid-template-columns:26px 1fr;gap:10px;padding:0 0 12px;font-size:calc(13.5px * var(--es-s))}
+#einsatz-blatt .es-ablauf li::before{content:"";position:absolute;left:12px;top:24px;bottom:2px;width:2px;background:linear-gradient(var(--es-akzent),transparent);opacity:.45}
+#einsatz-blatt .es-ablauf li:last-child::before{display:none}
+#einsatz-blatt .es-ablauf-nr{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;border:1px solid var(--es-akzent);color:var(--es-akzent);font-size:12px;font-weight:600;background:var(--es-grund)}
+#einsatz-blatt .es-zaehlt{margin:0 14px 12px;padding:10px 12px;border-radius:8px;background:rgba(143,208,255,.05)}
+#einsatz-blatt .es-zaehlt h4{margin:0 0 6px;color:var(--es-akzent)}
+#einsatz-blatt .es-zaehlt ul{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+#einsatz-blatt .es-zaehlt li{padding:4px 9px;border-radius:999px;border:1px solid var(--es-rand2);font-size:calc(12.5px * var(--es-s))}
+#einsatz-blatt .es-bedingungen{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+#einsatz-blatt .es-bedingungen li{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:center;padding:6px 10px;border-radius:8px;background:rgba(242,164,58,.08);border:1px solid rgba(242,164,58,.35)}
+#einsatz-blatt .es-bedingungen li.ok{background:transparent;border-color:var(--es-rand)}
+#einsatz-blatt .es-bed-zeichen{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--es-orange);color:#1a1205;font-weight:700;font-size:12px}
+#einsatz-blatt .es-bedingungen li.ok .es-bed-zeichen{background:color-mix(in srgb,var(--es-gruen) 70%,transparent);color:#fff}
+#einsatz-blatt .es-bedingungen-ok{margin-top:10px}
+
+/* ---------- Lage, Kennzahlen ---------- */
+#einsatz-blatt .es-lage{margin:14px 0 0;padding:12px;border:1px solid var(--es-rand);border-radius:12px;background:var(--es-glas)}
+#einsatz-blatt .es-lagezahlen{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+#einsatz-blatt .es-lagezahl{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:8px;background:rgba(143,208,255,.05);border:1px solid var(--es-rand)}
+#einsatz-blatt .es-lagezahl b{font-size:calc(17px * var(--es-s));font-variant-numeric:tabular-nums;color:#fff}
+#einsatz-blatt .es-lagezahl span{font-size:calc(12px * var(--es-s));color:var(--es-leise)}
+#einsatz-blatt .es-lagezahl.gut b{color:var(--es-gruen2)}#einsatz-blatt .es-lagezahl.warn b{color:var(--es-orange)}#einsatz-blatt .es-lagezahl.schlecht b{color:var(--es-rot)}
+#einsatz-blatt .es-sim{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+#einsatz-blatt .es-kennzahlen{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 4px;padding:8px 12px;border-radius:8px;background:rgba(143,208,255,.05);font-size:calc(13px * var(--es-s));color:var(--es-leise)}
+#einsatz-blatt .es-kennzahlen b{color:#fff;font-variant-numeric:tabular-nums}
+#einsatz-blatt .es-tf-zeile{display:grid;grid-template-columns:minmax(110px,32%) 1fr auto;gap:10px;align-items:center;margin:0 0 8px;font-size:calc(13px * var(--es-s))}
+#einsatz-blatt .es-tf-zeile b{font-variant-numeric:tabular-nums}
+
+/* ---------- Startort, Schiffe, Zähler ---------- */
+#einsatz-blatt .es-start{display:flex;flex-wrap:wrap;gap:8px}
+#einsatz-blatt .es-schiffgruppe{margin:8px 0 0}
+#einsatz-blatt .es-schiff,#einsatz-blatt .es-trupp{display:grid;grid-template-columns:72px 1fr;grid-template-areas:"bild name" "zaehler zaehler";gap:6px 12px;align-items:center;padding:8px 10px;margin:0 0 6px;border-radius:10px;border:1px solid var(--es-rand);background:var(--es-glas2)}
+#einsatz-blatt .es-schiff.gewaehlt{border-color:color-mix(in srgb,var(--es-gruen2) 70%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--es-gruen2) 40%,transparent)}
+#einsatz-blatt .es-schiff>img,#einsatz-blatt .es-trupp>img{grid-area:bild;width:72px;height:44px;object-fit:contain;mix-blend-mode:lighten}
+#einsatz-blatt .es-schiff-name,#einsatz-blatt .es-trupp-name{grid-area:name;display:flex;flex-direction:column;min-width:0}
+#einsatz-blatt .es-schiff-name b,#einsatz-blatt .es-trupp-name b{font-weight:600;overflow-wrap:normal;word-break:normal;hyphens:manual}
+#einsatz-blatt .es-schiff-name small,#einsatz-blatt .es-trupp-name small{color:var(--es-leise);font-size:calc(12px * var(--es-s))}
+#einsatz-blatt .es-trupp{grid-template-columns:56px 1fr}
+#einsatz-blatt .es-trupp>img{width:56px;height:44px}
+#einsatz-blatt .es-trupp:not(:has(img)){grid-template-columns:1fr;grid-template-areas:"name" "zaehler"}
+#einsatz-blatt .es-zaehler{grid-area:zaehler;display:grid;grid-template-columns:44px minmax(64px,1fr) 44px auto;gap:6px;align-items:center}
+#einsatz-blatt .es-zaehler input{width:100%;min-height:44px;padding:6px 8px;border-radius:8px;border:1px solid var(--es-rand2);background:#081322;color:#fff;text-align:center;font:inherit;font-variant-numeric:tabular-nums}
+#einsatz-blatt button.es-z-knopf{min-height:44px;width:44px;padding:0;border-radius:8px;border:1px solid var(--es-rand2);--button-wash:rgba(143,208,255,.06);color:#fff;font-size:20px;line-height:1}
+#einsatz-blatt button.es-z-max{min-height:44px;padding:0 12px;border-radius:8px;border:1px solid var(--es-rand2);--button-wash:transparent;color:var(--es-blau);font-size:calc(13px * var(--es-s))}
+#einsatz-blatt button.es-z-knopf:active,#einsatz-blatt button.es-z-max:active{transform:scale(.96)}
+#einsatz-blatt .es-truppen{display:grid;grid-template-columns:1fr;gap:0}
+
+/* ---------- Balken ---------- */
+#einsatz-blatt .es-balken{display:flex;height:8px;border-radius:999px;overflow:hidden;background:rgba(143,208,255,.1)}
+#einsatz-blatt .es-balken>span{display:block;height:100%;width:0;transition:width .2s ease-out}
+#einsatz-blatt .es-kap>.voll{background:var(--es-gruen2)}#einsatz-blatt .es-kap>.zuviel{background:var(--es-rot)}
+#einsatz-blatt .es-gut-balken>.mit{background:#e0b85a}
+#einsatz-blatt .es-tf-balken>.ist{background:linear-gradient(90deg,#2fd0c0,#7bd88f)}
+#einsatz-blatt .es-bev{height:12px;margin:8px 0}
+#einsatz-blatt .es-bev>.es-bewohner,#einsatz-blatt .es-quali.es-bewohner input{--q:#8fd0ff}
+#einsatz-blatt .es-bev>.es-fachkraefte,#einsatz-blatt .es-quali.es-fachkraefte input{--q:#e0b85a}
+#einsatz-blatt .es-bev>.es-forscher,#einsatz-blatt .es-quali.es-forscher input{--q:#b48cff}
+#einsatz-blatt .es-bev>span{background:var(--q)}
+#einsatz-blatt .es-kapazitaet{display:flex;flex-direction:column;gap:6px;margin:0 0 10px;padding:10px 12px;border-radius:10px;border:1px solid var(--es-rand);background:var(--es-glas2);font-variant-numeric:tabular-nums}
+#einsatz-blatt .es-kapazitaet small{color:var(--es-leise)}
+#einsatz-blatt .es-kapazitaet button{align-self:flex-start}
+
+/* ---------- Güter, Siedler, Personen ---------- */
+#einsatz-blatt .es-gueter{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
+#einsatz-blatt .es-gut{position:relative;display:grid;grid-template-columns:26px 1fr auto;grid-template-areas:"bild name info" "zaehler zaehler zaehler";gap:6px 10px;align-items:center;padding:8px 10px 10px;border-radius:10px;border:1px solid var(--es-rand);background:var(--es-glas2);overflow:hidden}
+#einsatz-blatt .es-gut.gewaehlt{border-color:rgba(224,184,90,.55)}
+#einsatz-blatt .es-gut.zuwenig{border-color:rgba(242,164,58,.7)}
+#einsatz-blatt .es-gut>img,#einsatz-blatt .es-gut>span:first-child{grid-area:bild;width:26px;height:26px;object-fit:contain}
+#einsatz-blatt .es-gut-name{grid-area:name;display:flex;flex-direction:column;min-width:0}
+#einsatz-blatt .es-gut-name small{color:var(--es-leise);font-size:calc(12px * var(--es-s));font-variant-numeric:tabular-nums}
+#einsatz-blatt .es-gut-info{grid-area:info;color:var(--es-leise);font-size:calc(12px * var(--es-s));text-align:right}
+#einsatz-blatt .es-gut.zuwenig .es-gut-info{color:var(--es-orange)}
+#einsatz-blatt .es-gut>.es-gut-balken{position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:0}
+#einsatz-blatt .es-qualis{display:grid;grid-template-columns:1fr;gap:8px}
+#einsatz-blatt .es-quali{padding:8px 10px;border-radius:10px;border:1px solid var(--es-rand);background:var(--es-glas2)}
+#einsatz-blatt .es-quali-kopf{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px}
+#einsatz-blatt .es-quali-kopf span{color:var(--es-leise);font-variant-numeric:tabular-nums}
+#einsatz-blatt .es-quali small{color:var(--es-leise);font-size:calc(12px * var(--es-s))}
+#einsatz-blatt input[type=range]{width:100%;min-height:36px;accent-color:var(--q,var(--es-akzent));background:transparent;border:0;padding:0}
+#einsatz-blatt .es-personen h4{margin-top:4px}
+#einsatz-blatt .es-person{display:grid;grid-template-columns:1fr;gap:6px;padding:8px 10px;margin:0 0 6px;border-radius:10px;border:1px solid var(--es-rand);background:var(--es-glas2)}
+#einsatz-blatt .es-person small{display:block;color:var(--es-leise);font-size:calc(12px * var(--es-s))}
+#einsatz-blatt .es-regler-zeile{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin:4px 0 8px}
+#einsatz-blatt .es-regler-zeile b{min-width:56px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* ---------- Start ---------- */
+#einsatz-blatt .es-tempi{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+#einsatz-blatt button.es-tempo{display:flex;flex-direction:column;align-items:center;gap:0;min-height:56px;padding:6px 2px;border-radius:10px;border:1px solid var(--es-rand2);--button-wash:rgba(143,208,255,.05);color:var(--es-text);font-variant-numeric:tabular-nums}
+#einsatz-blatt button.es-tempo b{font-size:calc(14px * var(--es-s))}
+#einsatz-blatt button.es-tempo small{font-size:calc(11px * var(--es-s));color:var(--es-leise);white-space:nowrap}
+#einsatz-blatt button.es-tempo[aria-pressed="true"]{border-color:var(--es-akzent);--button-wash:color-mix(in srgb,var(--es-akzent) 18%,transparent);box-shadow:inset 0 0 0 1px var(--es-akzent)}
+#einsatz-blatt .es-rueck{display:flex;flex-direction:row;align-items:center;min-width:0;gap:10px;margin:10px 0 0;color:var(--es-leise)}
+#einsatz-blatt .es-rueck select{min-height:44px;padding:6px 10px;border-radius:8px;border:1px solid var(--es-rand2);background:#081322;color:#fff;font:inherit}
+#einsatz-blatt .es-zusammen{padding:12px;border:1px solid var(--es-rand);border-radius:12px;background:var(--es-glas)}
+#einsatz-blatt .es-plan{margin:12px 0 0;padding:10px 12px;border-radius:8px;background:rgba(143,208,255,.06);color:var(--es-leise)}
+#einsatz-blatt .es-plan.ok{color:var(--es-gruen2);background:rgba(86,210,124,.08)}
+#einsatz-blatt .es-plan.schlecht{color:#ffc9c9;background:rgba(255,100,100,.1)}
+#einsatz-blatt .es-plan.warn{color:var(--es-orange);background:rgba(242,164,58,.1)}
+#einsatz-blatt .es-bestaetigen{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:center;margin:14px 0 0;padding:12px;border-radius:10px;border:1px solid var(--es-akzent);background:color-mix(in srgb,var(--es-akzent) 8%,transparent);cursor:pointer}
+#einsatz-blatt .es-bestaetigen input{width:24px;height:24px;min-height:0;margin:0;accent-color:var(--es-gruen2)}
+#einsatz-blatt .es-profi{margin-top:14px}
+
+/* ---------- Fußleiste ---------- */
+#einsatz-blatt .es-fuss{flex:none;display:grid;grid-template-columns:72px 1fr;grid-template-areas:"text text" "zurueck weiter";gap:8px 10px;align-items:stretch;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--es-rand2);background:linear-gradient(180deg,rgba(7,13,26,.94),rgba(4,8,16,.98))}
+#einsatz-blatt .es-fuss-text{grid-area:text;margin:0;min-width:0;color:var(--es-orange);font-size:calc(12.5px * var(--es-s));line-height:1.35}
+#einsatz-blatt .es-fuss-text:empty{display:none}
+#einsatz-blatt .es-fuss-text.es-fuss-fehler{color:#ffc9c9}
+#einsatz-blatt .es-fuss-text.es-ruck{animation:es-ruck .35s ease-out}
+@keyframes es-ruck{30%{transform:translateX(-4px)}60%{transform:translateX(3px)}}
+#einsatz-blatt button.es-zurueck,#einsatz-blatt button.es-weiter{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:56px;border-radius:14px;line-height:1.15}
+#einsatz-blatt button.es-zurueck{grid-area:zurueck;gap:2px;padding:4px 0;border:1px solid var(--es-rand2);--button-wash:rgba(143,208,255,.05);color:var(--es-text)}
+#einsatz-blatt button.es-zurueck span{font-size:22px;line-height:1;color:var(--es-akzent)}
+#einsatz-blatt button.es-zurueck small{font-size:calc(11.5px * var(--es-s));color:var(--es-leise)}
+#einsatz-blatt button.es-weiter{grid-area:weiter;gap:2px;padding:6px 16px;border:1px solid rgba(120,230,155,.45);--button-wash:#2b8a4c;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+#einsatz-blatt button.es-weiter b{font-size:calc(15px * var(--es-s));font-weight:700;letter-spacing:.01em}
+#einsatz-blatt button.es-weiter small{font-size:calc(12px * var(--es-s));color:rgba(230,255,238,.85);font-variant-numeric:tabular-nums}
+#einsatz-blatt button.es-weiter.es-starten{--button-wash:#2f9653;border-color:rgba(140,240,170,.6)}
+#einsatz-blatt button.es-weiter[aria-disabled="true"]{--button-wash:rgba(143,208,255,.05);border-color:var(--es-rand2);color:var(--es-leise);box-shadow:none}
+#einsatz-blatt button.es-weiter[aria-disabled="true"] small{color:var(--es-leise)}
+#einsatz-blatt button.es-weiter[aria-busy="true"]{cursor:progress}
+#einsatz-blatt button.es-zurueck:active,#einsatz-blatt button.es-weiter:not([aria-disabled="true"]):active{transform:scale(.985)}
+#einsatz-blatt button:focus-visible{outline:2px solid var(--es-akzent);outline-offset:2px}
+
+/* ---------- Handy ---------- */
+@media (max-width:767px){
+ #einsatz-blatt{background:none}
+ #einsatz-blatt .es-flaeche{width:100%;border-left:0;box-shadow:none}
+ #einsatz-blatt .es-innen{padding:10px 12px 20px}
+ #einsatz-blatt .es-kopf{padding:10px 12px 0}
+ #einsatz-blatt .es-fuss{padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));grid-template-columns:64px 1fr}
+ #einsatz-blatt .es-schritte button{flex-direction:column;gap:2px;font-size:calc(11px * var(--es-s))}
+ #einsatz-blatt .es-schritte li:not(.aktiv) button{font-size:0}
+ #einsatz-blatt .es-schritte li:not(.aktiv) button span{font-size:11px}
+ #einsatz-blatt .es-auftraege{grid-template-columns:1fr}
+ #einsatz-blatt .es-gueter{grid-template-columns:1fr}
+ #einsatz-blatt .es-fakten>div{grid-template-columns:minmax(84px,38%) 1fr}
+}
+@media (max-width:380px){
+ #einsatz-blatt .es-tempi{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+ #einsatz-blatt .es-zaehler{grid-template-columns:44px minmax(56px,1fr) 44px auto}
+}
+@media (hover:hover) and (pointer:fine){
+ #einsatz-blatt button.es-zielzeile:hover,#einsatz-blatt button.es-auftrag:hover,#einsatz-blatt button.es-chip:hover{border-color:var(--es-rand2);filter:brightness(1.08)}
+}
+@media (prefers-reduced-motion:reduce){#einsatz-blatt *{transition:none!important;animation:none!important}}
+
+/* Kopf der Planetenliste: Kolonieplätze frei / nächste Forschungsstufe (rahmen.js planetenliste) */
+body.game-client[data-rahmen] .planeten-kopf-hinweis{margin:-4px 4px 8px;font-size:calc(12px * var(--text-scale,1));color:var(--r-leise,#8ea4b8)}
+
+#einsatz-blatt .es-sofort{display:flex;flex-direction:column;gap:6px;margin:6px 0 12px}
+#einsatz-blatt .es-sofort button{width:100%}
+#einsatz-blatt .es-sofort small{color:var(--es-leise);font-size:calc(12px * var(--es-s))}
+
+/* Ereignisliste: feindlicher Anflug → Flotte retten (rahmen.js) */
+body.game-client button.ereignis-retten{margin-left:8px;min-height:32px;padding:2px 10px;border-radius:8px;border:1px solid rgba(79,168,255,.6);--button-wash:rgba(79,168,255,.14);color:#cfe6ff;font-size:12px;font-weight:600}
+@media (max-width:767px),(pointer:coarse){body.game-client button.ereignis-retten{min-height:44px}}
+
+/* ---------- Tempo-Auswahl Hin/Rück (Karl 24.10.: Auswahl mit Zeit, Treibstoff und Ersparnis je Stufe) ---------- */
+#einsatz-blatt .es-tws{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;align-items:start}
+#einsatz-blatt .es-tw{border:1px solid var(--es-rand2);border-radius:12px;background:var(--es-glas);overflow:hidden}
+#einsatz-blatt .es-tw.offen{border-color:var(--es-akzent);box-shadow:0 0 0 1px var(--es-akzent) inset}
+#einsatz-blatt button.es-tw-knopf{display:grid;grid-template-columns:1fr auto;grid-template-areas:"titel pfeil" "wert pfeil" "info pfeil";gap:0 10px;width:100%;min-height:64px;padding:10px 14px;border:0;border-radius:0;--button-wash:transparent;color:var(--es-text);text-align:left}
+#einsatz-blatt .es-tw-titel{grid-area:titel;font-size:calc(11px * var(--es-s));letter-spacing:.12em;text-transform:uppercase;color:var(--es-akzent)}
+#einsatz-blatt button.es-tw-knopf>b{grid-area:wert;font-size:calc(20px * var(--es-s));font-variant-numeric:tabular-nums;line-height:1.2}
+#einsatz-blatt .es-tw-wert strong{color:#fff}
+#einsatz-blatt .es-tw-wert{grid-area:info;font-size:calc(12.5px * var(--es-s));color:var(--es-leise);font-variant-numeric:tabular-nums}
+#einsatz-blatt .es-tw-wert em,#einsatz-blatt .es-tw-option em{font-style:normal}
+#einsatz-blatt em.spart{color:var(--es-gruen2)}
+#einsatz-blatt .es-tw-pfeil{grid-area:pfeil;align-self:center;width:10px;height:10px;border-right:2px solid var(--es-leise);border-bottom:2px solid var(--es-leise);transform:rotate(45deg);margin-top:-6px;transition:transform .15s}
+#einsatz-blatt .es-tw.offen .es-tw-pfeil{transform:rotate(225deg);margin-top:6px}
+#einsatz-blatt .es-tw-liste{border-top:1px solid var(--es-rand);padding:6px;display:flex;flex-direction:column;gap:4px;max-height:min(60vh,520px);overflow-y:auto;overscroll-behavior:contain}
+#einsatz-blatt button.es-tw-option{display:grid;grid-template-columns:66px 1fr auto;grid-template-areas:"pz dauer an" "pz spar spar";gap:0 10px;align-items:center;min-height:52px;padding:6px 10px;border-radius:8px;border:1px solid transparent;--button-wash:transparent;color:var(--es-text);text-align:left;font-variant-numeric:tabular-nums}
+#einsatz-blatt button.es-tw-option>b{grid-area:pz;font-size:calc(16px * var(--es-s));white-space:nowrap}
+#einsatz-blatt button.es-tw-option>small,#einsatz-blatt button.es-tw-option>strong,#einsatz-blatt button.es-tw-option>em{white-space:nowrap}
+#einsatz-blatt .es-tw-dauer{grid-area:dauer;font-weight:600}
+#einsatz-blatt button.es-tw-option>.es-tw-spar{grid-area:spar;font-size:calc(13px * var(--es-s));color:var(--es-leise);white-space:nowrap}
+#einsatz-blatt .es-tw-spar strong,#einsatz-blatt .es-tw-wert strong{color:#fff;font-weight:700}
+#einsatz-blatt .es-tw-spar em,#einsatz-blatt .es-tw-wert em{font-style:normal}
+#einsatz-blatt .es-tw-spar em.spart,#einsatz-blatt .es-tw-wert em.spart{color:var(--es-gruen2)}
+#einsatz-blatt button.es-tw-option>.es-tw-kosten{grid-area:kosten;text-align:right;font-size:calc(14px * var(--es-s));color:#fff;font-weight:700}
+#einsatz-blatt button.es-tw-option>.es-tw-spar.spart{color:var(--es-gruen2)}
+#einsatz-blatt button.es-tw-option>small{color:var(--es-leise);font-size:calc(12px * var(--es-s))}
+#einsatz-blatt button.es-tw-option>.es-tw-an{grid-area:an;text-align:right}
+#einsatz-blatt button.es-tw-option[aria-selected="true"]{border-color:var(--es-akzent);--button-wash:color-mix(in srgb,var(--es-akzent) 16%,transparent)}
+#einsatz-blatt button.es-tw-option[aria-selected="true"]>b::before{content:"✓ ";color:var(--es-akzent)}
+#einsatz-blatt .es-tw-hinweis{margin:6px 4px 2px;font-size:calc(12px * var(--es-s));color:var(--es-leise)}
+#einsatz-blatt .es-zp{display:flex;flex-direction:column}
+#einsatz-blatt .es-zp-linie{display:block;width:0;height:12px;margin-left:24px;border-left:2px dashed color-mix(in srgb,var(--es-akzent) 45%,transparent)}
+#einsatz-blatt .es-zp-ziel{display:grid;grid-template-columns:minmax(0,1fr);gap:2px;padding:10px 14px;border:1px dashed var(--es-rand2);border-radius:12px;background:rgba(4,9,18,.5)}
+/* Titel „Am Ziel“ stand buchstabenweise in einer 0-px-Spalte (grid-area:titel ohne benannten Bereich; Funktionsprüfung 25.10.2026). */
+#einsatz-blatt .es-zp-ziel>*{grid-area:auto!important;grid-column:1/-1;min-width:0}
+#einsatz-blatt .es-zp-ziel b{font-size:calc(14px * var(--es-s));line-height:1.3}
+#einsatz-blatt .es-zp-ziel small{font-size:calc(12px * var(--es-s));color:var(--es-leise)}
+#einsatz-blatt .es-zp-offen{border-style:solid;border-color:color-mix(in srgb,var(--es-orange) 45%,transparent)}
+#einsatz-blatt .es-tw-regler{margin:6px 6px 0}
+#einsatz-blatt .es-fp li.bleibt .es-fp-punkt{background:var(--es-leise)}
+#einsatz-blatt .es-einweg{margin:0;padding:12px 14px;border:1px dashed var(--es-rand2);border-radius:12px}
+
+/* ---------- Ankunft planen, Kopplung, Verband ---------- */
+#einsatz-blatt .es-termin{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0}
+#einsatz-blatt .es-termin label,#einsatz-blatt .es-preis{display:flex;flex-direction:column;gap:4px;min-width:0;font-size:calc(12px * var(--es-s));color:var(--es-leise)}
+#einsatz-blatt .es-termin input,#einsatz-blatt .es-preis input{min-height:48px;padding:8px 12px;border-radius:10px;border:1px solid var(--es-rand2);background:#081322;color:#fff;font:inherit;font-size:calc(16px * var(--es-s));font-variant-numeric:tabular-nums}
+#einsatz-blatt .es-termin small{grid-column:1/-1;color:var(--es-leise);font-size:calc(12px * var(--es-s))}
+#einsatz-blatt .es-kopplung{display:flex;flex-direction:column;gap:6px}
+#einsatz-blatt .es-wahlzeile{display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start;min-height:52px;padding:10px 12px;margin:0 0 6px;border-radius:10px;border:1px solid var(--es-rand);background:var(--es-glas2);cursor:pointer;min-width:0}
+#einsatz-blatt .es-wahlzeile.an{border-color:var(--es-akzent);box-shadow:inset 0 0 0 1px var(--es-akzent)}
+#einsatz-blatt .es-wahlzeile input{width:20px;height:20px;min-height:0;margin:2px 0 0;accent-color:var(--es-akzent)}
+#einsatz-blatt .es-wahlzeile span{display:flex;flex-direction:column;gap:2px;min-width:0}
+#einsatz-blatt .es-wahlzeile small{color:var(--es-leise);font-size:calc(12px * var(--es-s))}
+#einsatz-blatt .es-wahlzeile em{font-style:normal;font-size:calc(12.5px * var(--es-s))}
+#einsatz-blatt em.gut{color:var(--es-gruen2)}#einsatz-blatt em.warn{color:var(--es-orange)}#einsatz-blatt em.schlecht{color:var(--es-rot)}
+
+/* ---------- Fahrplan ---------- */
+#einsatz-blatt .es-fahrplan{padding:12px;border:1px solid var(--es-rand);border-radius:12px;background:var(--es-glas)}
+#einsatz-blatt .es-fp-balken{display:flex;height:10px;border-radius:999px;overflow:hidden;background:rgba(143,208,255,.08);margin:0 0 12px}
+#einsatz-blatt .es-fp-balken span{display:block;height:100%;width:0}
+#einsatz-blatt .es-fp-balken .hin{background:var(--es-akzent)}
+#einsatz-blatt .es-fp-balken .halt{background:repeating-linear-gradient(135deg,rgba(242,201,76,.75) 0 6px,rgba(242,201,76,.35) 6px 12px)}
+#einsatz-blatt .es-fp-balken .rueck{background:color-mix(in srgb,var(--es-akzent) 45%,transparent)}
+#einsatz-blatt .es-fp{list-style:none;margin:0;padding:0}
+#einsatz-blatt .es-fp li{display:grid;grid-template-columns:22px 1fr;gap:10px;position:relative}
+#einsatz-blatt .es-fp li>div{display:flex;flex-direction:column;min-width:0;padding:0 0 4px}
+#einsatz-blatt .es-fp li b{font-size:calc(13px * var(--es-s))}
+#einsatz-blatt .es-fp li>div>span{font-variant-numeric:tabular-nums;color:#fff;font-size:calc(15px * var(--es-s))}
+#einsatz-blatt .es-fp li small{color:var(--es-leise);font-size:calc(12px * var(--es-s))}
+#einsatz-blatt .es-fp-punkt{width:14px;height:14px;margin:3px 0 0 4px;border-radius:50%;border:2px solid var(--es-akzent);background:var(--es-grund)}
+#einsatz-blatt .es-fp li.ziel .es-fp-punkt{background:var(--es-akzent)}
+#einsatz-blatt .es-fp li.heim .es-fp-punkt{border-color:var(--es-gruen2);background:var(--es-gruen2)}
+#einsatz-blatt .es-fp-strecke{min-height:30px}
+#einsatz-blatt .es-fp-linie{justify-self:center;width:2px;height:100%;min-height:26px;background:linear-gradient(var(--es-akzent),color-mix(in srgb,var(--es-akzent) 30%,transparent))}
+#einsatz-blatt .es-fp-strecke>div{justify-content:center}
+#einsatz-blatt .es-sprit{display:flex;flex-wrap:wrap;gap:2px 8px;align-items:baseline;margin:10px 0 0;padding:10px 12px;border-radius:10px;border:1px solid rgba(143,208,255,.25);background:rgba(143,208,255,.05);font-variant-numeric:tabular-nums}
+#einsatz-blatt .es-sprit span{color:var(--es-leise);font-size:calc(12.5px * var(--es-s))}
+#einsatz-blatt .es-sprit small{flex-basis:100%;color:var(--es-leise);font-size:calc(12px * var(--es-s))}
+#einsatz-blatt .es-sprit.fehlt{border-color:rgba(255,100,100,.55);background:rgba(255,100,100,.08)}
+#einsatz-blatt .es-sprit.fehlt b{color:#ffc9c9}
+
+/* ---------- Info-Symbole und Unterseiten ---------- */
+#einsatz-blatt button.es-info{display:inline-grid;place-items:center;flex:none;width:28px;height:28px;min-height:0;padding:0;margin:0 0 0 4px;border-radius:50%;border:1px solid var(--es-rand2);--button-wash:transparent;color:var(--es-blau);font:600 13px/1 Oxanium,"Segoe UI",system-ui,sans-serif;text-transform:none;letter-spacing:0;vertical-align:middle;position:relative}
+#einsatz-blatt button.es-info::after{content:"";position:absolute;inset:-8px}
+#einsatz-blatt .es-auftrag-rahmen{position:relative}
+#einsatz-blatt .es-auftrag-rahmen>button.es-auftrag{width:100%;padding-right:52px}
+#einsatz-blatt .es-auftrag-rahmen>button.es-info{position:absolute;top:8px;right:8px;width:36px;height:36px}
+#einsatz-blatt .es-infobereich{position:absolute;inset:0;pointer-events:none;z-index:5}
+#einsatz-blatt.es-info-offen .es-infobereich{pointer-events:auto}
+#einsatz-blatt .es-unterseite{position:absolute;inset:0;display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(143,208,255,.06),transparent 200px),var(--es-grund);animation:es-us-rein .16s ease-out}
+@keyframes es-us-rein{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+#einsatz-blatt .es-us-kopf{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--es-rand)}
+#einsatz-blatt .es-us-kopf h3{margin:0;font-size:calc(17px * var(--es-s));color:#f1f6fb}
+#einsatz-blatt button.es-us-zurueck{width:44px;height:44px;min-height:44px;padding:0;border-radius:50%;border:1px solid var(--es-rand2);--button-wash:transparent;color:var(--es-text);font-size:24px;line-height:1}
+#einsatz-blatt .es-us-inhalt{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:12px 16px}
+#einsatz-blatt .es-us-inhalt section{margin:0 0 14px;padding:12px 14px;border:1px solid var(--es-rand);border-left:3px solid var(--es-akzent);border-radius:10px;background:var(--es-glas)}
+#einsatz-blatt .es-us-inhalt h4{margin:0 0 6px;color:var(--es-akzent)}
+#einsatz-blatt .es-us-inhalt p{margin:0;line-height:1.5}
+#einsatz-blatt .es-info-liste{margin:0;padding:0 0 0 18px}
+#einsatz-blatt .es-info-liste li{margin:0 0 4px}
+#einsatz-blatt .es-us-fuss{display:flex;flex-direction:column;gap:8px;padding:8px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--es-rand)}
+#einsatz-blatt .es-us-fuss button{width:100%;justify-content:center;min-height:48px}
+#einsatz-blatt .es-unterseite .es-bedingungen{margin:0}
+#einsatz-blatt .es-preis{margin:6px 0}
+@media (prefers-reduced-motion:reduce){#einsatz-blatt .es-unterseite{animation:none}}
+
+/* ---------- Bildwelt (Karl 24.10.: transparente Hintergrundbilder, mehr Coolness) ----------
+   Oben das Motiv der Auftragsgruppe vollständig (100 % Breite, eigenes Seitenverhältnis – nie beschnitten), nach unten
+   ausgeblendet; darüber ein Schleier in Gruppenfarbe. Karten tragen das typische Schiff blass rechts. Ruhig, ohne Bewegung. */
+#einsatz-blatt .es-flaeche::before{content:"";position:absolute;left:0;right:0;top:0;aspect-ratio:2/1;max-height:70%;background:var(--es-bild,none) top center/100% auto no-repeat;opacity:.5;
+ -webkit-mask-image:linear-gradient(#000 0%,rgba(0,0,0,.75) 40%,transparent 100%);mask-image:linear-gradient(#000 0%,rgba(0,0,0,.75) 40%,transparent 100%);pointer-events:none;z-index:0}
+#einsatz-blatt .es-flaeche::after{content:"";position:absolute;left:0;right:0;top:0;height:46%;background:radial-gradient(120% 70% at 85% 0%,color-mix(in srgb,var(--es-akzent) 18%,transparent),transparent 70%);pointer-events:none;z-index:0}
+#einsatz-blatt .es-kopfbereich,#einsatz-blatt .es-innen,#einsatz-blatt .es-fuss{position:relative;z-index:1}
+#einsatz-blatt .es-kopf{background:linear-gradient(180deg,rgba(4,9,18,.1),rgba(4,9,18,.6))}
+#einsatz-blatt .es-kopf h2{text-shadow:0 2px 12px rgba(0,0,0,.6)}
+#einsatz-blatt button.es-auftrag{position:relative;overflow:hidden;isolation:isolate}
+#einsatz-blatt button.es-auftrag::after{content:"";position:absolute;right:-6px;top:50%;width:46%;height:110%;transform:translateY(-50%);background:var(--es-karte,none) right center/contain no-repeat;opacity:.22;
+ -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 55%);mask-image:linear-gradient(90deg,transparent 0%,#000 55%);pointer-events:none;z-index:-1;mix-blend-mode:lighten}
+#einsatz-blatt button.es-auftrag.gewaehlt::after{opacity:.38}
+#einsatz-blatt button.es-auftrag.gesperrt::after{opacity:.1;filter:grayscale(1)}
+#einsatz-blatt .es-auftrag-rahmen>button.es-auftrag::after{right:40px}
+
+/* Lösungsknopf einer offenen Bedingung unter dem Text, nicht daneben (sonst bricht der Text Wort für Wort um) */
+#einsatz-blatt .es-bedingungen li>button{grid-column:2;justify-self:start}
+
+/* Lage: Hinweistext über die ganze Breite */
+#einsatz-blatt .es-lagezahlen>p{grid-column:1/-1;margin:0}
+/* Flotte als Bildreihe (Start-Schritt) */
+#einsatz-blatt .es-reihe{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin:0 0 12px}
+#einsatz-blatt .es-reihe-schiff{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 6px;border-radius:10px;border:1px solid var(--es-rand);background:radial-gradient(80% 70% at 50% 35%,color-mix(in srgb,var(--es-akzent) 14%,transparent),transparent 75%),rgba(6,12,24,.55)}
+#einsatz-blatt .es-reihe-schiff img{width:84px;height:48px;object-fit:contain;mix-blend-mode:lighten}
+#einsatz-blatt .es-reihe-schiff b{font-size:calc(16px * var(--es-s));font-variant-numeric:tabular-nums;color:#fff}
+#einsatz-blatt .es-reihe-schiff small{font-size:calc(11.5px * var(--es-s));color:var(--es-leise);text-align:center;line-height:1.2}
+/* Zielbild mit Ring in Gruppenfarbe */
+#einsatz-blatt .es-zielkarte .es-zielbild{box-shadow:0 0 0 2px color-mix(in srgb,var(--es-akzent) 45%,transparent),0 0 24px color-mix(in srgb,var(--es-akzent) 22%,transparent)}
+/* Querformat am Handy (Einsatzprobe 25.10.2026: bei 640×360 belegten Kopf und Fuß zwei Drittel der Höhe, ~115 px Inhalt):
+   Untertitel aus (die Zielkarte im Inhalt nennt das Ziel), Kopf und Schrittleiste flacher, Fußtext neben die Knöpfe.
+   Tippziele bleiben ≥ 44 px. */
+@media (max-height:460px) and (orientation:landscape){
+ #einsatz-blatt .es-kopf{padding:6px 12px 0}
+ #einsatz-blatt .es-kopf p{display:none}
+ #einsatz-blatt .es-kopf h2{font-size:calc(16px * var(--es-s))}
+ #einsatz-blatt .es-schritte{margin-top:2px;padding-bottom:4px}
+ #einsatz-blatt .es-schritte li::after{bottom:-4px}
+ #einsatz-blatt .es-fuss{grid-template-columns:auto 1fr minmax(160px,40%);grid-template-areas:"zurueck text weiter";align-items:center;padding:6px 12px calc(6px + env(safe-area-inset-bottom,0px))}
+ #einsatz-blatt .es-fuss-text{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+ #einsatz-blatt button.es-zurueck,#einsatz-blatt button.es-weiter{min-height:44px}
+}

@@ -7,6 +7,10 @@ function seiteSpiel() {
     h("div.platz", { id: "spielplatz" }, h("div.leer", { stil: { paddingTop: "30vh" } }, "Das Spiel lädt … (nur die Seite deines Spielservers ist erreichbar)")),
     h("aside.seitenleiste", null,
       h("div.zeile", { stil: { marginBottom: "10px" } }, h("b.gold", { stil: { letterSpacing: ".18em", fontSize: "12px" } }, "DER RAT"), h("span.rechts"), knopf("Im Browser", () => sende("browser_extern"), "leise klein", "extern")),
+      h("div.zeile", { stil: { marginBottom: "10px", flexWrap: "wrap" } },
+        knopf("Briefkasten",()=>sende("spiel_navigieren",{seite:"briefkasten"}),"klein"),
+        knopf("Codex",()=>sende("spiel_navigieren",{seite:"codex"}),"klein"),
+        knopf("Kampfsimulator",()=>sende("spiel_navigieren",{seite:"warsim"}),"klein")),
       h("div.liste", null, ROLLEN.map((r) => { const a = rolleA(r), aktiv = rolleW(r).aktiv, denkt = a.status === "denkt";
         return h("div.eintrag.wahl", { stil: { "--rolle": ROLLENFARBE[r] }, onclick: () => nav("rat", { rolle: r }) }, avatar(r, 36), h("div.text", null, h("b", null, ROLLENTITEL[r]),
           h("span.winzig.matt", null, !aktiv ? "nicht im Rat" : denkt ? "denkt …" : a.naechster ? "nächster Zug " + in_(a.naechster) : (laeuft() ? "wartet" : "ruht")),

@@ -10,14 +10,20 @@ use argon2::{
 };
 mod communication;
 mod workspace;
+mod akten;
+pub mod agenten;
+mod ziele;
 pub mod eingabe;
 pub mod fairplay;
 pub mod harness;
 pub mod mcp;
+// 20.10.2026: interne Spielerart (Bot, Agent, Mensch, Mensch mit Agent); nur für Server und Spielleitung.
+pub mod spielerart;
 mod uebergabe;
 pub mod local;
 pub mod public_catalog;
 pub mod web_assets;
+pub mod beschreibungen;
 use kern::{aktion::Aktion, regeln::Regelwerk, typen::*, Welt};
 use lauf::bots::{Bot, Bottyp};
 use rand::{rngs::OsRng, RngCore};
@@ -34,8 +40,8 @@ use std::{
 pub const API_VERSION: u32 = 1;
 pub const BOT_COUNT: u16 = 30;
 pub const SEATS: u16 = 20;
-/// Local rounds: pure time steps write the full checkpoint at most every 30 wall seconds.
-pub const LOCAL_TICK_CHECKPOINT_SECS: u64 = 30;
+/// Local rounds persist every five-second tick. Confirmed completions are durable.
+pub const LOCAL_TICK_CHECKPOINT_SECS: u64 = 5;
 /// Local rounds keep battle reports and daily values of the last 30 game days in memory.
 pub const LOCAL_REPORT_DAYS: i64 = 30;
 /// Local rounds keep the write-only research archives (actions, domain events) of the last
@@ -46,6 +52,35 @@ pub fn now() -> i64 {
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs() as i64
+}
+
+#[cfg(test)] mod recovery_tests {
+ use super::*;
+ fn root()->PathBuf{std::env::temp_dir().join(format!("stern-recovery-{}",token()))}
+ #[test] fn panicking_transaction_rolls_back_world_and_sql_and_keeps_accepting_commands(){
+  let mut g=Game::open_world(&root(),712,Some(30)).unwrap();let before=g.world.hash();let tempo=g.runtime.tempo;
+  let n:i64=g.db.query_row("SELECT count(*) FROM audit",[],|r|r.get(0)).unwrap();
+  let reply=g.transaction(|g|{g.runtime.tempo=17;g.world.spieler[0].stufe=4;g.db.execute("INSERT INTO audit(time,kind,result) VALUES(0,'test','rollback')",[]).unwrap();panic!("Controlled recovery fault");});
+  assert_eq!(reply.unwrap_err().0,503);assert_eq!(g.world.hash(),before);assert_eq!(g.runtime.tempo,tempo);
+  let after:i64=g.db.query_row("SELECT count(*) FROM audit",[],|r|r.get(0)).unwrap();assert_eq!(n,after);
+  g.transaction(|g|{g.runtime.tempo=2;Ok(json!({"ok":true}))}).unwrap();assert_eq!(g.runtime.tempo,2);
+ }
+ #[test] fn simultaneous_research_builds_and_fabrication_are_durable_without_shutdown(){
+  let path=root();let mut g=Game::open_world(&path,712,Some(30)).unwrap();g.runtime.bots_enabled=false;
+  for sid in 0..8u16 {
+   let p=g.world.spieler[sid as usize].heimat as usize;let k=g.world.planeten[p].koord;g.world.spieler[sid as usize].stufe=5;
+   g.world.planeten[p].bevoelkerung=100_000*M;g.world.planeten[p].gebaeude[Gebaeude::Akademie.idx()]=10;
+   g.world.planeten[p].gebaeude[Gebaeude::Solarkraftwerk.idx()]=20;g.world.planeten[p].gebaeude[Gebaeude::Farm.idx()]=20;g.world.planeten[p].gebaeude[Gebaeude::Labor.idx()]=5;g.world.planeten[p].gebaeude[Gebaeude::Werft.idx()]=1;g.world.planeten[p].bestand=[1_000_000*M;GUETER];g.world.raten_neu(p);
+   assert!(g.world.fp_rate(sid)>0,"isolated fixture needs a working laboratory");
+   g.world.forschen(sid,Rolle::Alle,Forschung::Energietechnik,None).unwrap();g.world.spieler[sid as usize].forschung_aktiv.as_mut().unwrap().fp_rest=1;
+   g.world.bauen(sid,Rolle::Alle,k,Gebaeude::Erzmine).unwrap();g.world.planeten[p].bauschleife[0].fertig=Some(STUNDE);g.world.planeten[p].bauschleife[0].dauer=STUNDE;g.world.plane(STUNDE,kern::welt::EreignisArt::BauFertig{planet:p as u32});
+   g.world.fertigen(sid,Rolle::Alle,k,kern::welt::Produkt::Einheit(Einheit::Spionagesonde),1).unwrap();g.world.planeten[p].fertigung_naechste[0]=STUNDE;g.world.plane(STUNDE,kern::welt::EreignisArt::FertigungFertig{planet:p as u32,schleife:0});
+  }
+  g.checkpoint_now().unwrap();let start=std::time::Instant::now();g.advance(STUNDE as u32).unwrap();println!("24 simultaneous completions: {} ms",start.elapsed().as_millis());
+  for sid in 0..8u16{let p=g.world.spieler[sid as usize].heimat as usize;assert_eq!(g.world.spieler[sid as usize].forschung[Forschung::Energietechnik.idx()],1);assert!(g.world.planeten[p].bauschleife.is_empty());assert_eq!(g.world.planeten[p].einheiten[Einheit::Spionagesonde.idx()],1);}
+  let hash=g.world.hash();let time=g.world.zeit;drop(g); // no graceful shutdown/final checkpoint
+  let resumed=Game::open_world(&path,712,Some(30)).unwrap();assert_eq!(resumed.world.zeit,time);assert_eq!(resumed.world.hash(),hash);
+ }
 }
 pub fn token() -> String {
     let mut b = [0u8; 32];
@@ -103,6 +138,10 @@ pub struct Runtime {
     leases: BTreeMap<SpielerId, Lease>,
     #[serde(default = "default_bot_period")]
     pub bot_period_secs: i64,
+    /// Opferschutz gegen Räuberbots (Startoption `--opferschutz`, Admin `settings.opferschutz`); neue Welten: aus,
+    /// ältere Laufzeiten ohne das Feld: an (wie damals).
+    #[serde(default)]
+    pub opferschutz: lauf::bots::Opferschutz,
     agent_status: BTreeMap<SpielerId, Value>,
     pub bot_actions: u64,
     pub bot_rejected: u64,
@@ -136,6 +175,9 @@ pub struct Game {
     pub data_root: PathBuf,
     pub storage_error: Option<String>,
     local_tick_times: Vec<f64>,
+    /// Last local time step and its carried game-second remainder: the view reports the tick
+    /// age, so clients extrapolate from the real current time instead of jumping back each poll.
+    pub(crate) local_tick_at: Option<(std::time::Instant, f64)>,
     /// Local runtime (cockpit singleplayer/LAN): bots answer commands at once, archived
     /// histories leave memory, and pure time steps checkpoint at a bounded rate.
     pub(crate) local: bool,
@@ -179,10 +221,22 @@ fn fresh(seed: u64, rules: &str) -> Result<(Welt, Runtime), String> {
 fn fresh_with(seed: u64, mut r: Regelwerk, bot_count: u16, seats: u16) -> Result<(Welt, Runtime), String> {
     r.welt.fenster_sekunden = 1;
     let mut world = Welt::neu(r, seed, (bot_count + seats) as usize)?;
+    world.ausbau_aktivieren()?;
+    // Neue Welten starten in der Mondgeneration (STERNE13); laufende Welten bleiben unverändert.
+    world.monde_aktivieren()?;
+    // Invasion v1 (Bomber, 48-h-Belagerung, Allianzhilfe, Volksmiliz) nur für neue Welten.
+    world.invasion_aktivieren()?;
+    // Allianzen bis 50 Mitglieder und Dysonsphäre nur für neue Welten (docs/DYSONSPHAERE.md).
+    world.allianz_v2_aktivieren()?;
+    world.dyson_aktivieren()?;
+    // Technik v1 (Antriebswechsel, Plasmatechnik; regeln/technik.ron) nur für neue Welten.
+    world.technik_aktivieren()?;
+    for sid in 0..world.spieler.len(){world.heimat_anpassen(sid as SpielerId);}
+    for pid in 0..world.planeten.len(){world.raten_neu(pid);}
     let mut bots = BTreeMap::new();
     for sid in 0..bot_count {
         world.spieler[sid as usize].ki = false;
-        bots.insert(sid, Bot::neu(Bottyp::ALLE[sid as usize % 4], sid));
+        let mut bot=Bot::neu(Bottyp::ALLE[sid as usize % 4], sid);bot.naechster=0;bots.insert(sid,bot);
     }
     for sid in bot_count..bot_count + seats {
         world.spieler[sid as usize].name = format!("Freier Startplatz {}", sid - bot_count + 1);
@@ -197,7 +251,8 @@ fn fresh_with(seed: u64, mut r: Regelwerk, bot_count: u16, seats: u16) -> Result
             paused: false,
             bots,
             bots_enabled: true,
-            bot_period_secs: 7200,
+            bot_period_secs: 900,
+            opferschutz: lauf::bots::Opferschutz::neue_welt(),
             revision: 0,
             leases: BTreeMap::new(),
             agent_status: BTreeMap::new(),
@@ -211,9 +266,24 @@ fn fresh_with(seed: u64, mut r: Regelwerk, bot_count: u16, seats: u16) -> Result
         },
     ))
 }
+/// Opferschutz aus JSON übernehmen: `true`/`false` schaltet nur ein oder aus, ein Objekt setzt `aktiv`,
+/// `pause_stunden` (1 bis 168) und `neulinge_tage` (0 bis 30); fehlende Felder bleiben wie bisher.
+pub fn opferschutz_lesen(v: &Value, alt: lauf::bots::Opferschutz) -> Result<lauf::bots::Opferschutz, String> {
+    let mut o = alt;
+    if let Some(b) = v.as_bool() { o.aktiv = b; return Ok(o); }
+    if !v.is_object() { return Err("opferschutz: true, false oder {aktiv, pause_stunden, neulinge_tage}".into()); }
+    if let Some(b) = v.get("aktiv") { o.aktiv = b.as_bool().ok_or("opferschutz.aktiv: true oder false")?; }
+    if let Some(n) = v.get("pause_stunden") { o.pause_stunden = n.as_u64().filter(|n| (1..=168).contains(n)).ok_or("opferschutz.pause_stunden: 1 bis 168")? as u32; }
+    if let Some(n) = v.get("neulinge_tage") { o.neulinge_tage = n.as_u64().filter(|n| *n <= 30).ok_or("opferschutz.neulinge_tage: 0 bis 30")? as u32; }
+    Ok(o)
+}
 impl Game {
     pub fn open(root: &Path, seed: u64) -> Result<Self, String> {
         Self::open_world(root, seed, None)
+    }
+    /// Lokale Welt wie in der App (Diagnosewerkzeuge, z. B. examples/bot_lage.rs).
+    pub fn open_local(root: &Path, seed: u64, bots: u16) -> Result<Self, String> {
+        Self::open_world(root, seed, Some(bots))
     }
     fn open_world(root: &Path, seed: u64, local_bots: Option<u16>) -> Result<Self, String> {
         std::fs::create_dir_all(root).map_err(|e| e.to_string())?;
@@ -244,7 +314,7 @@ impl Game {
                 return Err("Unbekannte Server-Datenversion; Originaldaten bleiben erhalten".into());
             }
             (
-                Welt::aus_bytes(&w)?,
+                Welt::aus_bytes_fuer_spiel(&w)?,
                 serde_json::from_slice(&r).map_err(|e| e.to_string())?,
             )
         } else {
@@ -266,10 +336,13 @@ impl Game {
         };
         communication::setup(&db)?;
         workspace::setup(&db)?;
+        akten::setup(&db)?;
+        agenten::setup(&db)?;
         let email_code_key=identity::setup(&db,root)?;
         authenticator::setup(&db)?;
         harness::setup(&db)?;
         uebergabe::setup(&db)?;
+        spielerart::setup(&db)?;
         let fairplay = std::cell::RefCell::new(fairplay::setup(&db, root)?);
         mail::MailConfig::initialize(root)?;
         let mut g = Self {
@@ -279,6 +352,7 @@ impl Game {
             data_root: root.into(),
             storage_error: None,
             local_tick_times: Vec::new(),
+            local_tick_at: None,
             local: local_bots.is_some(),
             tick_checkpoint_secs: if local_bots.is_some() { LOCAL_TICK_CHECKPOINT_SECS } else { 0 },
             local_error: None,
@@ -294,7 +368,13 @@ impl Game {
         };
         // No downtime catch-up and no model command survives a process restart.
         g.runtime.leases.clear();
+        // 20.10.2026: Spielerart aller Plätze erfassen; Freigaben, die der Neustart gekappt hat, im Kontoprotokoll beenden.
+        g.spielerart_start().map_err(|e| e.1)?;
+        g.world.industrie_aktivieren();
         g.archive_tail_after_checkpoint_remove()?;
+        // Explicit content upgrade retains account, world identity, orders and every
+        // legacy ship/defense count. The versioned V11 snapshot stores the new layout.
+        // Keep the saved generation and rule identity when resuming.
         g.save().map_err(|e| e.1)?;
         Ok(g)
     }
@@ -402,17 +482,37 @@ impl Game {
         }
         let w = self.world.clone();
         let r = self.runtime.clone();
+        // Sicherheitsnetz (Karl 27.10.2026, App-Softlock nach schnellem Bauen): Hängt noch eine Transaktion offen, würde
+        // jedes BEGIN scheitern und kein Befehl käme mehr durch – bis zum Neustart. Offene Reste zurückrollen.
+        if !self.db.is_autocommit() {
+            eprintln!("Offene Spieltransaktion vor neuem Befehl zurückgerollt");
+            let _ = self.db.execute_batch("ROLLBACK");
+        }
         self.db
             .execute_batch("BEGIN IMMEDIATE")
             .map_err(|_| err(503, "Datenbank belegt"))?;
         self.checkpoint_written = false;
-        let result=f(self).and_then(|v| {
+        // A failed event must restore both the world and its SQL transaction. Otherwise
+        // one panicking completion kills the only game worker and all later HTTP calls.
+        // Der Schutz umfasst auch die Nachphase (Ereignisse, Spielerart, Speichern): eine Panik dort ließ die Transaktion
+        // offen, danach scheiterte jedes BEGIN IMMEDIATE („Datenbank belegt“) – der lokale Server nahm keinen Befehl mehr an.
+        let result=std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| -> Reply {
+            let v = f(self)?;
             if let Some(context)=&self.audit_context {
                 self.db.execute("INSERT INTO audit(time,account,kind,result) VALUES(?1,NULL,'admin',?2)",params![now(),json!({"context":context,"revision":self.runtime.revision+1,"world_id":self.runtime.world_id}).to_string()]).map_err(|_|err(503,"Admin-Audit konnte nicht gespeichert werden"))?;
             }
             self.runtime.revision+=1; let logs=self.world.log_abholen();self.record_player_events(logs)?;
+            if self.runtime.world_id==r.world_id && self.world.zeit>w.zeit {
+                self.db.execute("INSERT INTO simulation_clock(world_id,sim_from,sim_to,wall_end,tempo) VALUES(?1,?2,?3,?4,?5)",
+                    params![self.runtime.world_id,w.zeit,self.world.zeit,now(),r.tempo.max(1)]).map_err(|_|err(503,"Weltuhr nicht speicherbar"))?;
+            }
+            // 20.10.2026: Wechsel der Spielerart und Agentenfreigaben im Kontoprotokoll nachführen (gleiche Transaktion).
+            self.spielerart_abgleichen()?;
             if checkpoint || self.checkpoint_due() {self.save()?;} else {self.save_archive()?;}
             Ok(v)
+        })).unwrap_or_else(|_| {
+            eprintln!("Spieltransaktion zurückgerollt: unerwarteter Verarbeitungsfehler");
+            Err(err(503,"Verarbeitung wurde sicher zurückgesetzt; bitte erneut versuchen"))
         });
         if result.is_ok() && self.db.execute_batch("COMMIT").is_ok() {
             if self.checkpoint_written {
@@ -439,7 +539,7 @@ impl Game {
         if self.runtime.paused || self.world.beendet() {
             return Ok(json!({"paused":true}));
         }
-        self.transaction_with(false, |g| {
+        self.transaction_with(self.local, |g| {
             g.advance_steps(seconds.min(3600))
         })
     }
@@ -473,19 +573,27 @@ impl Game {
             let target = self.world.zeit + seconds.min(3600) as i64;
             let script_players=self.runtime.bots.keys().copied().collect();
             while self.world.zeit < target {
-                if !self.world.schritt() {
+                if !self.world.schritt_bis(target) {
                     break;
                 }
                 let logs=self.world.log_abholen();self.record_player_events(logs)?;
                 if self.runtime.bots_enabled {
-                    let sids:Vec<_>=self.runtime.bots.iter().filter(|(_,b)|b.naechster<=self.world.zeit).map(|(sid,_)|*sid).collect();
+                    let threatened:std::collections::BTreeSet<_>=self.world.kolonisation.besetzungen.iter()
+                        .filter(|(id,_)|self.world.ausbau.boden.miliz.get(id).is_none_or(|m|m.personen.gesamt()==0))
+                        .map(|(_,occupation)|occupation.verteidiger).collect();
+                    let sids:Vec<_>=self.runtime.bots.iter().filter(|(sid,b)|b.naechster<=self.world.zeit||threatened.contains(sid)).map(|(sid,_)|*sid).collect();
+                    let schutz=self.runtime.opferschutz;
+                    // Mitspieler (aktive Reiche ohne Skriptbot) genießen die Fairnessregeln der Bots (lauf::bots, Mitspieler).
+                    let menschen=self.mitspieler();
+                    lauf::bots::mit_mitspielern(&menschen, || -> Result<(), (u16, String)> {
                     for sid in sids {
                         if !self.world.spieler_aktiv(sid) {continue;}
                         let bot=self.runtime.bots.get_mut(&sid).unwrap();
+                        bot.opferschutz=schutz;
                         let due = bot.naechster <= self.world.zeit;
                         let prev = self.world.spieler[sid as usize].statistik.clone();
                         lauf::bots::zug(&mut self.world, sid, bot);
-                        lauf::bots::allianz_reagieren(&mut self.world,sid,&script_players);
+                        lauf::bots::reagieren_mit(&mut self.world,sid,bot.typ,&script_players);
                         if due {
                             bot.naechster = self.world.zeit + self.runtime.bot_period_secs;
                         }
@@ -494,6 +602,8 @@ impl Game {
                         self.runtime.bot_rejected += (next.abgelehnt - prev.abgelehnt) as u64;
                         if due {self.record_bot_turn(sid)?;}
                     }
+                    Ok(())
+                    })?;
                 }
                 let logs=self.world.log_abholen();self.record_player_events(logs)?;
                 if self.world.zeit % 60 == 0 {
@@ -505,6 +615,10 @@ impl Game {
             }
             self.runtime.leases.retain(|sid, l| l.until > now() && self.world.spieler_aktiv(*sid));
             Ok(json!({"sekunden":self.world.zeit}))
+    }
+    /// Aktive Reiche, die kein Skriptbot steuert (Menschen und ihre Agenten): für die Fairnessregeln der Bots.
+    pub fn mitspieler(&self) -> std::collections::BTreeSet<SpielerId> {
+        self.world.spieler.iter().map(|s| s.id).filter(|sid| self.world.spieler_aktiv(*sid) && !self.runtime.bots.contains_key(sid)).collect()
     }
     pub fn account_by_name(&self, name: &str) -> Option<Account> {
         self.db
@@ -593,7 +707,17 @@ impl Game {
         v["revision"] = json!(self.runtime.revision);
         v["paused"] = json!(self.runtime.paused);
         v["beendet"] = json!(self.world.beendet());
+        // Local worlds step every 5 s: the age of the last step lets the clock run on without jumping back.
+        if let Some((at, rest)) = self.local_tick_at.filter(|_| !self.runtime.paused && self.runtime.tempo > 0) {
+            v["tick_alter_ms"] = json!(((at.elapsed().as_secs_f64() + rest / self.runtime.tempo as f64) * 1000.0).round() as i64);
+        }
         v["mode"] = json!(a.mode);
+        // Schonzeit und Raubpause gegenüber den Skriptbots (Fairnessregeln, lauf::bots::schutz_sicht).
+        v["bot_schutz"] = lauf::bots::schutz_sicht(&self.world, &self.runtime.opferschutz, sid, !self.runtime.bots.contains_key(&sid));
+        Self::inbox_ids(&mut v);
+        self.inbox_times(a.id, &mut v)?;
+        v["postfach_gelesen"] = self.inbox_reads(a.id)?;
+        v["gegner_notizen"] = self.gegner_notizen(a.id)?;
         // Nur der Browserfeed trägt unsichtbare Fair-Play-Köder; die Harness-API nie.
         if role == Rolle::Alle { v["oberflaeche"] = self.oberflaeche(Some(a.id), "reich"); }
         v["agent"] = json!(self
@@ -604,9 +728,109 @@ impl Game {
             .map(|l| json!({"roles":l.roles,"until":l.until})));
         Ok(v)
     }
+    /// Postfach-Arten mit Pfad in der Sicht. Verschachtelte Mondberichte gehören dazu (vorher nie im Postfach).
+    const POSTFACH: [(&'static str, &'static str); 9] = [("systemberichte",""),("berichte",""),("flottenberichte",""),("kampfberichte",""),("ereignisse",""),
+        ("chronik",""),("bodenberichte",""),("spionageberichte","monde"),("phalanxberichte","monde")];
+    fn inbox_ids(v:&mut Value) {
+        for (kind, eltern) in Self::POSTFACH {
+            let rows = if eltern.is_empty() { v[kind].as_array_mut() } else { v[eltern][kind].as_array_mut() };
+            if let Some(rows)=rows {
+                for row in rows {
+                    if !row.is_object(){continue;}
+                    // Berichte tragen eine feste Kennung aus Art, Ort und Zeitpunkt (bzw. Kampfnummer): Live-Felder wie
+                    // `aufklaerung` oder neue Berichtsfelder ändern sie nicht mehr – vorher galt ein gelesener
+                    // Spionagebericht jede Spielstunde wieder als neu. Meldungen (ereignisse, chronik) hashen weiter
+                    // ihren Inhalt, damit ihr Lesestatus erhalten bleibt.
+                    let r = &*row;
+                    let s = |k: &str| r[k].to_string();
+                    let schluessel = match kind {
+                        "systemberichte" => format!("system:{}:{}",s("ziel"),s("zeit")),
+                        "kampfberichte" => format!("kampf:{}", s("nummer")),
+                        "berichte" => format!("bericht:{}:{}:{}", r["art"].as_str().unwrap_or("planet"), s("ziel"), s("zeit")),
+                        "flottenberichte" => format!("flotte:{}:{}", s("flotte"), s("zeit")),
+                        "bodenberichte" => format!("boden:{}:{}:{}", s("planet"), s("zeit"), s("angreifer_name")),
+                        "spionageberichte" => format!("mondspionage:{}:{}", s("ziel"), s("zeit")),
+                        "phalanxberichte" => format!("phalanx:{}", s("nr")),
+                        _ => {
+                            let mut stable=row.clone();
+                            if let Some(m)=stable.as_object_mut() {
+                                for key in ["alter_sekunden","alter_stunden","bericht_alter_stunden","_postfach_id"] {m.remove(key);}
+                            }
+                            format!("{kind}:{stable}")
+                        }
+                    };
+                    row["_postfach_id"]=json!(digest(&schluessel));
+                }
+            }
+        }
+    }
+    fn inbox_times(&self, account:i64, v:&mut Value) -> Result<(),(u16,String)> {
+        // Einmal zugeordnete Echtzeiten bleiben bei Tempowechsel und Neuladen stabil.
+        let jetzt=now();let sim=self.world.zeit;let tempo=self.runtime.tempo.max(1) as i64;
+        let mut stmt=self.db.prepare("SELECT report_id,received_at FROM report_times WHERE world_id=?1 AND account=?2")
+            .map_err(|_|err(503,"Berichtszeiten nicht lesbar"))?;
+        let mut zeiten:std::collections::BTreeMap<String,i64>=stmt.query_map(params![self.runtime.world_id,account],|r|Ok((r.get(0)?,r.get(1)?)))
+            .map_err(|_|err(503,"Berichtszeiten nicht lesbar"))?.collect::<Result<_,_>>().map_err(|_|err(503,"Berichtszeiten nicht lesbar"))?;
+        drop(stmt);
+        for (kind,parent) in Self::POSTFACH {
+            let rows=if parent.is_empty(){v[kind].as_array_mut()}else{v[parent][kind].as_array_mut()};
+            if let Some(rows)=rows { for row in rows {
+                let Some(id)=row["_postfach_id"].as_str().map(str::to_owned) else{continue};
+                if let Some(at)=zeiten.get(&id) {row["echtzeit"]=json!(at);continue;}
+                let zeit=row["zeit"].as_i64().or_else(||row["zeit"].as_str().and_then(|s|{
+                    let z:Vec<i64>=s.split(|c:char|!c.is_ascii_digit()).filter(|s|!s.is_empty()).filter_map(|s|s.parse().ok()).collect();
+                    (z.len()>=3).then(||(z[0]-1)*86400+z[1]*3600+z[2]*60+z.get(3).copied().unwrap_or(0))
+                })).unwrap_or(sim);
+                let ankunft=self.db.query_row("SELECT wall_end-(sim_to-?2)/tempo FROM simulation_clock WHERE world_id=?1 AND sim_from<=?2 AND sim_to>=?2 ORDER BY sim_to LIMIT 1",
+                    params![self.runtime.world_id,zeit],|r|r.get::<_,i64>(0)).optional().map_err(|_|err(503,"Weltuhr nicht lesbar"))?
+                    .unwrap_or_else(||jetzt.saturating_sub((sim-zeit).max(0)/tempo));
+                self.db.execute("INSERT OR IGNORE INTO report_times VALUES(?1,?2,?3,?4)",
+                    params![self.runtime.world_id,account,id,ankunft]).map_err(|_|err(503,"Berichtszeiten nicht speicherbar"))?;
+                zeiten.insert(id,ankunft);row["echtzeit"]=json!(ankunft);
+            }}
+        }
+        Ok(())
+    }
+    fn inbox_reads(&self, account:i64) -> Result<Value,(u16,String)> {
+        let mut stmt=self.db.prepare("SELECT report_id FROM inbox_reads WHERE world_id=?1 AND account=?2 ORDER BY read_at DESC LIMIT 2000")
+            .map_err(|_|err(503,"Postfachstatus nicht lesbar"))?;
+        let ids=stmt.query_map(params![self.runtime.world_id,account],|r|r.get::<_,String>(0))
+            .map_err(|_|err(503,"Postfachstatus nicht lesbar"))?.collect::<Result<Vec<_>,_>>()
+            .map_err(|_|err(503,"Postfachstatus nicht lesbar"))?;
+        Ok(json!(ids))
+    }
+    /// Reading post is independent of game pause, military roles and agent leases.
+    pub fn inbox_read(&mut self,a:&Account,v:&Value)->Reply {
+        self.world_matches(v)?;let sid=Self::sid(a)?;
+        if let Some(id)=v["brief"].as_u64() {
+            return self.transaction(|g| {
+                g.world.brief_lesen(sid,id).map_err(|e|err(403,&e))?;
+                Ok(json!({"brief":id,"gelesen":true}))
+            });
+        }
+        let id=v["bericht"].as_str().filter(|s|s.len()==64&&s.bytes().all(|b|b.is_ascii_hexdigit()))
+            .ok_or_else(||err(400,"Gültige Berichtskennung fehlt"))?;
+        let mut own=self.world.sicht(sid,Rolle::Alle);Self::inbox_ids(&mut own);
+        let allowed=Self::POSTFACH.iter()
+            .any(|(kind,eltern)|(if eltern.is_empty(){&own[*kind]}else{&own[*eltern][*kind]}).as_array().is_some_and(|rows|rows.iter().any(|r|r["_postfach_id"]==id)));
+        if !allowed {return Err(err(403,"Bericht gehört nicht zu deinem Postfach"));}
+        self.db.execute("INSERT INTO inbox_reads VALUES(?1,?2,?3,?4) ON CONFLICT(world_id,account,report_id) DO UPDATE SET read_at=excluded.read_at",
+            params![self.runtime.world_id,a.id,id,now()]).map_err(|_|err(503,"Lesestatus nicht gespeichert"))?;
+        self.db.execute("DELETE FROM inbox_reads WHERE world_id=?1 AND account=?2 AND report_id NOT IN(SELECT report_id FROM inbox_reads WHERE world_id=?1 AND account=?2 ORDER BY read_at DESC LIMIT 2000)",
+            params![self.runtime.world_id,a.id]).map_err(|_|err(503,"Postfachstatus nicht gespeichert"))?;
+        Ok(json!({"bericht":id,"gelesen":true}))
+    }
     pub fn tool(&self, a: &Account, v: &Value) -> Reply {
+        self.tool_als(a, Rolle::Alle, v)
+    }
+    /// Lesende Abfrage in einer Regierungsrolle (Harness/MCP): Vorschauen prüfen wie der echte Befehl dieser Rolle.
+    pub fn tool_als(&self, a: &Account, rolle: Rolle, v: &Value) -> Reply {
         let sid = Self::sid(a)?;
-        self.world.werkzeug(sid, v).map_err(|e| err(400, &e))
+        let mut result=self.world.werkzeug_als(sid, rolle, v).map_err(|e| err(400, &e))?;
+        if matches!(v["typ"].as_str(),Some("regelkontext"|"wirtschaftsdiagnose"|"kostenplan"|"ablaufplan"|"missionsplan"|"marktplan")) {
+            result["world_id"]=json!(self.runtime.world_id);
+        }
+        Ok(result)
     }
     fn world_matches(&self, v: &Value) -> Result<(), (u16, String)> {
         if v["world_id"].as_str() != Some(&self.runtime.world_id) {
@@ -794,6 +1018,8 @@ impl Game {
     pub fn admin_status(&self) -> Value {
         let mut accounts=self.account_registry();
         for a in &mut accounts {a["reich_status"]=a["spieler"].as_u64().map(|sid|self.world.reich_status(sid as u16)).unwrap_or(Value::Null);}
+        // 20.10.2026: Spielerart je Konto (nur Spielleitung).
+        for a in &mut accounts {a["art"]=json!(self.konto_art_nach_id(a["id"].as_i64().unwrap_or(0)));}
         let bots=self.runtime.bots.iter().map(|(sid,b)|{let s=&self.world.spieler[*sid as usize];json!({"spieler":sid,"name":s.name,"typ":b.typ,"naechster":b.naechster,"aktionen":s.statistik.aktionen,"abgelehnt":s.statistik.abgelehnt,"stufe":s.stufe,"punkte":s.punkte.gesamt(),"reich_status":self.world.reich_status(*sid)})}).collect::<Vec<_>>();
         let db_bytes = ["spiel.sqlite3", "spiel.sqlite3-wal", "spiel.sqlite3-shm"]
             .iter()
@@ -810,7 +1036,7 @@ impl Game {
             .filter(|p| p.bestand.iter().any(|n| *n < 0) || p.bevoelkerung < 0)
             .map(|p| format!("Negativer Bestand/Bevölkerung auf {}", p.koord))
             .collect::<Vec<_>>();
-        json!({"lobby":self.lobby(),"monitor":self.monitoring_status(),"storage_error":self.storage_error,"world_hash":self.world.hash(),"uptime_s":self.started.elapsed().as_secs(),"db_bytes":db_bytes,"invariant_errors":invariant_errors,"bots_enabled":self.runtime.bots_enabled,"bot_period_secs":self.runtime.bot_period_secs,"epoche_tage":self.world.regeln.welt.epoche_tage,"bots":bots,"accounts":accounts,"warteliste":self.private_waitlist(),
+        json!({"lobby":self.lobby(),"monitor":self.monitoring_status(),"storage_error":self.storage_error,"world_hash":self.world.hash(),"uptime_s":self.started.elapsed().as_secs(),"db_bytes":db_bytes,"invariant_errors":invariant_errors,"bots_enabled":self.runtime.bots_enabled,"bot_period_secs":self.runtime.bot_period_secs,"opferschutz":self.runtime.opferschutz,"epoche_tage":self.world.regeln.welt.epoche_tage,"bots":bots,"accounts":accounts,"warteliste":self.private_waitlist(),
             "agents":self.runtime.agent_status.keys().chain(self.runtime.leases.keys()).copied().collect::<std::collections::BTreeSet<_>>().iter().map(|sid|json!({"spieler":sid,"active":self.runtime.leases.get(sid).is_some_and(|l|l.until>now()),"roles":self.runtime.leases.get(sid).map(|l|&l.roles),"stats":self.runtime.agent_status.get(sid).cloned().unwrap_or_else(||json!({"status":"Wartet auf erste Modellantwort","calls":0,"errors":0,"tokens":0,"latency_ms":0}))})).collect::<Vec<_>>(),
             "flotten":self.world.flotten.len(),"ereignisse":self.world.ereignisse.len(),"fairplay":self.fairplay_admin(),"harness":self.harness_admin(),"bot_actions":self.runtime.bot_actions,"bot_rejected":self.runtime.bot_rejected,"registration":{"enabled":mail::MailConfig::load(&self.data_root).is_ok_and(|c|c.is_some()),"config_file":"mail-private.json","code_digits":6},"database":{"root":self.data_root.to_string_lossy(),"file":"spiel.sqlite3","players_view":"registered_players","states_table":"player_states","events_table":"account_events","snapshot_interval_seconds":60}})
     }
@@ -834,6 +1060,7 @@ impl Game {
             "paused",
             "bots_enabled",
             "bot_period_secs",
+            "opferschutz",
             "versorgung_stunden",
             "stillstand_stunden",
             "epoche_tage",
@@ -891,6 +1118,7 @@ impl Game {
                 if let Some(p)=v["bots_enabled"].as_bool(){g.runtime.bots_enabled=p;}
                 if let Some(m)=v["maintenance"].as_str(){g.runtime.maintenance=m.chars().take(400).collect();}
                 if let Some(n)=v["bot_period_secs"].as_i64(){if !(900..=86400).contains(&n){return Err(err(400,"Botabstand zwischen 900 und 86400 Spielsekunden"));}g.runtime.bot_period_secs=n;}
+                if let Some(o)=v.get("opferschutz"){g.runtime.opferschutz=opferschutz_lesen(o,g.runtime.opferschutz).map_err(|e|err(400,&e))?;}
                 if let Some(n)=v["epoche_tage"].as_i64(){if n<=g.world.zeit/TAG || n>10000{return Err(err(400,"Epochenende muss nach der aktuellen Spielzeit liegen, maximal 10000 Tage"));}
                     let mut r=(*g.world.regeln).clone();r.welt.epoche_tage=n;g.world.regeln=std::sync::Arc::new(r);}
                 g.admit_waiting()?;
@@ -942,10 +1170,38 @@ impl Game {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn berichtszeiten_beruecksichtigen_tempowechsel_und_bleiben_stabil() {
+        let mut g=game();g.world.zeit=7200;g.runtime.tempo=300;
+        g.db.execute("INSERT INTO simulation_clock(world_id,sim_from,sim_to,wall_end,tempo) VALUES(?1,0,3600,100000,60)",[&g.runtime.world_id]).unwrap();
+        g.db.execute("INSERT INTO simulation_clock(world_id,sim_from,sim_to,wall_end,tempo) VALUES(?1,3600,7200,100100,300)",[&g.runtime.world_id]).unwrap();
+        let mut v=json!({"berichte":[{"zeit":1800,"ziel":"1:1:1"},{"zeit":5400,"ziel":"1:1:2"}]});
+        Game::inbox_ids(&mut v);g.inbox_times(1,&mut v).unwrap();
+        assert_eq!(v["berichte"][0]["echtzeit"],99970);assert_eq!(v["berichte"][1]["echtzeit"],100094);
+        let vorher=v.clone();g.runtime.tempo=1;g.inbox_times(1,&mut v).unwrap();assert_eq!(v,vorher);
+    }
     use super::*;
     fn game() -> Game {
         let p = std::env::temp_dir().join(format!("sternenepoche-test-{}", token()));
         Game::open(&p, 83).unwrap()
+    }
+    /// Karl 27.10.2026: App-Softlock („keine neuen Befehle mehr, erst nach Neustart“). Eine Panik in der Transaktion
+    /// rollt Welt und SQL zurück, und eine offen gebliebene Transaktion blockiert den nächsten Befehl nicht.
+    #[test]
+    fn panik_oder_offene_transaktion_blockiert_keine_befehle() {
+        let mut g = game();
+        g.runtime.bots_enabled = false;
+        let zeit = g.world.zeit;
+        let e = g.transaction(|g| -> Reply { g.world.zeit += 999; panic!("Testpanik im Befehl") }).unwrap_err();
+        assert_eq!(e.0, 503);
+        assert!(g.db.is_autocommit() && g.world.zeit == zeit, "zurückgerollt");
+        let rev = g.runtime.revision;
+        g.transaction(|_| Ok(json!({}))).unwrap();
+        assert_eq!(g.runtime.revision, rev + 1, "nächster Befehl geht durch");
+        // Hängengebliebene Transaktion (wie früher nach einer Panik in der Nachphase): wird vor dem Befehl zurückgerollt.
+        g.db.execute_batch("BEGIN IMMEDIATE").unwrap();
+        g.transaction(|_| Ok(json!({}))).unwrap();
+        assert!(g.db.is_autocommit());
     }
     fn user(g: &mut Game, name: &str) -> (Account, String) {
         let v = g
@@ -958,6 +1214,25 @@ mod tests {
             g.authenticate(v["token"].as_str().unwrap()).unwrap(),
             v["token"].as_str().unwrap().into(),
         )
+    }
+    #[test]
+    fn planer_private_core_and_harness_results_agree_without_world_changes() {
+        let mut g=game();let (account,raw)=user(&mut g,"Planerprobe");
+        g.claim(&account,&json!({"mode":"mensch","volk":"syntheten"})).unwrap();
+        let a=g.authenticate(&raw).unwrap();let sid=Game::sid(&a).unwrap();
+        let own=g.world.planeten[g.world.spieler[sid as usize].heimat as usize].koord;
+        let foreign=g.world.planeten[g.world.spieler[0].heimat as usize].koord;
+        let before=g.world.hash();
+        for q in [json!({"typ":"regelkontext"}),json!({"typ":"wirtschaftsdiagnose","planet":own.to_string()}),
+            json!({"typ":"kostenplan","planet":own.to_string(),"positionen":[{"art":"einheit","einheit":"handelsfrachter","anzahl":2}]})] {
+            let result=g.tool(&a,&q).unwrap();assert_eq!(result["world_id"],g.runtime.world_id);
+            let s=harness::Schluessel{id:0,label:"Test".into(),rollen:vec![],expires:0};
+            assert_eq!(result,g.harness_werkzeug(&a,&s,&json!({"abfrage":q})).unwrap()["ergebnis"]);
+            let mut expected=g.world.werkzeug(sid,&q).unwrap();expected["world_id"]=json!(g.runtime.world_id);
+            assert_eq!(result,expected);
+        }
+        assert!(g.tool(&a,&json!({"typ":"wirtschaftsdiagnose","planet":foreign.to_string()})).is_err());
+        assert_eq!(before,g.world.hash());
     }
     #[test]
     fn seats_freeze_atomic_claim_and_restart() {
@@ -976,7 +1251,7 @@ mod tests {
         g.runtime.admission_limit=20;
         for i in 0..20 {
             let (a, _) = user(&mut g, &format!("Spieler{i}"));
-            g.claim(&a, &json!({"mode":"mensch","volk":"veyari"}))
+            g.claim(&a, &json!({"mode":"mensch","volk":"veyari","anfaengerschutz":true}))
                 .unwrap();
         }
         let (a, _) = user(&mut g, "Einundzwanzig");
@@ -1046,7 +1321,7 @@ mod tests {
         let quellen = [("lib.rs", include_str!("lib.rs")), ("main.rs", include_str!("main.rs")), ("identity.rs", include_str!("identity.rs")),
             ("admission.rs", include_str!("admission.rs")), ("authenticator.rs", include_str!("authenticator.rs")), ("communication.rs", include_str!("communication.rs")),
             ("monitoring.rs", include_str!("monitoring.rs")), ("workspace.rs", include_str!("workspace.rs")), ("fairplay.rs", include_str!("fairplay.rs")),
-            ("harness.rs", include_str!("harness.rs")), ("mcp.rs", include_str!("mcp.rs")), ("uebergabe.rs", include_str!("uebergabe.rs")), ("mail.rs", include_str!("mail.rs"))];
+            ("harness.rs", include_str!("harness.rs")), ("mcp.rs", include_str!("mcp.rs")), ("agenten.rs", include_str!("agenten.rs")), ("uebergabe.rs", include_str!("uebergabe.rs")), ("mail.rs", include_str!("mail.rs")), ("spielerart.rs", include_str!("spielerart.rs"))];
         let mut funde = Vec::new();
         for (datei, text) in quellen {
             // Nur Produktivcode; Testmodule dürfen Muster als Text enthalten.
@@ -1093,6 +1368,33 @@ mod tests {
         assert_eq!(audit_count, 2);
     }
     #[test]
+    fn opferschutz_der_raeuberbots_ist_einstellbar_und_abschaltbar() {
+        // Karl 20.10.2026: „muss zum Serverstart eingestellt werden können und auch ausgeschaltet werden können“.
+        let mut g = game();
+        // Karl 23.10.2026: neue Welten standardmäßig aus, beim Start oder im Betrieb einschaltbar.
+        assert_eq!(g.runtime.opferschutz, lauf::bots::Opferschutz::neue_welt());
+        assert!(!g.runtime.opferschutz.aktiv);
+        let wid = g.runtime.world_id.clone();
+        g.admin(&json!({"world_id":wid,"action":"settings","opferschutz":true})).unwrap();
+        assert!(g.runtime.opferschutz.aktiv);
+        g.admin(&json!({"world_id":wid,"action":"settings","opferschutz":false})).unwrap();
+        assert!(!g.runtime.opferschutz.aktiv);
+        g.admin(&json!({"world_id":wid,"action":"settings","opferschutz":{"aktiv":true,"pause_stunden":48,"neulinge_tage":7}})).unwrap();
+        assert_eq!(g.runtime.opferschutz, lauf::bots::Opferschutz { aktiv: true, pause_stunden: 48, neulinge_tage: 7 });
+        assert!(g.admin(&json!({"world_id":wid,"action":"settings","opferschutz":{"pause_stunden":0}})).is_err());
+        assert_eq!(g.admin_status()["opferschutz"]["pause_stunden"], 48);
+        // Die Bots übernehmen den Stand mit ihrem nächsten Zug.
+        g.advance(3600).unwrap();
+        assert!(g.runtime.bots.values().all(|b| b.opferschutz.pause_stunden == 48 && b.opferschutz.neulinge_tage == 7));
+        // Ältere Laufzeiten ohne das Feld laden mit eingeschaltetem Schutz.
+        let mut alt = serde_json::to_value(&g.runtime).unwrap();
+        alt.as_object_mut().unwrap().remove("opferschutz");
+        let r: Runtime = serde_json::from_value(alt).unwrap();
+        assert_eq!(r.opferschutz, lauf::bots::Opferschutz::default());
+        assert!(r.opferschutz.aktiv);
+        assert_eq!(opferschutz_lesen(&json!({"aktiv":false}), r.opferschutz).unwrap().aktiv, false);
+    }
+    #[test]
     fn thirty_bots_one_game_day_and_backup_resume() {
         let mut g = game();
         for _ in 0..24 {
@@ -1126,6 +1428,7 @@ mod tests {
         let wid=g.runtime.world_id.clone();let hash=g.world.hash();
         let profile=g.admin(&json!({"action":"rules_profile","world_id":wid})).unwrap()["text"].as_str().unwrap().to_owned();
         let preview=g.admin(&json!({"action":"reset_preview","world_id":wid,"rules":profile})).unwrap();
+        assert!(g.admin(&json!({"action":"reset_preview","world_id":wid,"rules":" ".repeat(60*1024+1)})).unwrap_err().1.contains("60 KiB"));
         assert_eq!(hash,g.world.hash());assert_eq!(wid,g.runtime.world_id);
         for invalid in [profile.replace("sektoren: 2","sektoren: 0"),profile.replace("treibstoff_teiler: 35000","treibstoff_teiler: 0"),profile.replace("reichtum_min: 0.7","reichtum_min: NaN")] {
             if invalid!=profile {assert!(g.admin(&json!({"action":"reset_preview","world_id":wid,"rules":invalid})).is_err());assert_eq!(hash,g.world.hash());}

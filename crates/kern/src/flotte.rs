@@ -26,12 +26,28 @@ pub struct Flugplan {
     /// Treibstoff für eine Strecke, in Tausendsteln.
     pub treibstoff: i64,
     pub kapazitaet: i64,
+    /// Zusätzliche Personen, ohne Betriebsbesatzung; kein Ersatz für Frachtraum.
+    pub personenplaetze: i64,
     pub tempo: i64,
+    pub treibstoff_erklaerung: crate::planer::modell::ErklaerterWert,
+    pub kapazitaet_erklaerung: crate::planer::modell::ErklaerterWert,
 }
 
-enum Partei {
+impl Flugplan {
+    /// Independent limits. Future passenger missions use the same checked plan;
+    /// spare freight capacity never creates another seat.
+    pub fn pruefe_zuladung(&self, fracht:i64, personen:i64)->Result<(),String>{
+        if fracht<0||personen<0{return Err("Zuladung darf nicht negativ sein".into());}
+        if fracht>self.kapazitaet{return Err(format!("Ladung {} übersteigt die Kapazität {}",ganz(fracht),ganz(self.kapazitaet)));}
+        if personen>self.personenplaetze{return Err(format!("{personen} Personen übersteigen die {} zusätzlichen Personenplätze",self.personenplaetze));}
+        Ok(())
+    }
+}
+
+pub(crate) enum Partei {
     Planet(usize),
     Flotte(FlottenId),
+    Mond(crate::monde::MondId),
 }
 
 impl Welt {
@@ -47,8 +63,13 @@ impl Welt {
     }
 
     pub fn tempo(&self, sid: SpielerId, e: Einheit) -> i64 {
-        let er = self.regeln.einh(e);
-        let Some(antrieb) = er.antrieb else {
+        self.tempo_volk(sid, e, self.spieler[sid as usize].volk)
+    }
+    /// Tempo mit der Forschung von `sid` und den eigenen Volkswerten von `volk` (Datenblatt für andere Völker).
+    pub fn tempo_volk(&self, sid: SpielerId, e: Einheit, volk: Volk) -> i64 {
+        // Technik v1: Antriebswechsel per Forschung (crate::technik); sonst Antrieb und Tempo der Einheitenregel.
+        let (antrieb, grundtempo, _) = self.regeln.antrieb_wirksam(e, &self.spieler[sid as usize].forschung);
+        let Some(antrieb) = antrieb else {
             return 0;
         };
         let bonus = self
@@ -58,17 +79,28 @@ impl Welt {
             .get(&antrieb)
             .copied()
             .unwrap_or(0.0);
-        mal(
-            er.tempo,
+        let t = mal(
+            grundtempo,
             1.0 + bonus * self.spieler[sid as usize].forschung[antrieb.idx()] as f64,
-        )
+        );
+        match self.regeln.volk_einheit(volk, e) { Some(v) if v.tempo != 1.0 => mal(t, v.tempo).max(1), _ => t }
+    }
+
+    /// Treibstoffverbrauch eines Schiffs (Technik v1: nach Antriebswechsel), Faktor in der Treibstoffformel.
+    pub fn verbrauch(&self, sid: SpielerId, e: Einheit) -> i64 {
+        self.verbrauch_volk(sid, e, self.spieler[sid as usize].volk)
+    }
+    pub fn verbrauch_volk(&self, sid: SpielerId, e: Einheit, volk: Volk) -> i64 {
+        let v = self.regeln.antrieb_wirksam(e, &self.spieler[sid as usize].forschung).2;
+        match self.regeln.volk_einheit(volk, e) { Some(f) if f.verbrauch != 1.0 => mal(v, f.verbrauch), _ => v }
     }
 
     /// Flugzeit in Spielsekunden: max(min, k * (10 + 350/sigma * sqrt(10 d / v))).
     pub fn flugdauer(&self, d: i64, v: i64, sigma_pm: i64) -> i64 {
         let f = &self.regeln.flug;
         let w = wurzel(10 * d as i128 * 1_000_000 / v.max(1) as i128) as i64;
-        (f.zeitfaktor * (10 + 350 * w / sigma_pm.max(1))).max(f.min_sekunden)
+        let kw = &self.regeln.kw().flug;
+        (f.zeitfaktor * (kw.grundzeit + kw.zeitkonstante * w / sigma_pm.max(1))).max(f.min_sekunden)
     }
 
     pub fn flugplan(
@@ -84,40 +116,65 @@ impl Welt {
                 "ungültige Geschwindigkeit oder Schiffszahl (maximal 1.000.000 je Typ)".into(),
             );
         }
+        let p = &self.planeten[start_pid];
+        self.flugplan_von(sid, p.koord, p.gebaeude[Gebaeude::Raumhafen.idx()], ziel, schiffe, sigma_pm)
+    }
+    /// Flugplan ab einer Koordinate (Planet mit seinem Raumhafen oder Orbitort ohne Raumhafen-Ersparnis).
+    pub fn flugplan_von(
+        &self,
+        sid: SpielerId,
+        von: Koord,
+        raumhafen: u8,
+        ziel: Koord,
+        schiffe: &[i64; SCHIFFE],
+        sigma_pm: i64,
+    ) -> Result<Flugplan, String> {
+        if !(100..=1000).contains(&sigma_pm) || schiffe.iter().any(|n| *n < 0 || *n > 1_000_000) {
+            return Err(
+                "ungültige Geschwindigkeit oder Schiffszahl (maximal 1.000.000 je Typ)".into(),
+            );
+        }
         let r = &self.regeln;
         let sp = &self.spieler[sid as usize];
-        let p = &self.planeten[start_pid];
         let mut tempo = i64::MAX;
         let mut verbrauch = 0i64;
         let mut ladung = 0i64;
+        let mut personenplaetze = 0i64;
         for e in 0..SCHIFFE {
             if schiffe[e] > 0 {
                 let einheit = Einheit::ALLE[e];
-                let er = r.einh(einheit);
                 tempo = tempo.min(self.tempo(sid, einheit));
-                verbrauch += schiffe[e] * er.verbrauch;
-                ladung += schiffe[e] * er.ladung;
+                verbrauch += schiffe[e] * self.verbrauch(sid, einheit);
+                ladung += schiffe[e] * r.ladung_milli(einheit, sp.volk);
+                personenplaetze += schiffe[e] * r.personenplaetze(einheit);
             }
         }
         if tempo == i64::MAX || tempo <= 0 {
             return Err("keine Schiffe gewählt".into());
         }
-        let d = self.entfernung(p.koord, ziel);
+        let d = self.entfernung(von, ziel);
         let dauer = self.flugdauer(d, tempo, sigma_pm);
-        let ersparnis = (r.flug.raumhafen_ersparnis * p.gebaeude[Gebaeude::Raumhafen.idx()] as f64)
+        let ersparnis = (r.flug.raumhafen_ersparnis * raumhafen as f64)
             .min(r.flug.raumhafen_ersparnis_max);
         let roh = M as i128
             + verbrauch as i128 * M as i128 * d as i128 * (sigma_pm as i128 * sigma_pm as i128)
                 / (r.flug.treibstoff_teiler as i128 * 1_000_000);
-        let treibstoff = mal(roh as i64, 1.0 - ersparnis);
+        let treibstoff_erklaerung = crate::planer::modell::ErklaerterWert::neu(roh as i64,"tausendstel_deuterium_je_strecke")
+            .faktor("raumhafen_mit_ersparnisobergrenze",1.0-ersparnis);
+        let treibstoff = treibstoff_erklaerung.wert;
         let logistik = 1.0 + r.flug.logistik_bonus * sp.forschung[Forschung::Logistik.idx()] as f64;
-        let kapazitaet = mal(ladung * M, r.volk(sp.volk).ladung * logistik);
+        let kapazitaet_erklaerung=crate::planer::modell::ErklaerterWert::neu(ladung,"tausendstel_fracht")
+            .faktor("volk_und_logistik",r.volk(sp.volk).ladung*logistik);
+        let kapazitaet = kapazitaet_erklaerung.wert;
         Ok(Flugplan {
             entfernung: d,
             dauer,
             treibstoff,
             kapazitaet,
+            personenplaetze,
             tempo,
+            treibstoff_erklaerung,
+            kapazitaet_erklaerung,
         })
     }
 
@@ -125,12 +182,66 @@ impl Welt {
         1 + self.spieler[sid as usize].forschung[Forschung::Computertechnik.idx()] as usize
     }
 
+    /// Erlaubte Kolonien: Generation 12 min(kolonien_max, 14, frei + Stufe der Kolonieforschung) – neue Welten (0.4.7,
+    /// Karl 24.10.2026) 2 frei ab Start und je Stufe Terraforming eine mehr, laufende Welten wie bisher je Astrophysikstufe
+    /// eine (Kernwerte `kolonien`, Standard frei 0 / Astrophysik); ältere Welten je zwei Astrophysikstufen eine.
     pub fn kolonien_erlaubt(&self, sid: SpielerId) -> usize {
-        let astro = self.spieler[sid as usize].forschung[Forschung::Astrophysik.idx()] as usize;
-        if astro == 0 {
+        let kw = &self.regeln.kw().kolonien;
+        let stufe = self.spieler[sid as usize].forschung[kw.forschung.idx()] as usize;
+        if self.ausbau.version > 0 {
+            (kw.frei as usize + stufe).min(self.kolonien_grenze())
+        } else if stufe == 0 {
             0
         } else {
-            (1 + (astro - 1) / 2).min(self.regeln.wirtschaft.kolonien_max as usize)
+            (1 + (stufe - 1) / 2).min(self.regeln.wirtschaft.kolonien_max as usize)
+        }
+    }
+
+    /// Höchstzahl der Kolonien dieser Welt (unabhängig von der Forschung).
+    pub fn kolonien_grenze(&self) -> usize {
+        let max = self.regeln.wirtschaft.kolonien_max as usize;
+        if self.ausbau.version > 0 { max.min(crate::verwaltung::MAX_PLANETEN - 1) } else { max }
+    }
+
+    /// Forschung, deren Stufen weitere Kolonien erlauben (neue Welten Terraforming, laufende Welten Astrophysik).
+    pub fn kolonie_forschung(&self) -> Forschung {
+        self.regeln.kw().kolonien.forschung
+    }
+
+    /// Neue Welten (0.4.7, Karl 24.10.2026): „sonst kann man das Kolonisierungsschiff senden, auch auf den Befehl, aber es wird
+    /// nicht kolonisiert“. Kolonie- und Kampfkolonisierungsflüge starten ohne freien Platz; erst die Gründung bzw. die
+    /// Übernahme braucht ihn (keine Reservierung beim Start). Laufende Welten (Standard-Kernwerte) prüfen wie bisher beim Start.
+    pub fn kolonieplatz_erst_bei_gruendung(&self) -> bool {
+        !self.regeln.kw().kolonien.ist_standard()
+    }
+
+    /// Kolonieplätze ohne Forschung (neue Welten 2, sonst 0).
+    pub fn kolonien_frei(&self) -> u8 {
+        if self.ausbau.version > 0 { self.regeln.kw().kolonien.frei } else { 0 }
+    }
+
+    /// Nötige Stufe der Kolonieforschung für insgesamt `n` Kolonien, ohne Grenze (Bots und Planung).
+    pub fn kolonie_stufe_roh(&self, n: u8) -> u8 {
+        if self.ausbau.version > 0 { n.saturating_sub(self.kolonien_frei()) } else { (2 * n as u16).saturating_sub(1).min(u8::MAX as u16) as u8 }
+    }
+
+    /// Nötige Stufe der Kolonieforschung für insgesamt `n` Kolonien; None, wenn `n` über der Höchstzahl liegt.
+    pub fn kolonie_stufe_fuer(&self, n: usize) -> Option<u8> {
+        (n <= self.kolonien_grenze()).then(|| self.kolonie_stufe_roh(n.min(u8::MAX as usize) as u8))
+    }
+
+    /// Text für die volle Kolonieobergrenze: was die nächste Kolonie erlaubt.
+    pub(crate) fn kolonien_voll_text(&self, sid: SpielerId) -> String {
+        let erlaubt = self.kolonien_erlaubt(sid);
+        if self.regeln.kw().kolonien.ist_standard() {
+            return format!("Astrophysik erlaubt {erlaubt} Kolonien, höhere Stufen erlauben mehr");
+        }
+        let f = self.kolonie_forschung();
+        match self.kolonie_stufe_fuer(erlaubt + 1) {
+            Some(n) => format!("Alle {erlaubt} Kolonieplätze sind belegt: {} Stufe {n} erlaubt die nächste Kolonie ({} frei ab Start, je Stufe {} eine mehr, höchstens {})",
+                crate::regeltext::forschung_name(f), self.kolonien_frei(), crate::regeltext::forschung_name(f), self.kolonien_grenze()),
+            None => format!("Alle {erlaubt} Kolonieplätze sind belegt – mehr als {} Kolonien (mit Heimatwelt {} Planeten) erlaubt diese Welt nicht",
+                self.kolonien_grenze(), self.kolonien_grenze() + 1),
         }
     }
 
@@ -191,6 +302,18 @@ impl Welt {
 
     pub(crate) fn flotte_senden_intern(&mut self, sid: SpielerId, rolle: Rolle,
         a: Flugauftrag, sondenziel: Option<FlottenId>) -> Result<String, String> {
+        self.flotte_senden_auswahl(sid,rolle,a,sondenziel,None,None)
+    }
+    pub fn flotte_senden_mit_siedlern(&mut self, sid: SpielerId, rolle: Rolle, a: Flugauftrag, volk: Option<Volk>) -> Result<String,String> {
+        self.flotte_senden_auswahl(sid,rolle,a,None,volk,None)
+    }
+    /// Wie `flotte_senden_mit_siedlern`, dazu die selbst gewählte Siedlermischung [Bewohner, Fachkräfte, Forscher].
+    pub fn flotte_senden_mit_mischung(&mut self, sid: SpielerId, rolle: Rolle, a: Flugauftrag, volk: Option<Volk>, mischung: Option<[i64; 3]>) -> Result<String,String> {
+        self.flotte_senden_auswahl(sid,rolle,a,None,volk,mischung)
+    }
+    fn flotte_senden_auswahl(&mut self, sid: SpielerId, rolle: Rolle, a: Flugauftrag, sondenziel: Option<FlottenId>, siedler_volk: Option<Volk>, siedler_mischung: Option<[i64; 3]>) -> Result<String,String> {
+        if siedler_volk.is_some() && !matches!(a.mission,Mission::Kolonisieren|Mission::Terraformen) { return Err("Siedlervolk nur bei freier Kolonisation oder als Zielvolk beim Terraformen angeben".into()); }
+        if siedler_mischung.is_some() && (a.mission!=Mission::Kolonisieren || self.ausbau.version==0) { return Err("Siedlermischung nur bei freier Kolonisation mit Bevölkerungsgruppen angeben".into()); }
         let r = self.regeln.clone();
         let pid = self.eigener_planet(sid, a.start)?;
         let p = &self.planeten[pid];
@@ -226,7 +349,8 @@ impl Welt {
         if self.system(a.ziel).is_none() || a.ziel.position > r.welt.plaetze_je_system {
             return Err(format!("{} liegt außerhalb der Galaxie", a.ziel));
         }
-        if (a.ziel.position == 0) != (a.mission == Mission::Abbau) {
+        if (a.ziel.position == 0 && a.mission != Mission::Abbau && !(self.ausbau.version>0 && a.mission==Mission::Saven))
+            || (a.mission == Mission::Abbau && a.ziel.position!=0&&!self.natuerlicher_ring(a.ziel)) {
             return Err("Position 0 ist der Asteroidengürtel: nur die Mission abbau fliegt dorthin, und nur dorthin".into());
         }
         if self.blockiert_fuer(pid, sid) && !(a.mission == Mission::Angriff && a.ziel == a.start) {
@@ -237,11 +361,19 @@ impl Welt {
         }
         if self.aufklaerungsregeln() {
             let own = sp.planeten.iter().any(|id|self.planeten[*id as usize].koord==a.ziel);
-            if a.mission == Mission::Abbau && !self.system_erfasst(sid,a.ziel) {
+            if matches!(a.mission,Mission::Abbau|Mission::Recyceln) && !self.system_erfasst(sid,a.ziel) {
                 return Err("Sonnensystem zuerst mit einer Systemsonde kartieren".into());
             }
-            if !own && !matches!(a.mission,Mission::SystemErkunden|Mission::Spionage|Mission::FlottenSpionage|Mission::Saven|Mission::Abbau)
-                && self.planetenwissen(sid,a.ziel)["bekannt"] != true {
+            if !own && !matches!(a.mission,Mission::SystemErkunden|Mission::Spionage|Mission::FlottenSpionage|Mission::Saven|Mission::Abbau|Mission::Recyceln|Mission::Terraformen)
+                && self.planetenwissen(sid,a.ziel)["bekannt"] != true
+                // Invasion v1: Verbündete kennen die Planeten ihrer Partner für Hilfe (halten/verstaerken).
+                && !(self.invasion_v1() && a.mission == Mission::Halten
+                    && self.belegung.get(&a.ziel).is_some_and(|p| self.verbuendet(sid, self.planeten[*p as usize].besitzer)))
+                // Karl 28.10.2026: „Allianzmitglieder haben die Möglichkeit, sich ohne Bericht beliefern zu können.“
+                && !(a.mission == Mission::Transport
+                    && self.belegung.get(&a.ziel).is_some_and(|p| self.gleiche_allianz(sid, self.planeten[*p as usize].besitzer)))
+                // 0.4.8: Wo eine eigene gestrandete Flotte steht, ist das Ziel bekannt (Versorgen, Nachschub).
+                && !self.eigene_orbitflotte_an(sid, a.ziel) {
                 return Err("Ziel zuerst mit einer eigenen Planetensonde aufklären".into());
             }
         }
@@ -251,7 +383,11 @@ impl Welt {
         let mut siedler = 0i64;
         let mut haltedauer = 0i64;
         let mut feindlich_gegen: Option<SpielerId> = None;
+        let mut terraform_volk: Option<Volk> = None;
         match a.mission {
+            Mission::Terraformen => {
+                terraform_volk = Some(self.terraform_flug_pruefen(sid, a.ziel, &a.schiffe, siedler_volk)?);
+            }
             Mission::SystemErkunden => {
                 if !self.aufklaerungsregeln() { return Err("Systemaufklärung benötigt Online-Regeln v1".into()); }
                 if (0..SCHIFFE).any(|e|e != Einheit::Spionagesonde.idx() && a.schiffe[e]>0) {
@@ -339,7 +475,7 @@ impl Welt {
                                         .into(),
                                 );
                             }
-                            if !hat(Einheit::Kolonieschiff) {
+                            if Self::kolonieschiff_typ(&a.schiffe).is_none() {
                                 return Err("Kampfkolonisierung braucht ein Kolonieschiff".into());
                             }
                             if self.kolonien(sid) >= self.kolonien_erlaubt(sid) {
@@ -351,7 +487,8 @@ impl Welt {
                 }
             }
             Mission::Transport => {
-                if ziel_pid.is_none() {
+                // 0.4.8: Ohne Planet nur zur eigenen gestrandeten Flotte (Versorgen, z. B. über einem Trümmerfeld).
+                if ziel_pid.is_none() && !self.eigene_orbitflotte_an(sid, a.ziel) {
                     return Err(format!("auf {} liegt kein Planet", a.ziel));
                 }
             }
@@ -367,7 +504,8 @@ impl Welt {
                     return Err(format!("auf {} liegt kein Planet", a.ziel));
                 };
                 let partner = self.planeten[zp].besitzer;
-                if partner == sid || !self.verbuendet(sid, partner) {
+                // Invasion v2: Bodenhilfe für eine verbündete Invasion (Truppen schließen sich den Angreifern an).
+                if (partner == sid || !self.verbuendet(sid, partner)) && !self.angriffshilfe_erlaubt(sid, zp) {
                     return Err("Halten geht nur bei einem Partner mit Verteidigungsbündnis oder in derselben Allianz".into());
                 }
                 haltedauer = a.haltedauer;
@@ -394,7 +532,7 @@ impl Welt {
             }
             Mission::Kolonisieren => {
                 self.koloniefracht_pruefen(sid, a.ziel, &a.schiffe, &a.ladung)?;
-                if !hat(Einheit::Kolonieschiff) {
+                if Self::kolonieschiff_typ(&a.schiffe).is_none() {
                     return Err("Kolonisieren braucht ein Kolonieschiff".into());
                 }
                 if ziel_pid.is_some() && !self.aufklaerungsregeln() {
@@ -410,38 +548,45 @@ impl Welt {
                     })
                     .count();
                 let erlaubt = self.kolonien_erlaubt(sid);
-                if if self.kolonisationsregeln_v2() {
+                if !self.kolonieplatz_erst_bei_gruendung() && if self.kolonisationsregeln_v2() {
                     !self.koloniekapazitaet(sid, a.ziel)
                 } else {
                     self.kolonien(sid) + unterwegs >= erlaubt
                 } {
-                    return Err(format!(
-                        "Astrophysik erlaubt {erlaubt} Kolonien, höhere Stufen erlauben mehr"
-                    ));
+                    return Err(self.kolonien_voll_text(sid));
                 }
-                siedler = r.wirtschaft.siedler * M;
+                let typ=Self::kolonieschiff_typ(&a.schiffe).unwrap();
+                let anzahl=r.flottendoktrin.get(&typ).map(|p|p.siedler).unwrap_or(r.wirtschaft.siedler);
+                siedler = anzahl * M;
                 if p.bevoelkerung - siedler < 1000 * M {
                     return Err(format!(
                         "für {} Siedler müssen auf {} mindestens 1000 Einwohner zurückbleiben",
-                        r.wirtschaft.siedler, a.start
+                        anzahl, a.start
                     ));
                 }
                 einweg = true;
             }
             Mission::Recyceln => {
-                if !hat(Einheit::Recycler) {
-                    return Err("Recyceln braucht Recycler".into());
+                if !hat(Einheit::Recycler) && !hat(Einheit::Bergungsschiff) {
+                    return Err("Trümmerbergung braucht Recycler oder Bergungsschiffe".into());
                 }
+            }
+            Mission::MondZerstoeren => {
+                return Err("Mondzerstörung zielt auf einen Mond: flotte_senden mit zielart mond".into());
             }
             Mission::Abbau => {
                 if !hat(Einheit::Bergbauschiff) {
                     return Err("Abbau braucht Bergbauschiffe".into());
                 }
-                if !self.system(a.ziel).map(|s| s.guertel).unwrap_or(false) {
+                if (a.ziel.position==0&&!self.system(a.ziel).map(|s|s.guertel).unwrap_or(false))
+                    ||(a.ziel.position>0&&!self.natuerlicher_ring(a.ziel)){
                     return Err(format!(
                         "System {}:{} hat keinen Asteroidengürtel",
                         a.ziel.sektor, a.ziel.system
                     ));
+                }
+                if a.ziel.position>0&&ziel_pid.is_some_and(|id|self.planeten[id].besitzer!=sid&&!self.verbuendet(sid,self.planeten[id].besitzer)){
+                    return Err("Ring einer fremden Welt: erst diplomatischen Zugang herstellen".into());
                 }
                 haltedauer = a.haltedauer;
                 if haltedauer < STUNDE || haltedauer > r.flug.abbau_max_stunden * STUNDE {
@@ -458,15 +603,33 @@ impl Welt {
         if a.ladung.iter().any(|m| *m < 0) {
             return Err("ladung darf nicht negativ sein".into());
         }
-        if fracht > plan.kapazitaet {
-            return Err(format!(
-                "Ladung {} übersteigt die Kapazität {}",
-                ganz(fracht),
-                ganz(plan.kapazitaet)
-            ));
-        }
+        plan.pruefe_zuladung(fracht,0)?;
         if matches!(a.mission, Mission::Spionage | Mission::FlottenSpionage | Mission::SystemErkunden) && fracht > 0 {
             return Err("Sonden tragen keine Ladung".into());
+        }
+        let mut siedlergruppe = crate::ausbau::Personen::default();
+        if self.ausbau.version>0 && siedler>0 {
+            let volk=siedler_volk.unwrap_or(sp.volk);
+            let vorhanden=self.ausbau.personen.get(&(pid as PlanetId)).cloned().unwrap_or_default();
+            siedlergruppe=match siedler_mischung {
+                // Karl 24.10.2026: gleich nur Forscher, nur Fachkräfte oder normale Bewohner mitschicken können.
+                Some(m) => {
+                    if m.iter().any(|n|!(0..=1_000_000_000).contains(n)) || m.iter().sum::<i64>()*M!=siedler {
+                        return Err(format!("Siedlermischung muss genau {} Siedler ergeben (Bewohner + Fachkräfte + Forscher)",siedler/M));
+                    }
+                    let mut g=crate::ausbau::Personen::default();
+                    for (q,art) in ["Bewohner","Fachkräfte","Forscher"].iter().enumerate() {
+                        let da=vorhanden.gruppen[volk.idx()][q]/M;
+                        if m[q]>da { return Err(format!("Auf {} gibt es nur {} {} ({})",a.start,da,art,volk.name())); }
+                        g.gruppen[volk.idx()][q]=m[q]*M;
+                    }
+                    g
+                }
+                None => vorhanden.auswahl_volk(volk,siedler),
+            };
+            self.siedler_eignung_pruefen(sid,a.ziel,&siedlergruppe,siedler)?;
+            let food=mal(siedlergruppe.organisch(),r.wirtschaft.nahrung_je_1000)*24/1000;
+            if a.ladung[Gut::Nahrung.idx()]<food{return Err("Koloniefracht muss die tatsächlichen organischen Siedler 24 Spielstunden versorgen".into());}
         }
         let treibstoff = plan.treibstoff * if einweg { 1 } else { 2 };
         self.abrechnen(pid);
@@ -479,6 +642,11 @@ impl Welt {
         self.zahlbar(pid, &bedarf, None)?;
         self.zahlbar(pid, &sprit, topf)?;
         self.zahlen(pid, &sprit, topf);
+        if self.ausbau.version>0 && siedler>0 {
+            let people=self.ausbau.personen.get_mut(&(pid as PlanetId)).expect("population");
+            people.nehmen(&siedlergruppe).expect("validated settlers");
+            self.ausbau.siedler.insert(self.naechste_flotte,siedlergruppe);
+        }
         let p = &mut self.planeten[pid];
         for g in 0..GUETER {
             p.bestand[g] -= a.ladung[g];
@@ -513,6 +681,8 @@ impl Welt {
                 verband: None,
             },
         );
+        if let Some(v) = terraform_volk { self.ausbau.terraform_fluege.insert(id, v); }
+        if self.ausbau.version>0 {self.ausbau.fluganzeigen.insert(id,serde_json::json!({"einweg":einweg,"hin_tempo_prozent":a.sigma_pm/10,"hin_dauer":plan.dauer,"treibstoff_hin":plan.treibstoff as f64/M as f64,"distanz":plan.entfernung,"reisetempo":plan.tempo}));}
         self.plane(ankunft, EreignisArt::FlotteAnkunft { flotte: id });
         if self.aufklaerungsregeln() {
             self.aufklaerung.abschirmung.insert(id, self.spieler[sid as usize].forschung[Forschung::Abschirmtechnik.idx()]);
@@ -534,6 +704,8 @@ impl Welt {
                         empfaenger: self.planeten[zp].besitzer,
                     },
                 );
+            } else if let Some(of) = self.eigene_orbitflotte_bei(sid, a.ziel) {
+                self.kolonisation.transportziele.insert(id, Transportziel::Flotte { flotte: of, empfaenger: sid });
             }
         }
         self.fachereignis(
@@ -571,7 +743,7 @@ impl Welt {
         let owner = self.planeten[pid].besitzer;
         (owner != sid && !self.verbuendet(sid, owner)).then_some(owner)
     }
-    fn gegner_angreifbar(&self, sid: SpielerId, gegner: SpielerId) -> Result<(), String> {
+    pub(crate) fn gegner_angreifbar(&self, sid: SpielerId, gegner: SpielerId) -> Result<(), String> {
         if sid == gegner || self.verbuendet(sid, gegner) {
             return Err("Gegner ist inzwischen eigener oder verbündeter Spieler".into());
         }
@@ -612,21 +784,31 @@ impl Welt {
         if mission != Mission::Angriff && self.spieler[sid as usize].stufe < 4 {
             return Err("Orbitbesetzung benötigt Zivilisationsstufe 4".into());
         }
+        if self.invasion_v1() && mission == Mission::Bombardieren && self.bombenlast_flotte(schiffe) == 0 {
+            return Err("Bombardieren braucht Bomber (bomber oder strategischer_bomber)".into());
+        }
         if mission == Mission::Kampfkolonisieren {
             if p.heimat {
                 return Err("Der ursprüngliche Heimatplanet ist vor Übernahme geschützt".into());
             }
-            if schiffe[Einheit::Kolonieschiff.idx()] < 1 {
+            if Self::kolonieschiff_typ(schiffe).is_none() {
                 return Err("Kampfkolonisierung braucht ein Kolonieschiff".into());
             }
-            if !self.koloniekapazitaet(sid, p.koord) {
+            if !self.kolonieplatz_erst_bei_gruendung() && !self.koloniekapazitaet(sid, p.koord) {
                 return Err("Koloniekapazität bereits belegt oder reserviert".into());
             }
         }
         if let Some(g) = self.tatsaechlicher_gegner(pid, sid) {
             self.gegner_angreifbar(sid, g)?;
-        } else if eigene_blockade && mission == Mission::Kampfkolonisieren && !freund {
+        } else if eigene_blockade
+            && (mission == Mission::Kampfkolonisieren
+                || (self.invasion_v1() && mission == Mission::Bombardieren))
+            && !freund
+        {
             self.gegner_angreifbar(sid, p.besitzer)?;
+        } else if eigene_blockade && !freund {
+            // Spielprobe 20.10.2026: „Kein feindlicher Gegner am Ziel“ war bei eigener Blockade unverständlich.
+            return Err("Deine eigene Flotte hält den Orbit – ein weiterer Angriff findet dort keinen Gegner. Möglich sind Bombardieren und Kampfkolonisieren.".into());
         } else {
             return Err("Kein feindlicher Gegner am Ziel".into());
         }
@@ -655,6 +837,15 @@ impl Welt {
                 "Versorgungsziel muss die gebundene eigene Orbitflotte am Flugziel sein".into(),
             );
         }
+        // Gestrandete Flotten (0.4.8): Laderaum des Empfängers vor dem Start prüfen – dieselbe Rechnung wie bei der Ankunft
+        // (Funktionsprüfung 25.10.2026: eine Sondenflotte ohne Laderaum nahm den Auftrag an, die Lieferung scheiterte erst dort).
+        if self.orbitflotten_aktiv() {
+            let kap = self.flugplan(f.besitzer, f.start as usize, f.ziel, &f.schiffe, 1000).map(|p| p.kapazitaet).unwrap_or(0);
+            let frei = kap - f.ladung.iter().sum::<i64>();
+            let menge: i64 = a.ladung.iter().sum();
+            if kap <= 0 { return Err("Diese Flotte hat keinen Laderaum – sie kann keinen Treibstoff aufnehmen".into()); }
+            if menge > frei { return Err(format!("Laderaum der Flotte reicht nicht: frei {}, geliefert würden {}", ganz(frei.max(0)), ganz(menge))); }
+        }
         let id = self.naechste_flotte;
         let result = self.flotte_senden(sid, rolle, a)?;
         self.kolonisation.transportziele.insert(
@@ -669,6 +860,9 @@ impl Welt {
     fn transport_ankunft_v2(&mut self, fid: FlottenId) {
         let f = self.flotten[&fid].clone();
         let mut zugestellt = false;
+        // Für die Meldung: Personen und Bodentruppen an Bord, bevor sie landen (Funktionsprüfung 25.10.2026: nur die Fracht wurde genannt).
+        let an_bord_personen = self.ausbau.passagiere.get(&fid).map_or(0, |p| p.gesamt() / M);
+        let an_bord_truppen: i64 = self.ausbau.boden.flotten.get(&fid).map_or(0, |u| u.iter().sum());
         match self.kolonisation.transportziele.remove(&fid) {
             Some(Transportziel::Planet { planet, empfaenger }) => {
                 let pid = planet as usize;
@@ -679,6 +873,7 @@ impl Welt {
                     && !self.blockiert_fuer(pid, empfaenger)
                 {
                     self.abrechnen(pid);
+                    self.personen_landen(fid,pid);
                     for g in 0..GUETER {
                         self.planeten[pid].bestand[g] += f.ladung[g];
                     }
@@ -725,6 +920,25 @@ impl Welt {
         }
         if zugestellt {
             self.flotten.get_mut(&fid).unwrap().ladung = [0; GUETER];
+        }
+        // Meldung für Absender und Empfänger (online fehlte sie, nur v1 meldete „Lieferung von …“).
+        let mut teile = if f.ladung.iter().any(|n| *n >= M) { vec![crate::berichte::fracht_text(&f.ladung)] } else { vec![] };
+        if an_bord_personen > 0 { teile.push(format!("{an_bord_personen} Personen")); }
+        if an_bord_truppen > 0 { teile.push(format!("{an_bord_truppen} Bodentruppen")); }
+        let fracht = if teile.is_empty() { "nichts".to_string() } else { teile.join(", ") };
+        let empfaenger = self.belegung.get(&f.ziel).map(|p| self.planeten[*p as usize].besitzer);
+        if zugestellt {
+            self.vorfall(f.besitzer, "lieferung", format!("Flotte {fid}: Transport nach {} zugestellt: {fracht}", f.ziel));
+            if let Some(e) = empfaenger.filter(|e| *e != f.besitzer) {
+                let von = self.spieler[f.besitzer as usize].name.clone();
+                self.vorfall(e, "lieferung", format!("Lieferung von {von} auf {} angekommen: {fracht}", f.ziel));
+            }
+        } else {
+            self.vorfall(
+                f.besitzer,
+                "lieferung",
+                format!("Flotte {fid}: Transport nach {} nicht zugestellt (Ziel nicht mehr erreichbar, blockiert oder Laderaum voll); Fracht kehrt zurück: {fracht}", f.ziel),
+            );
         }
         self.fachereignis(
             if zugestellt {
@@ -829,6 +1043,17 @@ impl Welt {
             if self.aufklaerungsregeln() {return Err("Keine eigene rückrufbare Flotte unter dieser Kennung".into());}
             return Err(format!("Flotte {fid} gehört dir nicht"));
         }
+        self.rueckruf_orbit(fid)?;
+        let Some(f) = self.flotten.get(&fid) else { return Err("Flotte fehlt".into()) };
+        if self.ausbau.expeditionen.get(&fid).is_some_and(|e|e.status=="vermisst"){return Err("Vermisste Expedition kann nicht zurückgerufen werden".into());}
+        if self.ausbau.expeditionen.get(&fid).is_some_and(|e|e.status=="aktiv"){
+            if self.ausbau.expeditionen[&fid].scan{return Err("Laufendes Expeditionsereignis zuerst abschließen".into());}
+            self.expedition_abschluss(fid);return Ok("Expedition vorzeitig beendet; ihr einmaliges Gesamtrisiko wurde ausgewertet".into());
+        }
+        if f.zustand!=Flottenzustand::Rueckflug {
+            if let Some(e)=self.ausbau.expeditionen.get_mut(&fid){e.status="rueckflug".into();}
+            if let Some(target)=self.ausbau.rettungsziele.remove(&fid){if let Some(e)=self.ausbau.expeditionen.get_mut(&target){e.rettungen.remove(&fid);}}
+        }
         if self.kolonisationsregeln_v2()
             && self
                 .kolonisation
@@ -841,8 +1066,9 @@ impl Welt {
         match f.zustand {
             Flottenzustand::Rueckflug => Err(format!("Flotte {fid} ist schon auf dem Rückflug")),
             Flottenzustand::Hinflug => {
-                let zurueck = jetzt + (jetzt - f.abflug).max(MINUTE);
+                let zurueck = jetzt + ((jetzt - f.abflug)*self.rueckdauer(fid,f.flugdauer)/f.flugdauer.max(1)).max(MINUTE);
                 let start = f.start;
+                let fraction=((jetzt-f.abflug) as f64/f.flugdauer.max(1) as f64).clamp(0.0,1.0);let from=f.ziel;
                 let f = self.flotten.get_mut(&fid).unwrap();
                 f.zustand = Flottenzustand::Rueckflug;
                 f.verband = None;
@@ -856,6 +1082,7 @@ impl Welt {
                         },
                     );
                 }
+                self.rueckflug_anzeigen(fid,fraction,from);
                 self.plane(zurueck, EreignisArt::FlotteRueckkehr { flotte: fid });
                 Ok(format!(
                     "Flotte {fid} kehrt um, Rückkehr {}",
@@ -885,6 +1112,10 @@ impl Welt {
     }
 
     pub(crate) fn heimflug(&mut self, fid: FlottenId) {
+        if self.ausbau.version>0 {
+            if let Some(e)=self.ausbau.expeditionen.get_mut(&fid){if e.status!="verloren"{e.status="rueckflug".into();}}
+        }
+
         if self.kolonisationsregeln_v2() {
             let Some(f) = self.flotten.get(&fid).cloned() else {
                 return;
@@ -903,9 +1134,11 @@ impl Welt {
             for pid in besetzungen {
                 self.besetzung_abbrechen(pid, "Besetzungsflotte verlässt den Orbit");
             }
+            // 0.4.8: ohne Rückflugtreibstoff stranden bzw. zurück an den Orbitort.
+            if self.heimflug_orbit(fid) { return; }
             let start = f.start as usize;
             if self.planeten[start].besitzer == f.besitzer {
-                let retour = self.zeit + f.flugdauer;
+                let retour = self.zeit + self.rueckdauer(fid,f.flugdauer);
                 let fl = self.flotten.get_mut(&fid).unwrap();
                 fl.zustand = Flottenzustand::Rueckflug;
                 fl.verband = None;
@@ -917,6 +1150,7 @@ impl Welt {
                         wartend: false,
                     },
                 );
+                self.rueckflug_anzeigen(fid,1.0,f.ziel);
                 self.plane(retour, EreignisArt::FlotteRueckkehr { flotte: fid });
             } else {
                 self.rueckflug_umleiten(fid, f.ziel, self.spieler[f.besitzer as usize].heimat);
@@ -934,15 +1168,29 @@ impl Welt {
         f.zustand = Flottenzustand::Rueckflug;
         f.verband = None;
         f.rueckkehr = jetzt + f.flugdauer;
-        let zurueck = f.rueckkehr;
+        let zurueck = f.rueckkehr;let from=f.ziel;
+        self.rueckflug_anzeigen(fid,1.0,from);
         self.plane(zurueck, EreignisArt::FlotteRueckkehr { flotte: fid });
     }
 
     pub fn flotte_rueckkehr(&mut self, fid: FlottenId) {
+        // Sonde eines Sammelauftrags gelandet: sie (und andere freie Sonden) fliegen die nächsten offenen Plätze an.
+        let auftrag = self.sammelauftrag(fid);
+        self.flotte_rueckkehr_landen(fid);
+        if let Some(auftrag) = auftrag.filter(|_| !self.flotten.contains_key(&fid)) { self.sammelauftrag_fortsetzen(&auftrag, true); }
+    }
+
+    fn flotte_rueckkehr_landen(&mut self, fid: FlottenId) {
         let Some(f) = self.flotten.get(&fid).cloned() else {
             return;
         };
         if f.zustand != Flottenzustand::Rueckflug || f.rueckkehr != self.zeit {
+            return;
+        }
+        if self.rueckkehr_orbit(fid) {
+            return;
+        }
+        if self.mond_rueckkehr(fid) {
             return;
         }
         if self.kolonisationsregeln_v2() {
@@ -986,6 +1234,7 @@ impl Welt {
         if self.planeten[pid].besitzer != f.besitzer {
             pid = self.spieler[f.besitzer as usize].heimat as usize;
         }
+        self.personen_landen(fid,pid);
         self.abrechnen(pid);
         let p = &mut self.planeten[pid];
         for e in 0..SCHIFFE {
@@ -1015,6 +1264,11 @@ impl Welt {
         self.raten_neu(pid);
     }
 
+    pub(crate) fn rueckflug_anzeigen(&mut self,fid:FlottenId,position:f64,von:Koord){
+        if self.ausbau.version==0{return;}
+        let f=&self.flotten[&fid];let v=self.ausbau.fluganzeigen.entry(fid).or_insert_with(||serde_json::json!({}));
+        v["rueck_beginn"]=serde_json::json!(self.zeit);v["rueck_dauer"]=serde_json::json!((f.rueckkehr-self.zeit).max(1));v["rueck_position"]=serde_json::json!(position);v["rueck_von"]=serde_json::json!(von.to_string());
+    }
     fn rueckflug_umleiten(&mut self, fid: FlottenId, von: Koord, ziel: PlanetId) {
         let f = self.flotten[&fid].clone();
         let k = self.planeten[ziel as usize].koord;
@@ -1038,6 +1292,8 @@ impl Welt {
                 wartend: false,
             },
         );
+        self.rueckflug_anzeigen(fid,1.0,von);
+        if let Some(v)=self.ausbau.fluganzeigen.get_mut(&fid){v["umgeleitet"]=serde_json::json!(true);v["rueck_tempo_prozent"]=serde_json::json!(100);}
         self.plane(ende, EreignisArt::FlotteRueckkehr { flotte: fid });
         self.fachereignis(
             "return_redirected",
@@ -1045,7 +1301,8 @@ impl Welt {
             serde_json::json!({"fleet":fid,"from":von,"target":k,"arrival":ende}),
         );
     }
-    fn rueckflug_landen(&mut self, fid: FlottenId, pid: usize) {
+    pub(crate) fn rueckflug_landen(&mut self, fid: FlottenId, pid: usize) {
+        self.personen_landen(fid,pid);
         let f = self.flotten[&fid].clone();
         self.abrechnen(pid);
         let p = &mut self.planeten[pid];
@@ -1064,10 +1321,16 @@ impl Welt {
             f.besitzer,
             serde_json::json!({"fleet":fid,"planet":pid}),
         );
+        // Mit Fracht (Beute, Recycling, Abbau, nicht zugestellte Lieferung) wie in v1.
+        let fracht = crate::berichte::fracht_text(&f.ladung);
         self.vorfall(
             f.besitzer,
             "flotte",
-            format!("Flotte {fid} auf {} zurück", self.planeten[pid].koord),
+            if fracht == "nichts" {
+                format!("Flotte {fid} ({}) auf {} zurück", f.mission, self.planeten[pid].koord)
+            } else {
+                format!("Flotte {fid} ({}) auf {} zurück mit {fracht}", f.mission, self.planeten[pid].koord)
+            },
         );
         self.raten_neu(pid);
     }
@@ -1103,6 +1366,18 @@ impl Welt {
         let f = self.flotten.get_mut(&fid).unwrap();
         f.ladung[Gut::Erz.idx()] += erz;
         f.ladung[Gut::Kristall.idx()] += kristall;
+        let (besitzer, ziel) = (f.besitzer, f.ziel);
+        let voll = summe > frei;
+        self.vorfall(
+            besitzer,
+            "abbau",
+            format!(
+                "Flotte {fid}: Abbau bei {ziel} beendet: {} Erz, {} Kristall{}",
+                ganz(erz),
+                ganz(kristall),
+                if voll { " (Laderaum voll, Rest bleibt im Gürtel)" } else { "" }
+            ),
+        );
     }
 
     pub fn orbit_ende(&mut self, fid: FlottenId) {
@@ -1125,6 +1400,10 @@ impl Welt {
             self.flotte_rueckkehr(fid);
             return;
         }
+        let f = f.clone();
+        if self.invasion_orbit_verlaengern(fid) {
+            return;
+        }
         if f.mission == Mission::Abbau {
             let dauer = f.haltedauer;
             self.abbau_ertrag(fid, dauer);
@@ -1139,12 +1418,19 @@ impl Welt {
         if f.zustand != Flottenzustand::Hinflug || f.ankunft != self.zeit {
             return;
         }
+        if self.schiffhandel_ankunft(fid){return;}
+        if self.expedition_ankunft(fid){return;}
+        if self.mond_ankunft(fid){return;}
         if f.mission == Mission::Angriff && f.verband.is_some() {
             self.verbandskampf(fid);
             return;
         }
         let jetzt = self.zeit;
         let ziel_pid = self.belegung.get(&f.ziel).map(|x| *x as usize);
+        if self.orbitkampf_ankunft(fid) { return; }
+        if self.verwuestet_ankunft(fid, ziel_pid) { return; }
+        if self.invasion_ankunft(fid, ziel_pid) { return; }
+        if f.mission==Mission::Stationieren{if let Some(p)=ziel_pid.filter(|p|self.planeten[*p].besitzer==f.besitzer&&!self.blockiert_fuer(*p,f.besitzer)){self.personen_landen(fid,p);}}
         match f.mission {
             Mission::SystemErkunden => self.system_erkunden_ankunft(fid),
             Mission::FlottenSpionage => self.flotten_spionage_ankunft(fid),
@@ -1250,6 +1536,18 @@ impl Welt {
                         ),
                     );
                 }
+                Some(zp) if self.angriffshilfe_erlaubt(f.besitzer, zp) => {
+                    let fl = self.flotten.get_mut(&fid).unwrap();
+                    fl.zustand = Flottenzustand::ImOrbit;
+                    fl.orbit_ende = jetzt + fl.haltedauer;
+                    let ende = fl.orbit_ende;
+                    self.plane(ende, EreignisArt::OrbitEnde { flotte: fid });
+                    let name = self.spieler[f.besitzer as usize].name.clone();
+                    if let Some(w) = self.ausbau.boden.invasion.wellen.get(&(zp as PlanetId)).cloned() {
+                        self.vorfall(w.angreifer, "invasion", format!("{}: Bodentruppen von {name} schließen sich deiner Invasion an", f.ziel));
+                    }
+                    self.vorfall(f.besitzer, "invasion", format!("Flotte {fid}: Bodentruppen kämpfen ab der nächsten Welle mit der verbündeten Invasion auf {}", f.ziel));
+                }
                 _ => self.heimflug(fid),
             },
             Mission::Spionage => self.spionieren(fid),
@@ -1266,13 +1564,13 @@ impl Welt {
                     let logistik = 1.0
                         + r.flug.logistik_bonus * sp.forschung[Forschung::Logistik.idx()] as f64;
                     let kap = mal(
-                        f.schiffe[Einheit::Recycler.idx()] * r.einh(Einheit::Recycler).ladung * M,
+                        [Einheit::Recycler,Einheit::Bergungsschiff].iter().map(|e|f.schiffe[e.idx()]*r.ladung_milli(*e,sp.volk)).sum(),
                         r.volk(sp.volk).ladung * logistik,
                     );
                     let frei = (kap - f.ladung.iter().sum::<i64>()).max(0);
                     let summe = t[0] + t[1];
                     let (erz, kristall) = if summe > frei {
-                        (anteil(t[0], frei, summe), anteil(t[1], frei, summe))
+                        { let erz=anteil(t[0], frei, summe); (erz, frei-erz) }
                     } else {
                         (t[0], t[1])
                     };
@@ -1280,12 +1578,31 @@ impl Welt {
                     fl.ladung[Gut::Erz.idx()] += erz;
                     fl.ladung[Gut::Kristall.idx()] += kristall;
                     let rest = [t[0] - erz, t[1] - kristall];
-                    if rest[0] + rest[1] < M {
+                    if rest[0] + rest[1] == 0 {
                         self.truemmer.remove(&f.ziel);
+                        self.monde.truemmerringe.retain(|k| *k != f.ziel);
                     } else {
                         self.truemmer.insert(f.ziel, rest);
                     }
+                    self.vorfall(
+                        f.besitzer,
+                        "recycling",
+                        format!(
+                            "Flotte {fid}: Trümmerfeld {} recycelt: {} Erz, {} Kristall geladen{}",
+                            f.ziel,
+                            ganz(erz),
+                            ganz(kristall),
+                            if rest[0] + rest[1] > 0 {
+                                format!("; Rest im Feld {} Erz, {} Kristall (Laderaum voll)", ganz(rest[0]), ganz(rest[1]))
+                            } else {
+                                "; Feld vollständig geräumt".into()
+                            }
+                        ),
+                    );
+                } else {
+                    self.vorfall(f.besitzer, "recycling", format!("Flotte {fid}: bei {} kein Trümmerfeld mehr vorgefunden", f.ziel));
                 }
+                self.ueberlebende_bergen(fid);
                 self.heimflug(fid);
             }
             Mission::Abbau => {
@@ -1295,13 +1612,15 @@ impl Welt {
                 let ende = fl.orbit_ende;
                 self.plane(ende, EreignisArt::OrbitEnde { flotte: fid });
             }
+            Mission::MondZerstoeren => self.heimflug(fid),
+            Mission::Terraformen => self.terraform_ankunft(fid),
         }
     }
 
     // ---------------------------------------------------------------- Kampf
 
     /// Trägt einen Kampf aus und schreibt Überlebende, Trümmer, Bericht und Statistik zurück.
-    fn gefecht(&mut self, fids: &[FlottenId], parteien: &[Partei], ort: Koord) -> Sieger {
+    pub(crate) fn gefecht(&mut self, fids: &[FlottenId], parteien: &[Partei], ort: Koord) -> Sieger {
         let r = self.regeln.clone();
         let nr = self.kampf_nr;
         self.kampf_nr += 1;
@@ -1311,12 +1630,12 @@ impl Welt {
         let mut koloniestand = std::collections::BTreeMap::new();
         if self.kolonisationsregeln_v2() {
             for fl in &flotten {
-                koloniestand.insert(fl.id, fl.schiffe[Einheit::Kolonieschiff.idx()]);
+                koloniestand.insert(fl.id, Self::kolonieschiffe(&fl.schiffe));
             }
             for p in parteien {
                 if let Partei::Flotte(id) = p {
                     koloniestand
-                        .insert(*id, self.flotten[id].schiffe[Einheit::Kolonieschiff.idx()]);
+                        .insert(*id, Self::kolonieschiffe(&self.flotten[id].schiffe));
                 }
             }
         }
@@ -1349,12 +1668,22 @@ impl Welt {
                     e[..SCHIFFE].copy_from_slice(&fl.schiffe);
                     vert.push(Gruppe::neu(&r, &self.spieler[fl.besitzer as usize], e));
                 }
+                Partei::Mond(mid) => {
+                    let m = &self.monde.monde[mid];
+                    vert.push(Gruppe::neu(&r, &self.spieler[m.besitzer as usize], m.einheiten));
+                }
             }
         }
         let erg = kampf(&r, &ang, &vert, &mut rng);
+        // Mondgeneration: Reparaturdock des Mondes an diesem Ort (Schiffe des Mondbesitzers).
+        let dock = self.reparaturdock(ort);
+        let mut repariert = [0i64; SCHIFFE];
+        let mondkampf = parteien.iter().any(|p| matches!(p, Partei::Mond(_)));
 
         let mut truemmer = [0i64; 2];
+        let mut verlorene_besatzung = [0i64; VOELKER];
         let mut truemmer_dazu = |e: usize, verloren: i64, volk: Volk| {
+            if e < SCHIFFE { verlorene_besatzung[volk.idx()] += verloren * r.einh(Einheit::ALLE[e]).besatzung; }
             let k = r.kosten_einheit(Einheit::ALLE[e], volk);
             truemmer[0] += mal(k[Gut::Erz.idx()] * verloren, r.kampf.truemmer_anteil);
             truemmer[1] += mal(k[Gut::Kristall.idx()] * verloren, r.kampf.truemmer_anteil);
@@ -1401,10 +1730,14 @@ impl Welt {
         let mut vert_nachher = [0i64; EINHEITEN];
         let mut vert_spieler: Vec<SpielerId> = Vec::new();
         let mut vert_verlust: Vec<(SpielerId, i64)> = Vec::new();
+        // Für den Bericht: wiederaufgebaute Verteidigung getrennt und jede verteidigende Partei einzeln.
+        let mut wieder = [0i64; EINHEITEN];
+        let mut parteien_bericht: Vec<serde_json::Value> = Vec::new();
         for (gi, p) in parteien.iter().enumerate() {
             let sid = vert[gi].spieler;
             let volk = self.spieler[sid as usize].volk;
             let mut verlust = 0i64;
+            let mut nach = [0i64; EINHEITEN];
             if !vert_spieler.contains(&sid) {
                 vert_spieler.push(sid);
             }
@@ -1417,15 +1750,17 @@ impl Welt {
                         vert_vorher[e] += vorher;
                         if verloren > 0 {
                             if e < SCHIFFE {
-                                truemmer_dazu(e, verloren, volk);
-                                verlust += wert_von(e, verloren, volk);
+                                let rep = match dock { Some((_, owner, pm)) if owner == sid && e != Einheit::Weltentruemmer.idx() => verloren * pm / 1000, _ => 0 };
+                                repariert[e] += rep;
+                                truemmer_dazu(e, verloren - rep, volk);
+                                verlust += wert_von(e, verloren - rep, volk);
                             } else {
                                 // Zerstörte Verteidigung wird zum Teil wiederhergestellt.
-                                let neu = if self.kolonisation.aktiv
+                                let neu = if (self.kolonisation.aktiv
                                     && matches!(
                                         f.mission,
                                         Mission::Bombardieren | Mission::Kampfkolonisieren
-                                    ) {
+                                    )) || e == Einheit::Solarsonde.idx() {
                                     0
                                 } else {
                                     ((verloren as i128 * fx(r.kampf.verteidigung_wiederaufbau)
@@ -1433,11 +1768,43 @@ impl Welt {
                                         / FX) as i64
                                 };
                                 rest += neu;
+                                wieder[e] += neu;
+                                // Salvage only permanent losses; restored defenses retain their material.
+                                truemmer_dazu(e, verloren - neu, volk);
                                 verlust += wert_von(e, verloren - neu, volk);
                             }
                         }
                         vert_nachher[e] += rest;
+                        nach[e] = rest;
                         self.planeten[*zp].einheiten[e] = rest;
+                    }
+                }
+                Partei::Mond(mid) => {
+                    for e in 0..EINHEITEN {
+                        let vorher = vert[gi].einheiten[e];
+                        let mut rest = erg.verteidiger[gi][e];
+                        let verloren = vorher - rest;
+                        vert_vorher[e] += vorher;
+                        if verloren > 0 {
+                            if e < SCHIFFE {
+                                let rep = match dock { Some((_, owner, pm)) if owner == sid && e != Einheit::Weltentruemmer.idx() => verloren * pm / 1000, _ => 0 };
+                                repariert[e] += rep;
+                                truemmer_dazu(e, verloren - rep, volk);
+                                verlust += wert_von(e, verloren - rep, volk);
+                            } else {
+                                // Solarsonden sind wehrlose Anlagen: kein Wiederaufbau, volle Trümmer.
+                                let neu = if e == Einheit::Solarsonde.idx() { 0 } else {
+                                    ((verloren as i128 * fx(r.kampf.verteidigung_wiederaufbau) + FX / 2) / FX) as i64
+                                };
+                                rest += neu;
+                                wieder[e] += neu;
+                                truemmer_dazu(e, verloren - neu, volk);
+                                verlust += wert_von(e, verloren - neu, volk);
+                            }
+                        }
+                        vert_nachher[e] += rest;
+                        nach[e] = rest;
+                        if let Some(m) = self.monde.monde.get_mut(mid) { m.einheiten[e] = rest; }
                     }
                 }
                 Partei::Flotte(id) => {
@@ -1448,9 +1815,12 @@ impl Welt {
                         vert_vorher[e] += vorher;
                         vert_nachher[e] += rest;
                         neu[e] = rest;
+                        nach[e] = rest;
                         if vorher > rest {
-                            truemmer_dazu(e, vorher - rest, volk);
-                            verlust += wert_von(e, vorher - rest, volk);
+                            let rep = match dock { Some((_, owner, pm)) if owner == sid && e != Einheit::Weltentruemmer.idx() => (vorher - rest) * pm / 1000, _ => 0 };
+                            repariert[e] += rep;
+                            truemmer_dazu(e, vorher - rest - rep, volk);
+                            verlust += wert_von(e, vorher - rest - rep, volk);
                         }
                     }
                     if neu.iter().sum::<i64>() == 0 {
@@ -1460,6 +1830,14 @@ impl Welt {
                     }
                 }
             }
+            parteien_bericht.push(serde_json::json!({
+                "spieler": sid,
+                "art": match p { Partei::Planet(_) => "planet", Partei::Mond(_) => "mond", Partei::Flotte(_) => "flotte" },
+                "flotte": match p { Partei::Flotte(id) => Some(*id), _ => None },
+                "vorher": crate::sicht::einheiten(&vert[gi].einheiten, 0),
+                "nachher": crate::sicht::einheiten(&nach, 0),
+                "verlust_wert": ganz(verlust),
+            }));
             vert_verlust.push((sid, verlust));
         }
 
@@ -1467,6 +1845,51 @@ impl Welt {
             let t = self.truemmer.entry(ort).or_insert([0, 0]);
             t[0] += truemmer[0];
             t[1] += truemmer[1];
+        }
+        // Rettungskapseln gehören zum Trümmerfeld, auch nach einem gewöhnlichen Raumkampf.
+        // Nur dauerhaft verlorene Schiffe zählen; Werftdock-Reparaturen erzeugen keine zweite Besatzung.
+        if self.ausbau.version > 0 {
+            let mut personen=crate::ausbau::Personen::default();
+            for volk in Volk::ALLE {
+                personen.gruppen[volk.idx()][1]=verlorene_besatzung[volk.idx()]*crate::monde::UEBERLEBENDE_PROMILLE/1000*M;
+            }
+            if personen.gesamt()>0 {
+                if let Some((_,alt))=self.monde.ueberlebende.iter_mut().find(|(k,_)|*k==ort){alt.add(&personen);}
+                else{self.monde.ueberlebende.push((ort,personen));}
+            }
+        }
+        if let Some((mid, _, _)) = dock { if repariert.iter().any(|n| *n > 0) { self.reparatur_vormerken(mid, nr, &repariert); } }
+        if !mondkampf {
+            let mut beteiligte: Vec<SpielerId> = flotten.iter().map(|fl| fl.besitzer).collect();
+            beteiligte.extend(vert.iter().map(|g| g.spieler));
+            beteiligte.sort();
+            beteiligte.dedup();
+            self.mondwurf(nr, ort, truemmer[0] + truemmer[1], beteiligte);
+        }
+        if self.ausbau.version>0 {self.ausbau.kampfrunden.insert(nr,erg.protokoll.clone());}
+        // Auch in Welten ohne Ausbau (Version 0): dort nur im Speicher, Hash und Snapshot nehmen `ausbau` erst ab Version 1 auf.
+        let herkunft=flotten.iter().map(|fl|(fl.besitzer,fl.start_koord,self.monde.flottenstart.contains_key(&fl.id))).collect();
+        self.ausbau.kampf_herkunft.insert(nr,herkunft);
+        // Technikstand beider Seiten für den Bericht (Karl 22.10.2026: Wirkung von Forschung und Schilden sehen).
+        if self.ausbau.version>0 {
+            let mut wer: Vec<SpielerId> = flotten.iter().map(|fl| fl.besitzer).chain(vert_spieler.iter().copied()).collect();
+            wer.dedup();
+            let technik = wer.into_iter().fold(Vec::new(), |mut v: Vec<(SpielerId, [u8; 3])>, s| {
+                if !v.iter().any(|(x, _)| *x == s) { let fo = &self.spieler[s as usize].forschung;
+                    v.push((s, [fo[Forschung::Waffentechnik.idx()], fo[Forschung::Schildtechnik.idx()], fo[Forschung::Panzerung.idx()]])); }
+                v });
+            self.ausbau.kampf_technik.insert(nr, technik);
+            // Berichtszusatz (Karl 22.10.2026: Berichte „korrekt, ohne Lücken“): Ziel Mond oder Planet, je Partei,
+            // wiederaufgebaute Verteidigung und Werftdock-Reparatur getrennt von den echten Verlusten.
+            self.ausbau.kampf_zusatz.insert(nr, serde_json::json!({
+                "ziel_mond": mondkampf,
+                "ueberlebende": verlorene_besatzung.iter().map(|n|n*crate::monde::UEBERLEBENDE_PROMILLE/1000).sum::<i64>(),
+                "wiederaufgebaut": crate::sicht::einheiten(&wieder, 0),
+                "repariert": crate::sicht::einheiten(&repariert, 0),
+                "parteien": parteien_bericht,
+                "wiederaufbau_prozent": (r.kampf.verteidigung_wiederaufbau * 100.0).round(),
+                "truemmer_prozent": (r.kampf.truemmer_anteil * 100.0).round(),
+            }));
         }
         self.kampfberichte.push(Kampfbericht {
             nr,
@@ -1492,22 +1915,33 @@ impl Welt {
             Sieger::Verteidiger => "Sieg des Verteidigers",
             Sieger::Unentschieden => "unentschieden",
         };
-        for (sid, verlust) in ang_verluste {
+        // Je Spieler eine Meldung und ein Zähler, auch wenn er mit mehreren Flotten oder Planet und Flotte beteiligt war.
+        let je_spieler = |liste: Vec<(SpielerId, i64)>| {
+            let mut out: Vec<(SpielerId, i64)> = Vec::new();
+            for (s, v) in liste {
+                match out.iter_mut().find(|e| e.0 == s) {
+                    Some(e) => e.1 += v,
+                    None => out.push((s, v)),
+                }
+            }
+            out
+        };
+        for (sid, verlust) in je_spieler(ang_verluste) {
             let st = &mut self.spieler[sid as usize].statistik;
             st.angriffe += 1;
             st.verluste += verlust;
-            self.vorfall(sid,"kampf",format!("Kampf {nr} bei {ort}: {ausgang} nach {} Runden, eigene Verluste im Wert von {}",erg.runden,ganz(verlust)));
+            self.vorfall(sid,"kampf",if erg.runden==0{format!("Gefecht bei {ort}: {ausgang} ohne Gegenwehr, eigene Verluste im Wert von {}",ganz(verlust))}else{format!("Gefecht bei {ort}: {ausgang} nach {}, eigene Verluste im Wert von {}",crate::typen::runden_text(erg.runden),ganz(verlust))});
             self.wecke(sid, Rolle::Feldherr, "Kampfbericht", false);
             self.wecke(sid, Rolle::Stratege, "Kampfbericht", false);
         }
-        for (sid, verlust) in vert_verlust {
+        for (sid, verlust) in je_spieler(vert_verlust) {
             let st = &mut self.spieler[sid as usize].statistik;
             st.verteidigungen += 1;
             st.verluste += verlust;
             self.vorfall(
                 sid,
                 "kampf",
-                format!("Kampf {nr} bei {ort}: Angriff von {ang_name}, {ausgang} nach {} Runden, eigene Verluste im Wert von {}", erg.runden, ganz(verlust)),
+                format!("Gefecht bei {ort}: Angriff von {ang_name}, {ausgang} nach {}, eigene Verluste im Wert von {}", crate::typen::runden_text(erg.runden), ganz(verlust)),
             );
             self.wecke(sid, Rolle::Feldherr, "Kampfbericht", true);
             self.wecke(sid, Rolle::Stratege, "Kampfbericht", false);
@@ -1516,7 +1950,7 @@ impl Welt {
             let nachher = self
                 .flotten
                 .get(&id)
-                .map(|f| f.schiffe[Einheit::Kolonieschiff.idx()])
+                .map(|f| Self::kolonieschiffe(&f.schiffe))
                 .unwrap_or(0);
             if nachher < vorher {
                 let pids = self
@@ -1597,6 +2031,8 @@ impl Welt {
                             block.ladung[g] += f.ladung[g];
                         }
                         block.mission = Mission::Kampfkolonisieren;
+                        block.siedler += f.siedler;
+                        self.boden_verstaerken(fid,bf);
                         self.flotten.remove(&fid);
                         self.besetzung_beginnen(zp, bf);
                         return;
@@ -1675,16 +2111,27 @@ impl Welt {
         self.punkte_neu();
     }
 
-    fn planet_verteidiger_v2(&self, pid: usize, fid: FlottenId) -> Vec<Partei> {
+    pub(crate) fn planet_verteidiger_v2(&self, pid: usize, fid: FlottenId) -> Vec<Partei> {
         let p = &self.planeten[pid];
         let mut out = vec![Partei::Planet(pid)];
+        let angreifer = self.flotten.get(&fid).map(|f| f.besitzer);
         for f in self.flotten.values() {
+            // 0.4.8: gestrandete Flotten im Orbit kämpfen an der Seite des Besitzers (nie gegen ihn).
+            // Reine Truppenkonvois kämpfen nicht im Orbit (wie Halten unten); ihre Truppen helfen im Rückhalt (hilfsflotten) –
+            // Einsatzprobe 25.10.2026: ein gestrandeter Konvoi wurde vor der Landung abgeschossen, seine Truppen halfen nie.
+            if f.id != fid && self.orbitflotte_hilft(f, pid, angreifer) && self.bewaffnet(&f.schiffe)
+                && !(self.invasion_v1() && crate::invasion::nur_truppenkonvoi(&f.schiffe)) {
+                out.push(Partei::Flotte(f.id));
+                continue;
+            }
             if f.id != fid
                 && f.zustand == Flottenzustand::ImOrbit
                 && f.mission == Mission::Halten
                 && f.ziel == p.koord
+                && !self.monde.flottenziel.contains_key(&f.id)
                 && (f.besitzer == p.besitzer || self.verbuendet(f.besitzer, p.besitzer))
                 && self.bewaffnet(&f.schiffe)
+                && !(self.invasion_v1() && crate::invasion::nur_truppenkonvoi(&f.schiffe))
             {
                 out.push(Partei::Flotte(f.id));
             }
@@ -1721,7 +2168,7 @@ impl Welt {
         let f = self.flotten[&ids[0]].clone();
         let Some(pid) = self.belegung.get(&f.ziel).map(|p| *p as usize) else {
             for id in ids {
-                self.heimflug(*id);
+                self.umkehren(*id, "das Ziel ist nicht mehr besiedelt");
             }
             return;
         };
@@ -1743,11 +2190,12 @@ impl Welt {
             if ids.len() == 1
                 && b.besitzer == f.besitzer
                 && !freundplanet
-                && f.mission == Mission::Kampfkolonisieren
+                && (f.mission == Mission::Kampfkolonisieren
+                    || (self.invasion_v1() && f.mission == Mission::Bombardieren))
                 && !self.planeten[pid].heimat
             {
-                if self.gegner_angreifbar(f.besitzer, owner).is_err() {
-                    self.heimflug(f.id);
+                if let Err(grund) = self.gegner_angreifbar(f.besitzer, owner) {
+                    self.umkehren(f.id, &grund);
                     return;
                 }
                 if b.schiffe
@@ -1759,7 +2207,7 @@ impl Welt {
                         .zip(f.ladung)
                         .any(|(a, v)| a.checked_add(v).is_none())
                 {
-                    self.heimflug(f.id);
+                    self.umkehren(f.id, "die Blockadeflotte kann keine weiteren Schiffe aufnehmen");
                     return;
                 }
                 let block = self.flotten.get_mut(&bf).unwrap();
@@ -1769,7 +2217,11 @@ impl Welt {
                 for g in 0..GUETER {
                     block.ladung[g] += f.ladung[g];
                 }
-                block.mission = Mission::Kampfkolonisieren;
+                if f.mission == Mission::Kampfkolonisieren {
+                    block.mission = Mission::Kampfkolonisieren;
+                }
+                block.siedler += f.siedler;
+                self.boden_verstaerken(f.id,bf);
                 self.flotten.remove(&f.id);
                 self.fachereignis(
                     "blockade_reinforced",
@@ -1780,12 +2232,11 @@ impl Welt {
                 self.besetzung_beginnen(pid, bf);
                 return;
             }
-            if ids.iter().any(|id| {
-                self.gegner_angreifbar(self.flotten[id].besitzer, b.besitzer)
-                    .is_err()
+            if let Some(grund) = ids.iter().find_map(|id| {
+                self.gegner_angreifbar(self.flotten[id].besitzer, b.besitzer).err()
             }) {
                 for id in ids {
-                    self.heimflug(*id);
+                    self.umkehren(*id, &format!("die Blockadeflotte darf nicht angegriffen werden ({grund})"));
                 }
                 return;
             }
@@ -1795,7 +2246,7 @@ impl Welt {
                     .any(|id| self.flotten[id].mission != Mission::Angriff)
             {
                 for id in ids {
-                    self.heimflug(*id);
+                    self.umkehren(*id, "der Planet gehört dir oder einem Verbündeten; gegen die Blockade hilft nur die Mission Angriff");
                 }
                 return;
             }
@@ -1809,6 +2260,7 @@ impl Welt {
             self.gefecht(ids, &[Partei::Flotte(bf)], f.ziel);
             if !self.flotten.contains_key(&bf) {
                 self.planeten[pid].blockade = None;
+                self.vorfall(owner, "blockade", format!("Die Blockade von {} ist gebrochen", f.ziel));
                 self.fachereignis(
                     "blockade_broken",
                     owner,
@@ -1822,19 +2274,19 @@ impl Welt {
             self.punkte_neu();
             return;
         }
-        if freundplanet
-            || ids.iter().any(|id| {
-                self.gegner_angreifbar(self.flotten[id].besitzer, owner)
-                    .is_err()
-            })
-        {
+        let sperre = if freundplanet {
+            Some("der Planet gehört dir oder einem Verbündeten".to_string())
+        } else {
+            ids.iter().find_map(|id| self.gegner_angreifbar(self.flotten[id].besitzer, owner).err())
+        };
+        if let Some(grund) = sperre {
             for id in ids {
-                self.heimflug(*id);
+                self.umkehren(*id, &grund);
             }
             return;
         }
         let parteien = self.planet_verteidiger_v2(pid, f.id);
-        if parteien.iter().any(|p|matches!(p,Partei::Flotte(bf) if ids.iter().any(|id|self.flotten[id].besitzer==self.flotten[bf].besitzer || self.verbuendet(self.flotten[id].besitzer,self.flotten[bf].besitzer)))) {for id in ids {self.heimflug(*id);}return;}
+        if parteien.iter().any(|p|matches!(p,Partei::Flotte(bf) if ids.iter().any(|id|self.flotten[id].besitzer==self.flotten[bf].besitzer || self.verbuendet(self.flotten[id].besitzer,self.flotten[bf].besitzer)))) {for id in ids {self.umkehren(*id, "eine eigene oder verbündete Flotte verteidigt das Ziel");}return;}
         for id in ids {
             let sid = self.flotten[id].besitzer;
             self.bruch_pruefen(sid, owner);
@@ -1856,6 +2308,17 @@ impl Welt {
         {
             self.flotten.get_mut(&f.id).unwrap().zustand = Flottenzustand::ImOrbit;
             self.planeten[pid].blockade = Some(f.id);
+            // Beide Seiten erfahren, dass der Orbit jetzt gehalten wird (online fehlte das, nur v1 meldete es).
+            let name = self.spieler[f.besitzer as usize].name.clone();
+            let art = match f.mission {
+                Mission::Invasion => "belagert",
+                Mission::Bombardieren => "bombardiert",
+                Mission::Kampfkolonisieren => "besetzt den Orbit von",
+                _ => "blockiert",
+            };
+            self.vorfall(owner, "blockade", format!("{name} {art} {}", f.ziel));
+            self.vorfall(f.besitzer, "blockade", format!("Flotte {} hält den Orbit von {}", f.id, f.ziel));
+            self.wecke(owner, Rolle::Stratege, "Blockade", true);
             self.fachereignis(
                 "blockade_started",
                 f.besitzer,
@@ -2046,8 +2509,9 @@ impl Welt {
                 *sid,
                 "beute",
                 format!(
-                    "Verbandsbeute bei {}: eigener Anteil im Wert von {}",
+                    "Verbandsbeute bei {}: eigener Anteil {} (Wert {})",
                     self.planeten[zp].koord,
+                    crate::berichte::fracht_text(&ladungen[i]),
                     ganz(wert)
                 ),
             );
@@ -2065,8 +2529,9 @@ impl Welt {
             self.planeten[zp].besitzer,
             "beute",
             format!(
-                "Verbandsangriff auf {}: einmalige Beute im Wert von {}",
+                "Verbandsangriff auf {}: geplündert {} (Wert {})",
                 self.planeten[zp].koord,
+                crate::berichte::fracht_text(&pool),
                 ganz(r.wert(&pool))
             ),
         );
@@ -2080,32 +2545,13 @@ impl Welt {
             .pluenderquote
             .unwrap_or(r.kampf.pluenderquote);
         let Ok(plan) = self.flugplan(f.besitzer, f.start as usize, f.ziel, &f.schiffe, 1000) else {
+            // Ohne Rückflugplan (z. B. Treibstoff fehlt) keine Beute – aber nicht stumm.
+            self.vorfall(f.besitzer, "beute", format!("Keine Beute bei {}: Die Flotte {fid} kann keinen Rückflug planen und lädt nichts", f.ziel));
             return;
         };
         let frei = (plan.kapazitaet - f.ladung.iter().sum::<i64>()).max(0);
         let schutz = r.bunkerschutz(self.planeten[zp].gebaeude[Gebaeude::Bunker.idx()]);
-        let mut beute = [0i64; GUETER];
-        for g in [
-            Gut::Erz,
-            Gut::Kristall,
-            Gut::Deuterium,
-            Gut::Nahrung,
-            Gut::Legierung,
-            Gut::Elektronik,
-            Gut::Konsumgut,
-            Gut::Xenokristall,
-        ] {
-            beute[g.idx()] = mal(
-                (self.planeten[zp].bestand[g.idx()] - schutz[g.idx()]).max(0),
-                quote,
-            );
-        }
-        let summe: i64 = beute.iter().sum();
-        if summe > frei {
-            for g in 0..GUETER {
-                beute[g] = anteil(beute[g], frei, summe);
-            }
-        }
+        let beute = crate::planer::kampf::beute(&r, &self.planeten[zp].bestand, &schutz, quote, frei);
         for g in 0..GUETER {
             self.planeten[zp].bestand[g] -= beute[g];
             self.flotten.get_mut(&fid).unwrap().ladung[g] += beute[g];
@@ -2170,25 +2616,39 @@ impl Welt {
             if let (Some(platz), Some(sys)) =
                 (self.platz(f.ziel).cloned(), self.system(f.ziel).cloned())
             {
+                let zone=if self.ausbau.version>0 {crate::habitabilitaet::zone(f.ziel.position,self.regeln.welt.plaetze_je_system)} else {platz.zone};
                 self.spieler[f.besitzer as usize].erkundet.insert(
                     f.ziel,
                     Erkundung {
                         zeit: jetzt,
                         felder: platz.felder,
-                        zone: platz.zone,
+                        zone,
                         reich_erz: sys.reich_erz,
                         reich_kristall: sys.reich_kristall,
                         nebel: sys.nebel,
                     },
                 );
+                // Erkundungsbericht (Karl 22.10.2026: „jetzt müsste ich schon den Bericht haben“): Die Sicht baut
+                // daraus unter `berichte` einen Bericht der Art „erkundung“; Sondenzahl und Orbitlage hier festhalten.
+                let orbit = self.orbit_lage(f.besitzer, f.ziel);
+                if self.ausbau.version > 0 {
+                    self.ausbau.scan_details.insert(
+                        format!("{}:{}", f.besitzer, f.ziel),
+                        serde_json::json!({"zeit": jetzt, "art": "erkundung", "sonden": sonden, "orbit": orbit}),
+                    );
+                }
+                // Ein alter Bericht über einen früheren Besitzer dieses Platzes wäre jetzt falsch.
+                self.spieler[f.besitzer as usize].berichte.retain(|b| b.ziel != f.ziel);
+                self.scanarchiv_merken(f.besitzer, f.ziel);
                 self.vorfall(
                     f.besitzer,
                     "erkundung",
                     format!(
-                        "{} erkundet: {} Felder, Zone {}",
-                        f.ziel, platz.felder, platz.zone
+                        "Erkundungsbericht von {}: freier Platz, {} Felder, Zone {}, {}",
+                        f.ziel, platz.felder, zone, Self::orbit_satz(&orbit)
                     ),
                 );
+                self.wecke(f.besitzer, Rolle::Feldherr, "Erkundungsbericht", false);
             }
             self.heimflug(fid);
             return;
@@ -2200,18 +2660,10 @@ impl Welt {
             self.spieler[sid as usize].forschung[Forschung::Spionagetechnik.idx()] as i64
         };
         let diff = tech(f.besitzer) - tech(gegner);
+        // Probe strength and the research difference govern what this historical scan reveals.
         let info = sonden + diff;
-        let bericht = Spionagebericht {
-            zeit: jetzt,
-            ziel: f.ziel,
-            besitzer: gegner,
-            bestand: ziel.bestand.to_vec(),
-            schiffe: (info >= 2).then(|| ziel.einheiten[..SCHIFFE].to_vec()),
-            verteidigung: (info >= 3).then(|| ziel.einheiten[SCHIFFE..].to_vec()),
-            gebaeude: (info >= 5).then(|| ziel.gebaeude.iter().take(if self.aufklaerungsregeln(){GEBAEUDE}else{28}).copied().collect()),
-            forschung: (info >= 7).then(|| self.spieler[gegner as usize].forschung.iter().take(if self.aufklaerungsregeln(){FORSCHUNGEN}else{17}).copied().collect()),
-        };
-        let ziel_schiffe: i64 = ziel.einheiten[..SCHIFFE].iter().sum();
+        // Abwehr der Sonden vor dem Bericht würfeln: Sondenzahl, Abwehrchance und Abschuss gehören in den Bericht.
+        let ziel_schiffe: i64 = self.planeten[zp].einheiten[..SCHIFFE].iter().sum();
         let mut chance = (ziel_schiffe * sonden * 2).min(1000);
         if diff > 0 {
             chance >>= diff.min(10);
@@ -2219,6 +2671,33 @@ impl Welt {
             chance = (chance << (-diff).min(10)).min(1000);
         }
         let abgeschossen = (zufall(&mut rng, 1000) as i64) < chance;
+        // Halteflotten, Blockaden und Belagerer im Orbit kämpfen mit; ohne sie plant der Angreifer falsch.
+        let orbit = if info >= 2 { Some(self.orbit_lage(f.besitzer, f.ziel)) } else { None };
+        if self.ausbau.version>0 {
+            let mut data=serde_json::Map::new();
+            data.insert("sonden".into(),serde_json::json!(sonden));
+            data.insert("abwehrchance_promille".into(),serde_json::json!(chance));
+            data.insert("abgeschossen".into(),serde_json::json!(abgeschossen));
+            if let Some(o)=&orbit {data.insert("orbit".into(),o.clone());}
+            data.insert("zeit".into(),serde_json::json!(jetzt));
+            data.insert("metadaten".into(),serde_json::json!({"volk":self.spieler[gegner as usize].volk.name(),"zivilisationsstufe":self.spieler[gegner as usize].stufe,"scanstaerke":info,"schwellen":{"schiffe":2,"verteidigung":3,"gebaeude":5,"forschung":7,"vollscan":7}}));
+            if info>=7 {let full=self.planet_sicht(zp);for key in ["bevoelkerung","personengruppen","wohnraum","felder","energie","rate","gebaeude_integritaet_prozent","habitabilitaet","raketen","garnison","bodentruppen","stabilitaet"] {data.insert(key.into(),full[key].clone());}
+                data.insert("raketenbestand".into(),serde_json::json!(crate::raketen::regeln(&self.regeln).iter().enumerate().map(|(a,r)|(r.key,self.raketen_bestand(zp,a as u8))).collect::<std::collections::BTreeMap<_,_>>()));
+            }
+            self.ausbau.scan_details.insert(format!("{}:{}",f.besitzer,f.ziel),serde_json::Value::Object(data));
+        }
+        // Berichtslayout der Welt: 34 Schiffe wie bisher, 35 nur in Welten mit Terraformer (laufende Welten bitgleich).
+        let bericht_schiffe = self.bericht_schiffe();
+        let bericht = Spionagebericht {
+            zeit: jetzt,
+            ziel: f.ziel,
+            besitzer: gegner,
+            bestand: ziel.bestand.to_vec(),
+            schiffe: (info >= 2).then(|| ziel.einheiten[..bericht_schiffe].to_vec()),
+            verteidigung: (info >= 3).then(|| ziel.einheiten[SCHIFFE..].to_vec()),
+            gebaeude: (info >= 5).then(|| ziel.gebaeude.iter().take(if self.aufklaerungsregeln(){GEBAEUDE}else{28}).copied().collect()),
+            forschung: (info >= 7).then(|| self.spieler[gegner as usize].forschung.iter().take(if self.aufklaerungsregeln(){self.forschungszahl()}else{17}).copied().collect()),
+        };
         let sp = &mut self.spieler[f.besitzer as usize];
         sp.berichte.retain(|b| b.ziel != f.ziel);
         sp.berichte.push(bericht);
@@ -2226,28 +2705,44 @@ impl Welt {
             sp.berichte.remove(0);
         }
         let name = sp.name.clone();
+        self.scanarchiv_merken(f.besitzer, f.ziel);
         self.vorfall(
             gegner,
             "spionage",
-            format!("Spionage durch {name} auf {} bemerkt", f.ziel),
+            format!(
+                "Spionage durch {name} auf {} bemerkt; Sonde gestartet von {}{}",
+                f.ziel,
+                f.start_koord,
+                if abgeschossen {
+                    format!("; Abwehr: {} abgeschossen", if sonden == 1 { "1 Sonde".to_string() } else { format!("{sonden} Sonden") })
+                } else {
+                    String::new()
+                }
+            ),
         );
         self.wecke(gegner, Rolle::Feldherr, "Spionage bemerkt", false);
         self.wecke(f.besitzer, Rolle::Feldherr, "Spionagebericht", false);
+        let sonden_text = if sonden == 1 { "1 Sonde".to_string() } else { format!("{sonden} Sonden") };
         if abgeschossen {
             self.flotten.remove(&fid);
             self.vorfall(
                 f.besitzer,
                 "spionage",
                 format!(
-                    "Spionagebericht von {} erhalten, die Sonden wurden abgeschossen",
-                    f.ziel
+                    "Spionagebericht von {} erhalten, {sonden_text} abgeschossen (Abwehrchance {} %)",
+                    f.ziel,
+                    crate::berichte::promille_text(chance)
                 ),
             );
         } else {
             self.vorfall(
                 f.besitzer,
                 "spionage",
-                format!("Spionagebericht von {} erhalten", f.ziel),
+                format!(
+                    "Spionagebericht von {} erhalten; {sonden_text} auf dem Rückflug (Abwehrchance {} %)",
+                    f.ziel,
+                    crate::berichte::promille_text(chance)
+                ),
             );
             self.heimflug(fid);
         }
@@ -2270,20 +2765,38 @@ impl Welt {
                 .koloniefracht_pruefen(sid, f.ziel, &f.schiffe, &f.ladung)
                 .is_err()
         {
+            let grund = if !self.kolonieplatz_erst_bei_gruendung() {
+                String::new()
+            } else if self.belegung.contains_key(&f.ziel) {
+                ": der Platz ist inzwischen besiedelt".to_string()
+            } else if self.kolonien(sid) >= self.kolonien_erlaubt(sid) {
+                format!(": kein freier Kolonieplatz – {}", self.kolonien_voll_text(sid))
+            } else {
+                ": die Koloniefracht reicht nicht".to_string()
+            };
             self.vorfall(
                 sid,
                 "kolonie",
                 format!(
-                    "Kolonisierung von {} gescheitert, die Flotte kehrt um",
+                    "Kolonisierung von {} gescheitert{grund}, die Flotte kehrt um",
                     f.ziel
                 ),
             );
             self.heimflug(fid);
             return;
         }
-        let zr = &r.zonen[&platz.zone];
+        if self.ausbau.version>0 {
+            let settlers=self.ausbau.siedler.get(&fid).cloned().unwrap_or_default();
+            if self.siedler_eignung_pruefen(sid,f.ziel,&settlers,f.siedler).is_err() {
+                self.vorfall(sid,"kolonie",format!("Gründung auf {} nicht möglich: Siedlergruppe oder Klima ungeeignet. Die Flotte kehrt zurück.",f.ziel));
+                self.heimflug(fid);return;
+            }
+        }
+        let zone=if self.ausbau.version>0 {crate::habitabilitaet::zone(f.ziel.position,r.welt.plaetze_je_system)} else {platz.zone};
+        let zr = &r.zonen[&zone];
+        let typ=Self::kolonieschiff_typ(&f.schiffe).expect("Gründungsflotte besitzt Kolonieschiff");
         let habitate = r
-            .einh(Einheit::Kolonieschiff)
+            .einh(typ)
             .kosten
             .get(&Gut::Habitatmodul)
             .copied()
@@ -2291,13 +2804,13 @@ impl Welt {
         let mut einheiten = [0i64; EINHEITEN];
         einheiten[..SCHIFFE].copy_from_slice(&f.schiffe);
         // Das Kolonieschiff wird verbraucht: seine Habitatmodule werden der Grundwohnraum.
-        einheiten[Einheit::Kolonieschiff.idx()] -= 1;
+        einheiten[typ.idx()] -= 1;
         let pid = self.planeten.len();
         self.planeten.push(Planet {
             id: pid as PlanetId,
             besitzer: sid,
             koord: f.ziel,
-            zone: platz.zone,
+            zone,
             felder: platz.felder,
             heimat: false,
             faktor: [
@@ -2305,7 +2818,7 @@ impl Welt {
                 sys.reich_kristall,
                 milli(zr.deuterium),
                 milli(zr.nahrung),
-                milli(zr.solar),
+                if self.ausbau.version>0 {crate::habitabilitaet::solar_r(&r,f.ziel)} else {milli(zr.solar)},
             ],
             bestand: f.ladung,
             rate: [0; GUETER],
@@ -2315,7 +2828,7 @@ impl Welt {
             raketen: [0; 2],
             bevoelkerung: f.siedler,
             stabilitaet: milli(r.welt.start_stabilitaet),
-            grundwohnraum: habitate * r.wirtschaft.habitat_wohnraum * M,
+            grundwohnraum: if self.ausbau.industrie_version>0 {(habitate*r.wirtschaft.habitat_wohnraum*M).max(f.siedler*4/3)}else{habitate*r.wirtschaft.habitat_wohnraum*M},
             bauschleife: Vec::new(),
             fertigung: [Vec::new(), Vec::new()],
             fertigung_naechste: [-1, -1],
@@ -2337,9 +2850,37 @@ impl Welt {
             stab_ziel: milli(r.welt.start_stabilitaet),
             wohnraum: 0,
         });
+        if self.ausbau.version>0 {let people=self.ausbau.siedler.remove(&fid).unwrap_or_default();self.ausbau.personen.insert(pid as PlanetId,people);}
         self.belegung.insert(f.ziel, pid as PlanetId);
         self.spieler[sid as usize].planeten.push(pid as PlanetId);
+        // Mitgeführte Bodentruppen werden die Garnison der neuen Kolonie (Karl 24.10.2026).
+        self.boden_landen(fid, pid);
         self.flotten.remove(&fid);
+        if !r.flottendoktrin.is_empty(){
+            let target=r.einh(typ).ladung;
+            let p=&mut self.planeten[pid];p.gebaeude[Gebaeude::Lager.idx()]=1;
+            while mal(r.wirtschaft.lager_roh,r.wirtschaft.lager_faktor.powi(p.gebaeude[Gebaeude::Lager.idx()]as i32))<target && p.gebaeude[Gebaeude::Lager.idx()]<r.welt.max_gebaeudestufe {p.gebaeude[Gebaeude::Lager.idx()]+=1;}
+            p.gebaeude[Gebaeude::Solarkraftwerk.idx()]=1;
+            if self.ausbau.personen.get(&(pid as PlanetId)).map(|p|p.organisch()>0).unwrap_or(!r.volk(self.spieler[sid as usize].volk).ohne_nahrung){p.gebaeude[Gebaeude::Farm.idx()]=1;}
+            if r.flottendoktrin.get(&typ).is_some_and(|p|p.kolonie_minen==2){p.gebaeude[Gebaeude::Erzmine.idx()]=1;p.gebaeude[Gebaeude::Kristallmine.idx()]=1;}
+            // Ablauf v1: Wie die Farm 1 organische Siedler ernährt, deckt die Solarausstattung den Strom synthetischer
+            // Siedler auch auf kalten Bahnen (sonst schrumpft eine Synthetenkolonie ab der Landung, Messung 18.10.).
+            if self.regeln.ablauf>=1 && self.ausbau.personen.get(&(pid as PlanetId)).is_some_and(|p|p.gesamt()>p.organisch()) {
+                for _ in 0..10 {
+                    self.raten_neu(pid);
+                    let p=&mut self.planeten[pid];
+                    if p.energie_erzeugung>=p.energie_verbrauch {break;}
+                    p.gebaeude[Gebaeude::Solarkraftwerk.idx()]+=1;
+                }
+            }
+            for _ in 0..if self.ausbau.version>0 {0} else {r.welt.max_gebaeudestufe} {
+                self.raten_neu(pid);let p=&mut self.planeten[pid];
+                let energy=p.energie_erzeugung<p.energie_verbrauch;let food=self.ausbau.personen.get(&(pid as PlanetId)).map(|p|p.organisch()>0).unwrap_or(!r.volk(self.spieler[sid as usize].volk).ohne_nahrung)&&p.rate[Gut::Nahrung.idx()]<0;
+                if !energy&&!food{break;}
+                if energy&&p.gebaeude[Gebaeude::Solarkraftwerk.idx()]<r.welt.max_gebaeudestufe{p.gebaeude[Gebaeude::Solarkraftwerk.idx()]+=1;}
+                if food&&p.gebaeude[Gebaeude::Farm.idx()]<r.welt.max_gebaeudestufe{p.gebaeude[Gebaeude::Farm.idx()]+=1;}
+            }
+        }
         self.fachereignis(
             "colony_founded",
             sid,
@@ -2349,9 +2890,12 @@ impl Welt {
         self.vorfall(
             sid,
             "kolonie",
+            // Siedler und Startfracht nennen (Funktionsprüfung 25.10.2026: die Meldung sagte nur Felder und Zone).
             format!(
-                "Kolonie auf {} gegründet: {} Felder, Zone {}",
-                f.ziel, platz.felder, platz.zone
+                "Kolonie auf {} gegründet: {} Felder, Zone {} · {} Siedler{}",
+                f.ziel, platz.felder, zone,
+                crate::schiffhandel::credits_text(crate::typen::ganz(self.planeten[pid].bevoelkerung)),
+                if f.ladung.iter().any(|n| *n >= M) { format!(" · Startfracht: {}", crate::berichte::fracht_text(&f.ladung)) } else { String::new() }
             ),
         );
         self.wecke(sid, Rolle::Stratege, "Kolonie gegründet", false);
@@ -2372,6 +2916,7 @@ impl Welt {
     }
 
     pub fn garnison(&self, pid: usize) -> i64 {
+        if self.ausbau.industrie_version>0 {let units=self.ausbau.boden.bestand.get(&(pid as u32)).copied().unwrap_or_default();return (0..crate::boden::ANZAHL).map(|i|units[i]*self.regeln.kw().boden.angriff(i)).sum::<i64>()+self.ausbau.boden.miliz.get(&(pid as u32)).map(|m|m.personen.gesamt()/M*4).unwrap_or(0);}
         let k = &self.regeln.kampf;
         let p = &self.planeten[pid];
         let panzer = self.spieler[p.besitzer as usize].forschung[Forschung::Panzerung.idx()] as f64;
@@ -2410,6 +2955,20 @@ impl Welt {
     pub(crate) fn erobern(&mut self, pid: usize, fid: FlottenId) {
         let r = self.regeln.clone();
         let f = self.flotten[&fid].clone();
+        // Neue Welten (Karl 24.10.2026): auch eine Kampfkolonisierung belegt einen Kolonieplatz – ohne freien Platz kein
+        // Besitzerwechsel; die Belagerung endet, die Flotte hält weiter den Orbit.
+        if self.kolonieplatz_erst_bei_gruendung() && f.besitzer != self.planeten[pid].besitzer
+            && self.kolonien(f.besitzer) >= self.kolonien_erlaubt(f.besitzer)
+        {
+            let k = self.planeten[pid].koord;
+            let alt = self.planeten[pid].besitzer;
+            let text = self.kolonien_voll_text(f.besitzer);
+            self.vorfall(f.besitzer, "kampfkolonisation", format!("Übernahme von {k} nicht möglich, kein freier Kolonieplatz: {text}. Die Flotte hält weiter den Orbit"));
+            let name = self.spieler[f.besitzer as usize].name.clone();
+            self.vorfall(alt, "kampfkolonisation", format!("Übernahme von {k} durch {name} gescheitert: kein freier Kolonieplatz beim Angreifer"));
+            self.fachereignis("occupation_aborted", alt, serde_json::json!({"planet":pid,"fleet":fid,"attacker":f.besitzer,"defender":alt,"reason":"kein freier Kolonieplatz"}));
+            return;
+        }
         self.abrechnen(pid);
         // Offene Marktorders auf diesem Planeten enden vor dem Besitzerwechsel.
         let planet_id = self.planeten[pid].id;
@@ -2417,8 +2976,9 @@ impl Welt {
         let alt = self.planeten[pid].besitzer;
         let neu = f.besitzer;
         let regeln_v2 = self.kolonisationsregeln_v2();
+        let neuartig = self.kolonisation.aktiv && (f.mission == Mission::Kampfkolonisieren
+            || (self.invasion_v2() && f.mission == Mission::Kolonisieren));
         let p = &mut self.planeten[pid];
-        let neuartig = self.kolonisation.aktiv && f.mission == Mission::Kampfkolonisieren;
         if !neuartig {
             for g in 0..GEBAEUDE {
                 p.gebaeude[g] =
@@ -2433,13 +2993,13 @@ impl Welt {
             p.einheiten[e] = f.schiffe[e];
         }
         if neuartig {
-            p.einheiten[Einheit::Kolonieschiff.idx()] -= 1;
+            if let Some(e)=Self::kolonieschiff_typ(&f.schiffe){p.einheiten[e.idx()]-=1;}
         }
         for g in 0..GUETER {
             p.bestand[g] += f.ladung[g];
         }
         p.bauschleife.clear();
-        p.fertigung = [Vec::new(), Vec::new()];
+        self.ausbau.parallel.remove(&format!("{}:0",p.id));self.ausbau.parallel.remove(&format!("{}:1",p.id));p.fertigung = [Vec::new(), Vec::new()];
         p.fertigung_naechste = [-1, -1];
         p.prioritaeten.clear();
         p.mali.clear();
@@ -2448,6 +3008,7 @@ impl Welt {
         p.stabilitaet = milli(r.stabilitaet.unruhen_unter);
         p.besitzer = neu;
         p.raketen = [0; 2];
+        self.ausbau.raketensystem.lager.remove(&p.id);
         let k = p.koord;
         let id = p.id;
         self.kolonisation
@@ -2457,6 +3018,15 @@ impl Welt {
             |e| !matches!(e.art, EreignisArt::RaketenFertig { planet, .. } if planet == id)
                 && !(regeln_v2 && matches!(e.art,EreignisArt::BauFertig{planet}|EreignisArt::FertigungFertig{planet,..} if planet==id)),
         );
+        // Invasion v2: Ein Kolonieschiff mit „Kolonisieren“ übernimmt einen verwüsteten Planeten – seine Siedler werden Bewohner.
+        if self.invasion_v2() && f.mission == Mission::Kolonisieren && f.siedler > 0 {
+            self.planeten[pid].bevoelkerung += f.siedler;
+            if let Some(leute) = self.ausbau.siedler.remove(&fid) { self.ausbau.personen.entry(id).or_default().add(&leute); }
+        }
+        self.boden_landen(fid,pid);
+        self.ausbau.boden.auftraege.remove(&id);
+        self.ausbau.produktionsserien.remove(&id);
+        self.ausbau.fertigung_zahlung.remove(&format!("{pid}:0"));self.ausbau.fertigung_zahlung.remove(&format!("{pid}:1"));
         self.flotten.remove(&fid);
         self.kolonisation.besetzungen.remove(&id);
         self.kolonisation.besetzungsmarken.remove(&id);
@@ -2477,10 +3047,11 @@ impl Welt {
             "eroberung",
             format!("{k} wurde von {neu_name} erobert"),
         );
-        self.vorfall(neu, "eroberung", format!("{k} von {alt_name} erobert"));
+        self.vorfall(neu, "eroberung", format!("Du hast {k} erobert (bisher {alt_name})"));
         self.wecke(alt, Rolle::Stratege, "Kolonie verloren", true);
         self.wecke(neu, Rolle::Stratege, "Kolonie erobert", false);
         self.wecke(neu, Rolle::Verwalter, "Kolonie erobert", false);
+        self.mond_planet_erobert(pid, neu);
         self.raten_neu(pid);
         self.punkte_neu();
     }

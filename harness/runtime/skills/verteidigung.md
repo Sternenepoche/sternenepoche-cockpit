@@ -1,3 +1,3 @@
-Sensoren melden feindliche Anflüge spätestens 120 Spielminuten vor Ankunft. Prüfe angriffe in jeder Lage.
-Gegen überlegene Angreifer Flotte und Fracht rechtzeitig mit der Mission saven in Sicherheit bringen; Rückkehr selbst überwachen.
-Nach der ersten Plünderung Bunker und Verteidigungsanlagen bauen: Bunker schützen Lagerbestände, Verteidigung zählt ohne Unterhalt.
+Sensoren melden feindliche Anflüge mindestens 120 Spielminuten vor Ankunft; Sensorphalanx, Geheimdienst und Überwachungstechnik verlängern die Vorwarnung. Prüfe angriffe in jeder Lage.
+Gegen überlegene Angreifer Flotte und Fracht rechtzeitig mit der Mission saven in Sicherheit bringen; Rückkehr selbst überwachen. kampfsimulator und kampfszenario zeigen vorher, ob Halten lohnt.
+Nach dem ersten Angriff Bunker und Verteidigungsanlagen bauen: Bunker schützen je Stufe einen festen Teil jedes Rohstoffs, Verteidigung kostet keinen Unterhalt. Gegen Bombardieren und Invasion zählen bewaffnete Verteidigung, Planetenschild und Garnison (Bodentruppen, Miliz).

@@ -1,0 +1,987 @@
+/* Fester Rahmen, Bauseiten, Techinfo und Galaxietabelle nach docs/DESIGNREGELN.md (17.10.2026).
+   Wird zuletzt geladen; ältere Ebenen (game.css … mobile035.css) setzen teils !important, daher hier ebenfalls. */
+body.game-client[data-rahmen]{
+ --r-grund:#060c18;--r-glas:rgba(9,20,34,.86);--r-glas2:rgba(13,28,46,.9);--r-rand:rgba(150,190,230,.2);--r-rand2:rgba(150,190,230,.34);
+ --r-text:#dbe6f0;--r-leise:#8ea4b8;--r-gruen:#3fae5f;--r-gruen2:#56d27c;--r-orange:#f2a43a;--r-gold:#e2bd62;--r-rot:#ff6464;--r-blau:#8fd0ff;
+ --r-radius:4px;--r-schrift:Oxanium,"Segoe UI",system-ui,sans-serif;
+ font-family:var(--r-schrift);font-size:13px;
+ background:radial-gradient(1200px 700px at 70% -10%,#13284a55,transparent 60%),linear-gradient(#050a14e6,#050a14f2),url('assets/backgrounds.stars.webp') center top/cover fixed,var(--r-grund)!important;
+}
+body.game-client[data-rahmen] .koord{color:var(--r-blau);font-variant-numeric:tabular-nums}
+
+/* ---------- Kopfzeile (R1) ---------- */
+body.game-client[data-rahmen] .site-ai-notice{padding:2px 10px!important;font-size:11px!important;min-height:0!important}
+body.game-client[data-rahmen] .site-ai-notice a{min-height:20px!important}
+body.game-client[data-rahmen][data-playing="true"] header{max-width:none!important;min-height:38px!important;padding:3px 14px!important;gap:10px!important;flex-wrap:nowrap!important;align-items:center}
+body.game-client[data-rahmen][data-playing="true"] header .brand{font-size:14px!important;white-space:nowrap}
+body.game-client[data-rahmen][data-playing="true"] header .brand span{display:none}
+body.game-client[data-rahmen] #kopfzeile{display:flex;align-items:center;gap:2px;flex-wrap:wrap;margin-left:12px}
+body.game-client[data-rahmen] #kopfzeile[hidden]{display:none}
+body.game-client[data-rahmen] #kopfzeile>*{font-size:12px;padding:3px 9px;border-left:1px solid var(--r-rand);line-height:1.3}
+body.game-client[data-rahmen] #kopfzeile>*:first-child{border-left:0}
+body.game-client[data-rahmen] #kopfzeile .kopf-spieler{color:var(--r-gold);font-weight:600}
+body.game-client[data-rahmen] #kopfzeile .kopf-rang{color:var(--r-leise)}
+body.game-client[data-rahmen] #kopfzeile button{min-height:0!important;height:auto!important;background:none!important;border:0!important;border-left:1px solid var(--r-rand)!important;border-radius:0!important;color:var(--r-blau)!important;box-shadow:none!important;width:auto!important;min-width:0!important;font:inherit;font-size:12px!important;padding:3px 9px!important}
+body.game-client[data-rahmen] #kopfzeile button::before,body.game-client[data-rahmen] #kopfzeile button::after{display:none!important}
+body.game-client[data-rahmen] #kopfzeile button:hover,body.game-client[data-rahmen] #kopfzeile button[aria-selected="true"]{color:#fff!important;text-decoration:underline}
+body.game-client[data-rahmen][data-playing="true"] #account-strip{margin-left:auto!important}
+body.game-client[data-rahmen][data-playing="true"] #offline-entry{display:none!important}
+body.game-client[data-rahmen][data-playing="true"] main{max-width:none!important;margin:6px auto 0!important;padding:0 10px!important}
+body.game-client[data-rahmen][data-playing="true"] footer{padding:10px!important}
+
+/* ---------- Dreispaltiges Raster (R1) ---------- */
+body.game-client[data-rahmen] #game:not([hidden]){display:grid!important;grid-template-columns:186px minmax(0,1fr) 200px!important;grid-template-rows:repeat(6,auto) 1fr;grid-auto-flow:row;gap:6px 10px!important;align-items:start!important;max-width:1640px;margin:0 auto}
+body.game-client[data-rahmen] #game>*{grid-column:2!important;min-width:0}
+body.game-client[data-rahmen] #game>#tabs{grid-column:1!important;grid-row:1/span 7!important}
+body.game-client[data-rahmen] #game>#planet-sidebar{grid-column:3!important;grid-row:1/span 7!important}
+body.game-client[data-rahmen] #game>.panel,body.game-client[data-rahmen] #game>section{grid-row:auto!important;margin:0!important}
+body.game-client[data-rahmen] #game>#event-bar,body.game-client[data-rahmen] #game>#fp-anker-reich:empty{display:none!important}
+body.game-client[data-rahmen] #game>section[hidden]{display:none!important}
+body.game-client[data-rahmen] #rahmen-planetenwahl{display:none}
+
+/* ---------- Hauptmenü (R2) ---------- */
+body.game-client[data-rahmen] #game>#tabs{position:sticky!important;top:6px!important;display:flex!important;flex-direction:column!important;flex-wrap:nowrap!important;gap:2px!important;padding:6px!important;margin:0!important;background:var(--r-glas)!important;border:1px solid var(--r-rand)!important;border-radius:var(--r-radius)!important;max-height:calc(100vh - 12px);overflow:auto;box-shadow:none!important;backdrop-filter:none!important}
+body.game-client[data-rahmen] #game #tabs .nav-brand,body.game-client[data-rahmen] #game #tabs .section-picker-label,body.game-client[data-rahmen] #game #tabs .command-nav-tools,body.game-client[data-rahmen] #game #tabs .reiter-quelle,body.game-client[data-rahmen] #game #tabs .nav-group,body.game-client[data-rahmen] #game #tabs .menue-mehr,body.game-client[data-rahmen] #game #tabs #main-navigation{display:none!important}
+body.game-client[data-rahmen] #game #tabs>button[data-menue]{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px;width:100%!important;min-width:0!important;min-height:31px!important;height:31px!important;margin:0!important;padding:0 10px!important;border:1px solid transparent!important;border-radius:3px!important;background:linear-gradient(90deg,#0f2034,#0b1828)!important;color:#b9cadb!important;font:500 13px/1 var(--r-schrift)!important;text-align:left!important;box-shadow:none!important;transform:none!important;letter-spacing:.2px}
+body.game-client[data-rahmen] #game #tabs>button[data-menue]::before,body.game-client[data-rahmen] #game #tabs>button[data-menue]::after{display:none!important}
+body.game-client[data-rahmen] #game #tabs>button[data-menue]:hover{background:linear-gradient(90deg,#173252,#10233a)!important;color:#fff!important}
+body.game-client[data-rahmen] #game #tabs>button[data-menue][aria-selected="true"]{background:linear-gradient(90deg,#3a5f86,#24405f)!important;color:#fff!important;border-color:#86b4e3!important}
+body.game-client[data-rahmen] #game #tabs>button.menue-gold{color:var(--r-gold)!important;background:linear-gradient(90deg,#2a2412,#171407)!important;border-color:#6d5a2c!important;margin-top:4px!important}
+body.game-client[data-rahmen] #game #tabs>button.menue-gold+button.menue-gold{margin-top:0!important}
+body.game-client[data-rahmen] #game #tabs>button.menue-gold[aria-selected="true"]{background:linear-gradient(90deg,#6b5520,#3c3011)!important;color:#fff4d2!important;border-color:var(--r-gold)!important}
+body.game-client[data-rahmen] .menue-symbol{width:17px;height:17px;flex:0 0 17px;opacity:.85}
+body.game-client[data-rahmen] .menue-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- Ressourcenleiste (R3) ---------- */
+body.game-client[data-rahmen] #game>#resource-bar{display:flex!important;flex-wrap:wrap;gap:2px!important;min-height:0!important;padding:3px!important;margin:0!important;background:var(--r-glas)!important;border:1px solid var(--r-rand)!important;border-radius:var(--r-radius)!important;position:relative;grid-template-columns:none!important;box-shadow:none!important}
+body.game-client[data-rahmen] #game #resource-bar .resource{flex:1 1 76px;display:flex!important;align-items:center!important;gap:6px!important;min-width:0!important;min-height:0!important;height:36px!important;padding:2px 6px!important;margin:0!important;border:0!important;border-radius:3px!important;background:transparent!important;position:relative;overflow:hidden;box-shadow:none!important;grid-template-columns:none!important}
+body.game-client[data-rahmen] #game #resource-bar .resource:hover{background:#ffffff0d!important}
+body.game-client[data-rahmen] #game #resource-bar .resource::after,body.game-client[data-rahmen] #game #resource-bar .resource::before{display:none!important}
+body.game-client[data-rahmen] #game #resource-bar .resource-art,body.game-client[data-rahmen] #game #resource-bar .resource-sheen,body.game-client[data-rahmen] #game #resource-bar .resource-effect,body.game-client[data-rahmen] #game #resource-bar .resource-delta,body.game-client[data-rahmen] #game #resource-bar .resource-meter,body.game-client[data-rahmen] #game #resource-bar .resource-detail,body.game-client[data-rahmen] #game #resource-bar .resource-name,body.game-client[data-rahmen] #game #resource-bar .resource-warning{display:none!important}
+body.game-client[data-rahmen] #game #resource-bar .resource-icon{position:static!important;width:26px!important;height:26px!important;flex:0 0 26px;margin:0!important;transform:none!important}
+body.game-client[data-rahmen] #game #resource-bar .resource-icon img{width:26px!important;height:26px!important;border-radius:3px!important;object-fit:cover;grid-row:auto!important;box-shadow:none!important;filter:none!important}
+body.game-client[data-rahmen] #game #resource-bar .resource-value{font:600 13px/1.1 var(--r-schrift)!important;color:#e9eef4!important;font-variant-numeric:tabular-nums;white-space:nowrap;margin:0!important;text-shadow:none!important}
+body.game-client[data-rahmen] #game #resource-bar .resource-rate{display:block!important;position:static!important;font-size:10px!important;color:var(--r-leise)!important;margin:0!important;text-align:left!important;white-space:nowrap;grid-column:auto!important}
+body.game-client[data-rahmen] #game #resource-bar .resource>strong,body.game-client[data-rahmen] #game #resource-bar .resource>.resource-rate{order:2}
+body.game-client[data-rahmen] #game #resource-bar .resource{flex-wrap:wrap;align-content:center;column-gap:6px;row-gap:0}
+body.game-client[data-rahmen] #game #resource-bar .resource-icon{order:1}
+body.game-client[data-rahmen] #game #resource-bar .resource .resource-value{flex:1 1 auto}
+body.game-client[data-rahmen] #game #resource-bar .resource .resource-rate{flex:1 0 100%;padding-left:32px}
+body.game-client[data-rahmen] #game #resource-bar .resource.resource-full .resource-value,body.game-client[data-rahmen] #game #resource-bar .resource.resource-deficit[data-resource="energie"] .resource-value{color:var(--r-rot)!important}
+body.game-client[data-rahmen] #game #resource-bar .resource-hit{position:absolute!important;inset:0!important;opacity:0!important;min-height:0!important;width:auto!important;height:auto!important;padding:0!important;margin:0!important;border:0!important}
+body.game-client[data-rahmen] #resource-inspector{position:absolute!important;z-index:30;top:calc(100% + 4px);left:0;right:0;max-height:70vh;overflow:auto;background:var(--r-glas2)!important;border:1px solid var(--r-rand2)!important;border-radius:var(--r-radius)}
+
+/* ---------- Ereignisleiste (R4) ---------- */
+body.game-client[data-rahmen] #ereignisleiste{background:var(--r-glas);border:1px solid var(--r-rand);border-radius:var(--r-radius);font-size:12px}
+body.game-client[data-rahmen] #ereignisleiste.angriff{border-color:#c4444e;background:rgba(70,14,20,.85)}
+body.game-client[data-rahmen] #ereignisleiste summary{display:flex;align-items:center;gap:14px;padding:5px 10px;cursor:pointer;list-style:none;min-height:24px}
+body.game-client[data-rahmen] #ereignisleiste summary::-webkit-details-marker{display:none}
+body.game-client[data-rahmen] #ereignisleiste summary::after{content:'▾';margin-left:auto;color:var(--r-leise)}
+body.game-client[data-rahmen] #ereignisleiste details[open] summary::after{content:'▴'}
+body.game-client[data-rahmen] .ereignis-naechstes b{color:var(--r-orange);font-variant-numeric:tabular-nums}
+body.game-client[data-rahmen] .ereignis-zahl{color:var(--r-leise);margin-left:auto}
+body.game-client[data-rahmen] .ereignis-kritisch{color:var(--r-rot)}
+body.game-client[data-rahmen] .ereignis-sprung{background:none!important;border:0!important;padding:0 2px!important;min-height:0!important;font:inherit!important;font-weight:700!important;color:var(--r-rot)!important;text-decoration:underline dotted 1px;cursor:pointer}
+body.game-client[data-rahmen] .ereignis-schutz{color:#9fe0b5}
+body.game-client[data-rahmen] .ereignis-liste{margin:0;font-size:12px}
+body.game-client[data-rahmen] .ereignis-liste td,body.game-client[data-rahmen] .ereignis-liste th{padding:4px 8px!important}
+body.game-client[data-rahmen] .ereignis-liste tr.feindlich td{color:var(--r-rot)}
+body.game-client[data-rahmen] .ereignis-symbol{width:18px;height:18px;vertical-align:middle;border-radius:3px}
+body.game-client[data-rahmen] .ereignis-leer,body.game-client[data-rahmen] .ereignis-fuss{margin:0;padding:6px 10px;color:var(--r-leise)}
+body.game-client[data-rahmen] .ereignis-fuss button{min-height:26px!important;padding:3px 10px!important}
+
+/* ---------- Reiter einer Seite (höchstens eine Ebene) ---------- */
+body.game-client[data-rahmen] #seiten-reiter{display:flex;gap:2px;flex-wrap:wrap;border-bottom:1px solid var(--r-rand2)}
+body.game-client[data-rahmen] #seiten-reiter[hidden]{display:none}
+body.game-client[data-rahmen] #seiten-reiter button{min-height:28px!important;padding:4px 14px!important;border:1px solid var(--r-rand)!important;border-bottom:0!important;border-radius:4px 4px 0 0!important;background:#0d1d30!important;color:#b8c9da!important;font:500 12px var(--r-schrift)!important;box-shadow:none!important;width:auto!important}
+body.game-client[data-rahmen] #seiten-reiter button::before,body.game-client[data-rahmen] #seiten-reiter button::after{display:none!important}
+body.game-client[data-rahmen] #seiten-reiter button[aria-selected="true"]{background:#2c4b6e!important;color:#fff!important;border-color:#86b4e3!important}
+
+/* ---------- Inhaltsfelder als Glasflächen (§5) ---------- */
+body.game-client[data-rahmen] #game>.panel{background:var(--r-glas)!important;border:1px solid var(--r-rand)!important;border-radius:var(--r-radius)!important;box-shadow:none!important;padding:12px!important;min-height:0!important}
+body.game-client[data-rahmen] #game>.panel::after{display:none!important}
+body.game-client[data-rahmen] #game>.panel>h2:first-child{font:600 18px/1.2 var(--r-schrift)!important;margin:0 0 10px!important;color:#eef4fa!important}
+body.game-client[data-rahmen] em,body.game-client[data-rahmen] i:not([class]){font-style:normal}
+
+/* ---------- Planetenliste (R5) ---------- */
+body.game-client[data-rahmen] #game>#planet-sidebar{position:sticky!important;top:6px!important;padding:6px!important;margin:0!important;background:var(--r-glas)!important;border:1px solid var(--r-rand)!important;border-radius:var(--r-radius)!important;max-height:calc(100vh - 12px);overflow:auto;box-shadow:none!important;display:block!important}
+body.game-client[data-rahmen] #game #planet-sidebar::after{display:none!important}
+body.game-client[data-rahmen] .planeten-kopf{display:flex;justify-content:space-between;padding:2px 4px 6px;font-size:12px;color:var(--r-leise);border-bottom:1px solid var(--r-rand);margin-bottom:4px}
+body.game-client[data-rahmen] .planeten-kopf b{color:var(--r-text)}
+body.game-client[data-rahmen] .planeten-liste{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+body.game-client[data-rahmen] .planet-zeile{position:relative}
+body.game-client[data-rahmen] .planet-wahl{display:flex!important;align-items:center;gap:8px;width:100%!important;min-height:52px!important;padding:4px 6px!important;margin:0!important;border:1px solid transparent!important;border-radius:3px!important;background:transparent!important;text-align:left!important;color:var(--r-text)!important;box-shadow:none!important}
+body.game-client[data-rahmen] .planet-wahl::before,body.game-client[data-rahmen] .planet-wahl::after{display:none!important}
+body.game-client[data-rahmen] .planet-wahl:hover{background:#ffffff0d!important}
+body.game-client[data-rahmen] .planet-zeile.aktiv .planet-wahl{background:#13304a!important;border-color:var(--r-rand2)!important}
+body.game-client[data-rahmen] .planet-bild{position:relative;flex:0 0 44px;width:44px;height:44px}
+body.game-client[data-rahmen] .planet-bild img{width:44px;height:44px;border-radius:50%;object-fit:cover;display:block}
+body.game-client[data-rahmen] .planet-zeile.aktiv .planet-bild img{box-shadow:0 0 0 2px var(--r-gruen2),0 0 10px #56d27c88}
+body.game-client[data-rahmen] .planet-baut{position:absolute;left:-2px;bottom:-2px;font-size:12px;background:#132235;border:1px solid var(--r-rand2);border-radius:50%;width:18px;height:18px;display:grid;place-items:center;color:var(--r-orange)}
+body.game-client[data-rahmen] .planet-text{display:grid;min-width:0}
+body.game-client[data-rahmen] .planet-text strong{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.game-client[data-rahmen] .planet-zeile.aktiv .planet-text strong{color:var(--r-gruen2)}
+body.game-client[data-rahmen] .planet-text small{font-size:11px}
+body.game-client[data-rahmen] .planet-mond{position:absolute;left:36px;top:30px;width:20px!important;height:20px!important;min-height:0!important;padding:0!important;border-radius:50%!important;border:1px solid var(--r-rand2)!important;background:#0b1828!important;overflow:hidden}
+body.game-client[data-rahmen] .planet-mond img{width:100%;height:100%;object-fit:cover}
+body.game-client[data-rahmen] .planet-mond-platz{display:none}
+
+/* ---------- Bauseiten (§2) ---------- */
+body.game-client[data-rahmen] .bauseite-panel>h2,body.game-client[data-rahmen] #gebaeude-content,body.game-client[data-rahmen] #research,body.game-client[data-rahmen] #research-tree,body.game-client[data-rahmen] #forschen .research-entry,body.game-client[data-rahmen] #ship-gallery,body.game-client[data-rahmen] #manufacture,body.game-client[data-rahmen] #verteidigung-content,body.game-client[data-rahmen] #ground-forces .production-units,body.game-client[data-rahmen] #ground-forces>.catalog-filters,body.game-client[data-rahmen] #ground-forces>.catalog-era{display:none!important}
+body.game-client[data-rahmen] .bauseite-panel{padding:8px!important}
+body.game-client[data-rahmen] .bs-kopf{margin-bottom:8px}
+body.game-client[data-rahmen] .bs-banner{position:relative;min-height:176px;border-radius:var(--r-radius);border:1px solid var(--r-rand);background:#0b1828;display:flex;flex-direction:column;justify-content:flex-end;padding:14px 16px;overflow:hidden}
+body.game-client[data-rahmen] .bs-banner-bild{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%}
+body.game-client[data-rahmen] .bs-banner::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#050b16f0 0%,#050b16a0 45%,#050b1610 100%);z-index:1}
+body.game-client[data-rahmen] .bs-banner>h2,body.game-client[data-rahmen] .bs-banner>p{position:relative;z-index:2}
+body.game-client[data-rahmen] .bs-banner h2{font:600 20px/1.2 var(--r-schrift)!important;margin:0 0 4px!important;color:#fff!important;text-shadow:0 2px 6px #000}
+body.game-client[data-rahmen] .bs-banner p{margin:0;color:#c4d3e2;max-width:60ch}
+body.game-client[data-rahmen] .bs-detail{display:grid;grid-template-columns:200px minmax(0,1fr);gap:14px;min-height:176px;border:1px solid var(--r-rand2);border-radius:var(--r-radius);background:linear-gradient(110deg,#0f2338f2,#091626f2);padding:10px;animation:bs-auf 120ms ease-out}
+@keyframes bs-auf{from{opacity:.4}to{opacity:1}}
+body.game-client[data-rahmen] .bs-detail-bild{display:grid;gap:6px;align-content:start}
+body.game-client[data-rahmen] .bs-detail-bild img{width:200px;height:200px;object-fit:cover;border-radius:3px;border:1px solid var(--r-rand)}
+body.game-client[data-rahmen] .bs-detail-text{display:flex;flex-direction:column;gap:6px;min-width:0}
+body.game-client[data-rahmen] .bs-detail-kopf{display:flex;align-items:baseline;gap:10px}
+body.game-client[data-rahmen] .bs-detail-text h3{font:600 19px/1.2 var(--r-schrift)!important;margin:0!important;color:#fff!important}
+body.game-client[data-rahmen] .bs-stufe{color:var(--r-orange);font-weight:600}
+body.game-client[data-rahmen] .bs-schliessen{margin-left:auto!important;min-height:26px!important;width:28px!important;height:26px!important;padding:0!important;background:#1a2a3d!important;border:1px solid var(--r-rand2)!important;color:#d6e2ee!important;border-radius:3px!important;box-shadow:none!important}
+body.game-client[data-rahmen] .bs-fakten{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:3px 14px;margin:0;font-size:13px}
+body.game-client[data-rahmen] .bs-fakten dt{color:var(--r-leise)}
+body.game-client[data-rahmen] .bs-fakten dd{margin:0;color:var(--r-text)}
+body.game-client[data-rahmen] .bs-gruen{color:var(--r-gruen2)!important}
+body.game-client[data-rahmen] .bs-gelb{color:#f3d27a!important}
+body.game-client[data-rahmen] .bs-rot{color:var(--r-rot)!important}
+body.game-client[data-rahmen] .bs-kosten{display:flex;flex-wrap:wrap;gap:4px 12px}
+body.game-client[data-rahmen] .bs-gut{display:inline-flex;align-items:center;gap:4px;font-variant-numeric:tabular-nums}
+body.game-client[data-rahmen] .bs-gut img{width:22px;height:22px;border-radius:3px;object-fit:cover}
+body.game-client[data-rahmen] .bs-gut.knapp b{color:var(--r-rot)}
+body.game-client[data-rahmen] .bs-aktion{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+body.game-client[data-rahmen] .bs-formular{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0!important}
+body.game-client[data-rahmen] .bs-anzahl{display:flex!important;align-items:center;gap:6px;min-width:0!important;color:var(--r-leise);font-size:13px}
+body.game-client[data-rahmen] .bs-anzahl input{width:90px;min-height:32px!important;padding:4px 8px!important}
+body.game-client[data-rahmen] .bs-max{min-height:0!important;padding:2px 4px!important;background:none!important;border:0!important;color:var(--r-blau)!important;box-shadow:none!important;width:auto!important}
+body.game-client[data-rahmen] .bs-bauen{min-height:40px!important;min-width:200px;padding:8px 22px!important;border:1px solid #6fe39a!important;border-radius:4px!important;background:linear-gradient(#3cb763,#22803f)!important;color:#fff!important;font:700 15px var(--r-schrift)!important;letter-spacing:.3px;box-shadow:0 0 0 1px #0b2a16 inset,0 2px 10px #1d6e3a66!important;width:auto!important}
+body.game-client[data-rahmen] .bs-bauen::before,body.game-client[data-rahmen] .bs-bauen::after{display:none!important}
+body.game-client[data-rahmen] .bs-bauen:hover:not(:disabled){background:linear-gradient(#4bd176,#2a944a)!important}
+body.game-client[data-rahmen] .bs-bauen:disabled{background:#2a3a33!important;border-color:#43584c!important;color:#9db3a6!important;box-shadow:none!important;filter:none!important;opacity:1!important}
+body.game-client[data-rahmen] .bs-vormerken{color:#f3d27a;font-size:12px}
+body.game-client[data-rahmen] .bs-imauftrag{margin:0;color:var(--r-orange);font-weight:600}
+body.game-client[data-rahmen] .bs-knopfreihe{display:flex;flex-wrap:wrap;gap:6px}
+body.game-client[data-rahmen] .bs-zweit,body.game-client[data-rahmen] .bs-link{min-height:26px!important;padding:3px 10px!important;border:1px solid var(--r-rand2)!important;border-radius:3px!important;background:#13253a!important;color:#cfe0ef!important;font:500 12px var(--r-schrift)!important;box-shadow:none!important;width:auto!important}
+body.game-client[data-rahmen] .bs-link{background:none!important;border:0!important;color:var(--r-blau)!important;padding:2px 0!important;text-decoration:underline;text-underline-offset:3px}
+body.game-client[data-rahmen] .bs-abriss{color:#ffb3a9!important}
+body.game-client[data-rahmen] .bs-satz{margin:0;color:#c8d6e3;max-width:72ch}
+body.game-client[data-rahmen] .bs-hilfe{min-height:0!important;width:22px!important;height:22px!important;padding:0!important;border-radius:50%!important;border:1px solid var(--r-blau)!important;background:#0e2236!important;color:var(--r-blau)!important;font-weight:700!important;box-shadow:none!important;vertical-align:middle}
+body.game-client[data-rahmen] .bs-detail .production-series{font-size:12px}
+body.game-client[data-rahmen] .bs-gruppe{margin:0 0 8px}
+body.game-client[data-rahmen] .bs-gruppenkopf{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 0 4px!important;padding:4px 8px;font:600 13px var(--r-schrift)!important;color:#dfe9f3!important;background:linear-gradient(90deg,#1b3350,#0d1a2b);border:1px solid var(--r-rand);border-radius:3px}
+body.game-client[data-rahmen] .bs-gruppenkopf small{color:var(--r-leise);font-weight:400}
+body.game-client[data-rahmen] .bs-raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px}
+body.game-client[data-rahmen] .bs-kachel{position:relative;aspect-ratio:1;min-height:0!important;width:100%!important;padding:0!important;margin:0!important;border:1px solid var(--r-rand)!important;border-radius:3px!important;overflow:hidden;background:#0a1626!important;box-shadow:none!important;transition:transform 120ms ease-out,border-color 120ms}
+body.game-client[data-rahmen] .bs-kachel::before{display:none!important}
+body.game-client[data-rahmen] .bs-kachel img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+body.game-client[data-rahmen] .bs-kachel .bs-name{position:absolute;left:0;right:0;bottom:0;padding:12px 4px 2px;font-size:10px;line-height:1.15;color:#e8eef5;text-align:left;background:linear-gradient(transparent,#000c);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:30px}
+body.game-client[data-rahmen] .bs-kachel .bs-zahl{position:absolute;right:3px;bottom:2px;font:700 14px/1 var(--r-schrift);color:var(--r-orange);text-shadow:0 1px 2px #000,0 0 4px #000}
+body.game-client[data-rahmen] .bs-kachel:hover{border-color:#8fc1ee!important;transform:translateY(-1px)}
+body.game-client[data-rahmen] .bs-kachel.gewaehlt{border-color:var(--r-gruen2)!important;box-shadow:0 0 0 2px var(--r-gruen2) inset!important}
+body.game-client[data-rahmen] .bs-kachel.teuer img{filter:brightness(.5)}
+body.game-client[data-rahmen] .bs-kachel.gesperrt img{filter:grayscale(1) brightness(.6)}
+body.game-client[data-rahmen] .bs-kachel.gesperrt .bs-zahl{color:#a9a9a9}
+body.game-client[data-rahmen] .bs-kachel.baut::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(135deg,#56d27c44 0 6px,transparent 6px 12px);pointer-events:none}
+body.game-client[data-rahmen] .bs-schlangen{display:grid;grid-template-columns:repeat(auto-fit,minmax(max(150px,30%),1fr));gap:6px;margin-top:4px}
+body.game-client[data-rahmen] .bs-schlange{border:1px solid var(--r-rand);border-radius:var(--r-radius);background:#0a1726;padding:6px 8px;min-width:0}
+body.game-client[data-rahmen] .bs-schlange h4{margin:0 0 4px;font:600 12px var(--r-schrift);color:var(--r-leise);text-transform:uppercase;letter-spacing:.6px}
+body.game-client[data-rahmen] .bs-leer{margin:0;color:var(--r-leise);font-size:12px}
+body.game-client[data-rahmen] .bs-auftrag{display:grid;grid-template-columns:48px minmax(0,1fr);gap:8px;align-items:start}
+body.game-client[data-rahmen] .bs-auftrag img{width:48px;height:48px;object-fit:cover;border-radius:3px}
+body.game-client[data-rahmen] .bs-auftrag strong{display:block;font-size:13px}
+body.game-client[data-rahmen] .bs-auftrag small{display:block;color:var(--r-leise);font-size:11px}
+body.game-client[data-rahmen] .bs-auftrag .queue-bottom{margin:3px 0}
+body.game-client[data-rahmen] .bs-auftrag .job-time{color:var(--r-orange);font-variant-numeric:tabular-nums;font-size:12px}
+/* Wartende Einträge mit ↑ ↓ ✕ (Funktionsprüfung 25.10.2026: Umsortieren war am Handy nicht erreichbar) */
+body.game-client[data-rahmen] .queue-wartend{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:4px}
+body.game-client[data-rahmen] .queue-wartend li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center;border-top:1px solid var(--r-rand);padding-top:4px}
+body.game-client[data-rahmen] .queue-wartend-text b{display:block;font-size:12px;font-weight:600;overflow-wrap:anywhere}
+body.game-client[data-rahmen] .queue-wartend-text small{display:block;color:var(--r-leise);font-size:11px;overflow-wrap:anywhere}
+body.game-client[data-rahmen] .queue-wartend-knoepfe{display:flex;gap:4px}
+body.game-client[data-rahmen] .queue-pfeil{min-width:32px;padding:3px 6px!important}
+body.game-client[data-rahmen] #uebersicht-kopf .queue-wartend{display:none}
+body.game-client[data-rahmen] .bs-kachel-platz small,body.game-client[data-rahmen] .bs-imauftrag small{display:block;color:var(--r-leise);font-size:11px;font-weight:400}
+body.game-client[data-rahmen] .bs-abriss-grund{display:block;flex-basis:100%;color:var(--r-leise);font-size:11px}
+@media (max-width:767px),(pointer:coarse){body.game-client[data-rahmen] .queue-pfeil{min-width:44px;min-height:44px!important}}
+body.game-client[data-rahmen] #truppen-content>#ground-forces,body.game-client[data-rahmen] #werft-content>#production,body.game-client[data-rahmen] #missile-panel{margin-top:10px;border-top:1px solid var(--r-rand);padding-top:8px}
+
+/* ---------- Techinfo-Fenster (§3) ---------- */
+body.game-client[data-rahmen] dialog.techinfo{width:min(780px,calc(100vw - 24px));max-height:calc(100vh - 40px);padding:0;border:1px solid var(--r-rand2);border-radius:var(--r-radius);background:#0a1626f7;color:var(--r-text);font-family:var(--r-schrift)}
+body.game-client[data-rahmen] dialog.techinfo::backdrop{background:#000a}
+body.game-client[data-rahmen] .ti-kopf{display:flex;align-items:baseline;gap:12px;padding:10px 12px;border-bottom:1px solid var(--r-rand)}
+body.game-client[data-rahmen] .ti-kopf h2{margin:0!important;font:600 18px var(--r-schrift)!important}
+body.game-client[data-rahmen] .ti-kopf span{color:var(--r-orange)}
+body.game-client[data-rahmen] .ti-reiter{display:flex;gap:2px;padding:6px 12px 0;border-bottom:1px solid var(--r-rand2)}
+body.game-client[data-rahmen] .ti-reiter button{min-height:28px!important;padding:4px 14px!important;border:1px solid var(--r-rand)!important;border-bottom:0!important;border-radius:4px 4px 0 0!important;background:#0d1d30!important;color:#b8c9da!important;box-shadow:none!important;width:auto!important}
+body.game-client[data-rahmen] .ti-reiter button[aria-selected="true"]{background:#2c4b6e!important;color:#fff!important}
+/* Technische Zeichnungen im Reiter „Technik“: Umschalter + eine große Zeichnung, nie beschnitten */
+body.game-client[data-rahmen] .ti-zeichnungen{margin:0 0 14px}
+body.game-client[data-rahmen] .ti-zeichnungen h4{margin:0 0 6px}
+body.game-client[data-rahmen] .ti-zeichnung-wahl{display:flex;gap:4px;margin:0 0 8px}
+body.game-client[data-rahmen] .ti-zeichnung-wahl button{flex:1 1 0;min-width:0;min-height:34px!important;padding:4px 8px!important;border:1px solid var(--r-rand)!important;border-radius:4px!important;background:#0d1d30!important;color:#b8c9da!important;box-shadow:none!important;width:auto!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.game-client[data-rahmen] .ti-zeichnung-wahl button[aria-pressed="true"]{background:#2c4b6e!important;border-color:var(--r-rand2)!important;color:#fff!important}
+body.game-client[data-rahmen] .ti-zeichnung{margin:0}
+body.game-client[data-rahmen] .ti-zeichnung img{display:block;width:100%;height:auto;max-height:min(62vh,560px);object-fit:contain;background:#061224;border:1px solid var(--r-rand);border-radius:3px}
+body.game-client[data-rahmen] .ti-zeichnung figcaption{margin-top:4px;color:var(--r-leise);font-size:12px}
+body.game-client[data-rahmen] .ti-inhalt{padding:12px;overflow:auto;max-height:calc(100vh - 160px)}
+body.game-client[data-rahmen] .ti-hinweis{color:var(--r-leise);margin:0 0 8px}
+body.game-client[data-rahmen] .ti-baum{list-style:none;margin:0;padding-left:18px;border-left:1px dashed var(--r-rand2)}
+body.game-client[data-rahmen] .ti-wurzel{padding-left:0;border:0}
+body.game-client[data-rahmen] .ti-baum li{margin:3px 0}
+body.game-client[data-rahmen] .ti-baum li>button,body.game-client[data-rahmen] .ti-baum li>span{display:inline-flex!important;align-items:center;gap:6px;min-height:0!important;padding:2px 6px!important;background:none!important;border:0!important;color:inherit!important;box-shadow:none!important;width:auto!important;font:inherit}
+body.game-client[data-rahmen] .ti-baum li>b{margin-left:6px;font-variant-numeric:tabular-nums}
+body.game-client[data-rahmen] .ti-baum img,body.game-client[data-rahmen] .ti-anwendungen img{width:24px;height:24px;border-radius:3px;object-fit:cover}
+body.game-client[data-rahmen] .ti-baum li.erfuellt>b,body.game-client[data-rahmen] .ti-baum li.erfuellt>button{color:var(--r-gruen2)!important}
+body.game-client[data-rahmen] .ti-baum li.fehlt>b,body.game-client[data-rahmen] .ti-baum li.fehlt>button{color:var(--r-rot)!important}
+body.game-client[data-rahmen] .ti-anwendungen{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:4px}
+body.game-client[data-rahmen] .ti-anwendungen li{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:2px 6px;border:1px solid var(--r-rand);border-radius:3px}
+body.game-client[data-rahmen] .ti-anwendungen button,body.game-client[data-rahmen] .ti-sf button{display:inline-flex!important;align-items:center;gap:6px;min-height:0!important;padding:2px!important;background:none!important;border:0!important;color:var(--r-blau)!important;box-shadow:none!important;width:auto!important}
+body.game-client[data-rahmen] .ti-anwendungen b{color:var(--r-orange);font-size:12px;white-space:nowrap}
+body.game-client[data-rahmen] .ti-info{display:grid;grid-template-columns:180px minmax(0,1fr);gap:12px}
+body.game-client[data-rahmen] .ti-info img{width:180px;height:180px;object-fit:cover;border-radius:3px}
+body.game-client[data-rahmen] .ti-klasse{margin:0 0 6px;color:var(--r-gold);font-weight:600}
+body.game-client[data-rahmen] .ti-info dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 10px;margin:0}
+body.game-client[data-rahmen] .ti-info dt{color:var(--r-leise)}
+body.game-client[data-rahmen] .ti-info dd{margin:0}
+body.game-client[data-rahmen] .ti-lore{margin:10px 0 0;padding:8px 10px;border-left:3px solid var(--r-gold);background:#1a160b66;color:#e5dcc4}
+/* Archiv (LORE-BIBEL §8): lange Texte lesbar, Volksakten aufklappbar, Akzentfarbe je Volk */
+body.game-client[data-rahmen] .ti-archiv{display:grid;gap:12px;max-width:68ch;line-height:1.55}
+body.game-client[data-rahmen] .ti-archiv h4{margin:0 0 4px;font:600 13px var(--r-schrift);color:var(--r-gold);letter-spacing:.04em;text-transform:uppercase}
+body.game-client[data-rahmen] .ti-archiv p{margin:0;color:#dfe7ef;text-wrap:pretty}
+body.game-client[data-rahmen] .ti-archiv p+p{margin-top:.6em}
+body.game-client[data-rahmen] .ti-akte{margin:0 0 6px;border:1px solid var(--r-rand);border-left:3px solid var(--akte,#8aa);border-radius:3px;background:#0d1d3080}
+body.game-client[data-rahmen] .ti-akte[data-volk="aurelianer"]{--akte:#d7ab65}
+body.game-client[data-rahmen] .ti-akte[data-volk="krath"]{--akte:#d46e59}
+body.game-client[data-rahmen] .ti-akte[data-volk="syntheten"]{--akte:#87b9de}
+body.game-client[data-rahmen] .ti-akte[data-volk="veyari"]{--akte:#79bc9e}
+body.game-client[data-rahmen] .ti-akte summary{cursor:pointer;padding:6px 10px;font-weight:600;color:var(--akte,#cde)}
+body.game-client[data-rahmen] .ti-akte summary small{margin-left:6px;font-weight:400;color:var(--r-leise)}
+body.game-client[data-rahmen] .ti-akte p{padding:0 10px 8px}
+body.game-client[data-rahmen] .ti-verweise{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+body.game-client[data-rahmen] .ti-verweise button,body.game-client[data-rahmen] .ti-verweise span{display:inline-block!important;min-height:0!important;width:auto!important;padding:3px 10px!important;border:1px solid var(--r-rand)!important;border-radius:12px!important;background:#0d1d30!important;color:var(--r-blau)!important;box-shadow:none!important;font:inherit;font-size:13px}
+body.game-client[data-rahmen] .ti-verweise span{color:var(--r-leise)!important}
+body.game-client[data-rahmen] .ti-sf{margin-top:10px}
+body.game-client[data-rahmen] .ti-sf h4,body.game-client[data-rahmen] .ti-daten caption{margin:0 0 4px;text-align:left;font:600 13px var(--r-schrift);color:var(--r-leise)}
+body.game-client[data-rahmen] .ti-sf ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:2px 10px}
+body.game-client[data-rahmen] .ti-sf li{display:flex;justify-content:space-between}
+body.game-client[data-rahmen] .ti-sf li.sf-von button,body.game-client[data-rahmen] .ti-sf li.sf-von b{color:var(--r-rot)!important}
+body.game-client[data-rahmen] .ti-sf li.sf-gegen button,body.game-client[data-rahmen] .ti-sf li.sf-gegen b{color:var(--r-gruen2)!important}
+body.game-client[data-rahmen] .ti-daten,body.game-client[data-rahmen] .ti-stufen{margin-top:10px;font-size:12px}
+body.game-client[data-rahmen] .ti-daten th{width:45%}
+body.game-client[data-rahmen] .ti-stufen tr.aktuell{background:#2c4b6e66!important}
+body.game-client[data-rahmen] .ti-stufen tr.naechste{background:#1f5a3366!important}
+body.game-client[data-rahmen] .ti-stufen .stage-costs{display:flex;flex-wrap:wrap;gap:6px}
+body.game-client[data-rahmen] .ti-stufen .stage-costs img{width:16px;height:16px}
+
+/* ---------- Galaxie als Tabelle (§4) ---------- */
+body.game-client[data-rahmen] #karte[data-ansicht="tabelle"]>:not(#galaxie-tabelle):not(dialog),body.game-client[data-rahmen] #karte[data-ansicht="atlas"]>#galaxie-tabelle{display:none!important}
+body.game-client[data-rahmen] #karte[data-ansicht="tabelle"]{padding:8px!important}
+body.game-client[data-rahmen] .gt-kopf{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:6px 8px;background:#0c1b2d;border:1px solid var(--r-rand);border-radius:var(--r-radius)}
+body.game-client[data-rahmen] .gt-wahl{display:flex;align-items:center;gap:4px}
+body.game-client[data-rahmen] .gt-wahl span{color:var(--r-leise);margin-right:2px}
+body.game-client[data-rahmen] .gt-wahl input{width:62px;min-height:28px!important;padding:2px 6px!important;text-align:center}
+body.game-client[data-rahmen] .gt-wahl button,body.game-client[data-rahmen] .gt-filter button{min-height:28px!important;width:28px!important;padding:0!important;background:#13253a!important;border:1px solid var(--r-rand2)!important;color:#d4e2ef!important;box-shadow:none!important;border-radius:3px!important}
+body.game-client[data-rahmen] .gt-los{min-height:30px!important;padding:4px 18px!important;background:linear-gradient(#3cb763,#22803f)!important;border:1px solid #6fe39a!important;color:#fff!important;font-weight:700!important;box-shadow:none!important;width:auto!important}
+body.game-client[data-rahmen] .gt-zweit{min-height:28px!important;padding:3px 12px!important;background:#13253a!important;border:1px solid var(--r-rand2)!important;color:#d4e2ef!important;box-shadow:none!important;width:auto!important}
+body.game-client[data-rahmen] .gt-filter{display:flex;gap:2px}
+body.game-client[data-rahmen] .gt-filter button[aria-pressed="true"]{background:#2c4b6e!important;color:#fff!important;border-color:#86b4e3!important}
+body.game-client[data-rahmen] .gt-atlas{margin-left:auto}
+body.game-client[data-rahmen] .gt-zaehler{display:flex;flex-wrap:wrap;gap:4px 16px;padding:5px 8px;color:var(--r-leise);font-size:12px}
+body.game-client[data-rahmen] .gt-zaehler b{color:var(--r-text)}
+body.game-client[data-rahmen] .gt-tabelle{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+body.game-client[data-rahmen] .gt-tabelle caption{text-align:left;padding:4px 8px;color:var(--r-leise)}
+body.game-client[data-rahmen] .gt-tabelle th{padding:4px 6px!important;background:#10233a!important;color:#a9bfd3!important;font-weight:600;border-bottom:1px solid var(--r-rand2)!important}
+body.game-client[data-rahmen] .gt-tabelle td{padding:2px 6px!important;height:34px;border-bottom:1px solid #1c3044!important;vertical-align:middle}
+body.game-client[data-rahmen] .gt-tabelle tbody tr:nth-child(even){background:#0b1a2a66!important}
+body.game-client[data-rahmen] .gt-tabelle tbody tr:hover{background:#18324e88!important}
+body.game-client[data-rahmen] .gt-tabelle tr.gt-aktiv{background:#173a2a88!important}
+body.game-client[data-rahmen] .gt-tabelle tr.gt-gedimmt{opacity:.35}
+body.game-client[data-rahmen] .gt-platz{width:42px;text-align:center;font-weight:700;border-left:4px solid #3a4b5c}
+body.game-client[data-rahmen] .gt-zone-glut .gt-platz,body.game-client[data-rahmen] .gt-legende-zone.gt-zone-glut{border-left-color:#ff7a45}
+body.game-client[data-rahmen] .gt-zone-leben .gt-platz,body.game-client[data-rahmen] .gt-legende-zone.gt-zone-leben{border-left-color:#4cd17a}
+body.game-client[data-rahmen] .gt-zone-frost .gt-platz,body.game-client[data-rahmen] .gt-legende-zone.gt-zone-frost{border-left-color:#6cc6ff}
+body.game-client[data-rahmen] .gt-legende-zone{display:inline-block;width:14px;height:14px;border-left:5px solid;margin-right:4px;vertical-align:middle}
+body.game-client[data-rahmen] .gt-planet{width:40px}
+body.game-client[data-rahmen] .gt-planet img{width:28px;height:28px;border-radius:50%;object-fit:cover;display:block}
+body.game-client[data-rahmen] .gt-besiegt{filter:grayscale(1) brightness(.6)}
+body.game-client[data-rahmen] .gt-unbekannt{display:inline-block;width:24px;height:24px;border-radius:50%;border:1px dashed #6d8197;background:radial-gradient(circle at 35% 35%,#2a3b4e,#0d1724);vertical-align:middle}
+body.game-client[data-rahmen] .gt-planetname{min-width:150px}
+body.game-client[data-rahmen] .gt-planetname>span{margin-right:6px}
+body.game-client[data-rahmen] .gt-frei{color:#9fe0b5}
+body.game-client[data-rahmen] .gt-unerforscht{color:#6d8197}
+body.game-client[data-rahmen] .gt-kurz{display:inline-flex;gap:4px}
+body.game-client[data-rahmen] .gt-kurz button,body.game-client[data-rahmen] .gt-eigen{min-height:22px!important;padding:1px 8px!important;font-size:11px!important;background:#13253a!important;border:1px solid var(--r-rand2)!important;color:var(--r-blau)!important;box-shadow:none!important;width:auto!important;border-radius:3px!important}
+body.game-client[data-rahmen] .gt-eigen{color:var(--r-gruen2)!important}
+body.game-client[data-rahmen] .gt-mondzelle,body.game-client[data-rahmen] .gt-tfzelle{width:44px;text-align:center}
+body.game-client[data-rahmen] .gt-mond{width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle}
+body.game-client[data-rahmen] .gt-warn{color:var(--r-rot)}
+body.game-client[data-rahmen] .gt-tf{min-height:24px!important;width:26px!important;padding:0!important;background:#2a1d0c!important;border:1px solid #9a7434!important;color:var(--r-orange)!important;box-shadow:none!important;border-radius:50%!important}
+body.game-client[data-rahmen] .gt-spieler{display:inline-flex;align-items:baseline;gap:6px}
+body.game-client[data-rahmen] .gt-spieler small{color:var(--r-leise)}
+body.game-client[data-rahmen] .gt-name{font-weight:600}
+body.game-client[data-rahmen] .gt-rel-eigen{color:var(--r-gruen2)}
+body.game-client[data-rahmen] .gt-rel-verbuendet{color:#48d0b0}
+body.game-client[data-rahmen] .gt-rel-nap{color:#f3d365}
+body.game-client[data-rahmen] .gt-rel-feindlich,body.game-client[data-rahmen] .gt-rel-fremde_allianz{color:var(--r-rot)}
+body.game-client[data-rahmen] .gt-status abbr{text-decoration:none;color:#c9d6e2;cursor:help}
+body.game-client[data-rahmen] .gt-st-n{color:#9fe0b5!important}
+body.game-client[data-rahmen] .gt-st-s{color:var(--r-rot)!important}
+body.game-client[data-rahmen] .gt-st-i,body.game-client[data-rahmen] .gt-st-ii{color:#9aa5b1!important}
+body.game-client[data-rahmen] .gt-st-u{color:#7fb2ff!important}
+body.game-client[data-rahmen] .gt-allianz abbr{text-decoration:none;color:var(--r-blau);cursor:help}
+body.game-client[data-rahmen] .gt-aktion{display:inline-flex;gap:3px}
+body.game-client[data-rahmen] .gt-aktion button{min-height:24px!important;width:26px!important;height:24px!important;padding:0!important;background:#13253a!important;border:1px solid var(--r-rand2)!important;color:var(--r-blau)!important;box-shadow:none!important;border-radius:3px!important;font-size:13px!important}
+body.game-client[data-rahmen] .gt-loch td{color:#d6a8ff;text-align:center}
+body.game-client[data-rahmen] .gt-fuss{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:6px 8px;color:var(--r-leise);font-size:12px}
+body.game-client[data-rahmen] .gt-fehler{color:var(--r-rot)}
+body.game-client[data-rahmen] .gt-legende summary{cursor:pointer;color:var(--r-blau)}
+body.game-client[data-rahmen] .gt-legende dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 12px;margin:6px 0 0;max-width:640px}
+body.game-client[data-rahmen] .gt-legende dt{text-align:right;color:var(--r-text)}
+body.game-client[data-rahmen] .gt-legende dd{margin:0}
+
+/* ---------- Handy (< 768 px): Menü unten mit 5 Einträgen + „Mehr“, Planetenwahl oben ---------- */
+@media (max-width:767px){
+ body.game-client[data-rahmen][data-playing="true"]{padding-bottom:64px}
+ body.game-client[data-rahmen][data-playing="true"] header{flex-wrap:wrap!important}
+ body.game-client[data-rahmen] #kopfzeile{order:5;width:100%;margin:0;overflow-x:auto;flex-wrap:nowrap}
+ body.game-client[data-rahmen] #game:not([hidden]){display:flex!important;flex-direction:column;gap:6px!important;align-items:stretch!important} /* game.css vererbt align-items:start vom Desktop-Raster – sonst schrumpft #karte (galaxie-tabelle mit contain:inline-size) auf 0 px */
+ body.game-client[data-rahmen] #game>#planet-sidebar{display:none!important}
+ body.game-client[data-rahmen] #rahmen-planetenwahl{display:block}
+ body.game-client[data-rahmen] #rahmen-planetenwahl #colony-context{display:flex}
+ body.game-client[data-rahmen] #game>#tabs{position:fixed!important;left:0;right:0;bottom:0;top:auto!important;z-index:50;flex-direction:row!important;flex-wrap:wrap!important;max-height:none;border-radius:0!important;padding:4px!important;gap:3px!important;box-shadow:0 -4px 16px #000a!important}
+ body.game-client[data-rahmen] #game #tabs>button[data-menue]{flex:1 1 0!important;flex-direction:column!important;justify-content:center!important;height:50px!important;min-height:50px!important;padding:2px!important;font-size:10px!important;gap:3px!important}
+ body.game-client[data-rahmen] #game #tabs>button[data-menue] .menue-symbol{order:-1;width:20px;height:20px}
+ body.game-client[data-rahmen] #game #tabs>button[data-menue]:not([data-mobil]){display:none!important}
+ body.game-client[data-rahmen] #game #tabs>button.menue-mehr{display:flex!important;flex:1 1 0;flex-direction:column;align-items:center;justify-content:center;height:50px;min-height:50px!important;padding:2px!important;font-size:10px!important;gap:3px;background:#0f2034!important;border:1px solid transparent!important;color:#b9cadb!important;box-shadow:none!important}
+ body.game-client[data-rahmen] #game #tabs.mehr-offen{max-height:80vh;overflow:auto}
+ body.game-client[data-rahmen] #game #tabs.mehr-offen>button[data-menue]:not([data-mobil]){display:flex!important;flex:1 1 30%!important;order:-1}
+ body.game-client[data-rahmen] #game #resource-bar .resource{flex:1 1 30%!important}
+ body.game-client[data-rahmen] .bs-detail{grid-template-columns:96px minmax(0,1fr);gap:8px}
+ body.game-client[data-rahmen] .bs-detail-bild img{width:96px;height:96px}
+ body.game-client[data-rahmen] .bs-bauen{min-width:0;width:100%!important}
+ body.game-client[data-rahmen] .bs-banner{min-height:110px}
+ body.game-client[data-rahmen] .bs-raster{grid-template-columns:repeat(auto-fill,minmax(72px,1fr))}
+ body.game-client[data-rahmen] .bs-schlangen{grid-template-columns:1fr}
+ body.game-client[data-rahmen] .ti-info{grid-template-columns:1fr}
+ body.game-client[data-rahmen] .gt-tabelle{display:block;overflow-x:auto}
+ body.game-client[data-rahmen] .gt-atlas{margin-left:0}
+ body.game-client[data-rahmen] #ereignisleiste .ereignis-liste{display:block;overflow-x:auto}
+}
+@media (prefers-reduced-motion:reduce){body.game-client[data-rahmen] .bs-detail{animation:none}body.game-client[data-rahmen] .bs-kachel{transition:none}}
+/* Nachschärfung gegen ältere details-/summary- und Kopfzeilenstile */
+body.game-client[data-rahmen] #game #ereignisleiste details{margin:0!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important}
+body.game-client[data-rahmen] #game #ereignisleiste details>summary{min-height:0!important;padding:4px 10px!important;margin:0!important;border:0!important;background:none!important;font-size:12px!important}
+body.game-client[data-rahmen] #game #ereignisleiste details>summary::before{display:none!important}
+body.game-client[data-rahmen][data-playing="true"] header #kopfzeile{flex-wrap:nowrap;white-space:nowrap}
+body.game-client[data-rahmen][data-playing="true"] header button{min-height:28px!important;padding:3px 10px!important}
+body.game-client[data-rahmen][data-playing="true"] header #kopfzeile{flex:0 1 auto;min-width:0;overflow:hidden}
+body.game-client[data-rahmen][data-playing="true"] header #kopfzeile>*{flex:0 0 auto;white-space:nowrap!important}
+body.game-client[data-rahmen][data-playing="true"] header #connection{white-space:nowrap}
+@media (max-width:1180px){body.game-client[data-rahmen][data-playing="true"] header #connection{display:none}}
+/* Galaxietabelle: ältere Ebenen machen Tabellen auf schmalen Breiten zu Karten – hier immer echte Tabelle */
+body.game-client[data-rahmen] #game table.gt-tabelle{display:table!important;table-layout:auto}
+body.game-client[data-rahmen] #game table.gt-tabelle>thead{display:table-header-group!important}
+body.game-client[data-rahmen] #game table.gt-tabelle>tbody{display:table-row-group!important}
+body.game-client[data-rahmen] #game table.gt-tabelle tr{display:table-row!important;position:static!important}
+body.game-client[data-rahmen] #game table.gt-tabelle td,body.game-client[data-rahmen] #game table.gt-tabelle th{display:table-cell!important;position:static!important;text-transform:none!important;letter-spacing:0!important}
+body.game-client[data-rahmen] #game table.gt-tabelle td::before{display:none!important;content:none!important}
+body.game-client[data-rahmen] #game table.gt-tabelle>caption{display:table-caption!important}
+/* Kopfzeile kompakt: Volk nur als Bild, Verbindung als kurze Statusmarke */
+body.game-client[data-rahmen][data-playing="true"] header #account-strip span{display:none}
+body.game-client[data-rahmen][data-playing="true"] header #account-strip{padding:2px!important;min-height:0!important}
+body.game-client[data-rahmen][data-playing="true"] header #account-strip img{width:26px!important;height:26px!important}
+/* Status nie abschneiden (Karl 25.10.2026: Text darf weder überlappen noch abgeschnitten sein): bricht auf zwei Zeilen um */
+body.game-client[data-rahmen][data-playing="true"] header #connection{max-width:150px;white-space:normal;overflow-wrap:anywhere;line-height:1.15;font-size:11px!important}
+body.game-client[data-rahmen][data-playing="true"] header #world-time{white-space:nowrap;font-size:12px!important}
+body.game-client[data-rahmen] #game .bs-anzahl,body.game-client[data-rahmen] .bs-anzahl{flex-direction:row!important;align-items:center!important}
+body.game-client[data-rahmen] dialog.techinfo th,body.game-client[data-rahmen] dialog.techinfo td{text-transform:none!important;letter-spacing:0!important;padding:4px 8px!important}
+body.game-client[data-rahmen] dialog.techinfo th{color:var(--r-leise)!important;font-weight:500!important}
+body.game-client[data-rahmen][data-playing="true"] header button{white-space:nowrap!important;width:auto!important}
+body.game-client[data-rahmen] #game table.gt-tabelle td{height:30px!important}
+body.game-client[data-rahmen] #game>#forschen:not([hidden]){display:flex!important;flex-direction:column}
+body.game-client[data-rahmen] #forschen>#research-personnel{order:9;margin-top:8px}
+@media (max-width:767px){
+ body.game-client[data-rahmen] #game #tabs.mehr-offen>button{flex:1 1 30%!important;order:0!important}
+ body.game-client[data-rahmen] #game #tabs.mehr-offen>button.menue-mehr{order:9!important}
+ body.game-client[data-rahmen][data-playing="true"] header #kopfzeile{overflow-x:auto;overflow-y:hidden;flex:1 1 100%;scrollbar-width:none}
+ body.game-client[data-rahmen][data-playing="true"] header #account-strip,body.game-client[data-rahmen][data-playing="true"] header #connection{display:none!important}
+ body.game-client[data-rahmen] #rahmen-planetenwahl #colony-context{width:100%}
+ body.game-client[data-rahmen] #rahmen-planetenwahl #context-planet{flex:1 1 auto;width:auto!important;max-width:none!important}
+}
+body.game-client[data-rahmen] .gt-mond-symbol{color:#d9dde6;font-size:16px;cursor:help}
+body.game-client[data-rahmen] .planet-mond{color:#d9dde6;font-size:12px;line-height:18px;text-align:center}
+body.game-client[data-rahmen] .gt-planet{position:relative}
+body.game-client[data-rahmen] .gt-aktiv-plakette{display:inline-block;min-width:14px;padding:0 3px;border-radius:7px;background:#7a2a2a;color:#fff;font-size:10px;line-height:14px;text-align:center}
+body.game-client[data-rahmen] .gt-planet .gt-aktiv-plakette{position:absolute;right:2px;top:2px}
+body.game-client[data-rahmen][data-playing="true"] header #kopfzeile>*,body.game-client[data-rahmen][data-playing="true"] header #kopfzeile button{padding:3px 7px!important}
+@media (max-width:767px){body.game-client[data-rahmen] #galaxie-tabelle{overflow-x:auto;max-width:100%;contain:inline-size}body.game-client[data-rahmen] #karte{min-width:0}body.game-client[data-rahmen] .gt-kopf{min-width:0}}
+/* ---------- Monde (Mondgeneration des Kerns) ---------- */
+body.game-client[data-rahmen] .mond-kugel{display:inline-block;width:22px;height:22px;border-radius:50%;vertical-align:middle;background:radial-gradient(circle at 32% 30%,#f2f2f2 0,#a9adb4 22%,#5b6068 58%,#1e2126 100%);box-shadow:inset -3px -3px 6px #0009,0 0 4px #ffffff22}
+body.game-client[data-rahmen] .mond-basalt_dunkel{background:radial-gradient(circle at 32% 30%,#9a9a9a 0,#4b4b52 30%,#1d1d22 100%)}
+body.game-client[data-rahmen] .mond-eis_rissig{background:radial-gradient(circle at 32% 30%,#ffffff 0,#bfe3f7 25%,#5c8fb0 65%,#1b3448 100%)}
+body.game-client[data-rahmen] .mond-mineral_blau{background:radial-gradient(circle at 32% 30%,#d5ecff 0,#4f8fd6 30%,#203f73 70%,#0d1a33 100%)}
+body.game-client[data-rahmen] .mond-organisch_gruen{background:radial-gradient(circle at 32% 30%,#e6ffd8 0,#7dbb5b 30%,#2f5b2b 70%,#102010 100%)}
+body.game-client[data-rahmen] .mond-rost_staub{background:radial-gradient(circle at 32% 30%,#ffe0c4 0,#c07a46 30%,#6b3519 70%,#24110a 100%)}
+body.game-client[data-rahmen] .mond-schluucht_tief{background:radial-gradient(circle at 32% 30%,#e8dccb 0,#8a7a66 30%,#3d332b 70%,#140f0c 100%)}
+body.game-client[data-rahmen] .mond-vulkan_glut{background:radial-gradient(circle at 32% 30%,#fff1b0 0,#ff8a3c 25%,#8f2a12 62%,#260806 100%)}
+body.game-client[data-rahmen] .mond-amethyst_violett{background:radial-gradient(circle at 32% 30%,#f4ddff 0,#a66be0 30%,#4b2477 70%,#1a0b2b 100%)}
+body.game-client[data-rahmen] .mond-karmin_rot{background:radial-gradient(circle at 32% 30%,#ffd6d6 0,#d0464f 30%,#6a1520 70%,#22060a 100%)}
+body.game-client[data-rahmen] .mond-bild{border-radius:50%;object-fit:cover;vertical-align:middle;width:22px;height:22px}
+body.game-client[data-rahmen] .planet-mond{display:grid;place-items:center}
+body.game-client[data-rahmen] .planet-mond .planet-mond-bild{width:18px;height:18px}
+body.game-client[data-rahmen] .mond-banner{min-height:150px}
+body.game-client[data-rahmen] .mond-banner .mond-banner-kugel{position:absolute;right:28px;top:50%;transform:translateY(-50%);width:120px;height:120px;z-index:1}
+body.game-client[data-rahmen] .mond-banner::before{background:linear-gradient(90deg,#050b16f0 0%,#050b16b0 60%,#050b1640 100%)}
+body.game-client[data-rahmen] .mond-voll{color:var(--r-orange)}
+body.game-client[data-rahmen] .mond-wahl{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+body.game-client[data-rahmen] .mond-wahl button{display:inline-flex!important;align-items:center;gap:6px;min-height:28px!important;padding:2px 10px!important;background:#13253a!important;border:1px solid var(--r-rand2)!important;color:#d4e2ef!important;box-shadow:none!important;width:auto!important}
+body.game-client[data-rahmen] .mond-wahl button[aria-pressed="true"]{background:#2c4b6e!important;border-color:#86b4e3!important}
+body.game-client[data-rahmen] .mond-mini{width:18px!important;height:18px!important}
+body.game-client[data-rahmen] .mond-fakten{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0 0 6px}
+body.game-client[data-rahmen] .mond-fakten>div{border:1px solid var(--r-rand);border-radius:var(--r-radius);background:#0a1726;padding:6px 8px;display:grid;gap:2px;min-width:0}
+body.game-client[data-rahmen] .mond-fakten span{color:var(--r-leise);font-size:11px}
+body.game-client[data-rahmen] .mond-fakten small{color:var(--r-leise);font-size:11px}
+body.game-client[data-rahmen] .mond-lager{margin:0 0 8px}
+body.game-client[data-rahmen] .mond-felder{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:4px 0}
+body.game-client[data-rahmen] .mond-feld{border:1px solid var(--r-rand);border-radius:var(--r-radius);background:#0a1726;padding:6px 8px;min-width:0}
+body.game-client[data-rahmen] .mond-feld p{margin:4px 0}
+body.game-client[data-rahmen] .mond-form{display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px;margin:4px 0!important}
+body.game-client[data-rahmen] .mond-form label{min-width:0!important;font-size:12px}
+body.game-client[data-rahmen] .mond-form input,body.game-client[data-rahmen] .mond-form select{min-height:28px!important;padding:3px 6px!important;max-width:150px}
+body.game-client[data-rahmen] .mond-liste{margin:4px 0;padding-left:18px;font-size:12px}
+body.game-client[data-rahmen] .mond-tabelle{font-size:12px;margin:4px 0}
+body.game-client[data-rahmen] .mond-tabelle td,body.game-client[data-rahmen] .mond-tabelle th{padding:3px 6px!important;text-transform:none!important;letter-spacing:0!important}
+body.game-client[data-rahmen] .bs-bauen.bs-klein{min-width:0;min-height:26px!important;padding:2px 10px!important;font-size:12px!important}
+body.game-client[data-rahmen] .mond-loch{color:#d6a8ff}
+body.game-client[data-rahmen] .mond-schiffe{display:flex;flex-wrap:wrap;gap:6px}
+body.game-client[data-rahmen] .mond-schiffe input{width:80px}
+body.game-client[data-rahmen] .gt-mondknopf{min-height:0!important;width:28px!important;height:28px!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important;border-radius:50%!important}
+body.game-client[data-rahmen] .gt-mondknopf .gt-mond{width:22px;height:22px}
+body.game-client[data-rahmen] .gt-loch-symbol{color:#d6a8ff;font-size:15px}
+@media (max-width:1100px){body.game-client[data-rahmen] .mond-felder{grid-template-columns:1fr}body.game-client[data-rahmen] .mond-fakten{grid-template-columns:repeat(2,minmax(0,1fr))}}
+body.game-client[data-rahmen] #game #planet-sidebar .planet-mond{z-index:3;left:34px;top:28px}
+body.game-client[data-rahmen] #game #planet-sidebar .planet-mond{position:absolute!important;margin:0!important;min-width:0!important}
+@media (min-width:1101px){body.game-client[data-rahmen] .mond-felder{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr)}}
+body.game-client[data-rahmen] .mond-tabelle button,body.game-client[data-rahmen] .mond-feld button{white-space:nowrap!important;width:auto!important}
+body.game-client[data-rahmen] .mond-tabelle td{white-space:nowrap}
+/* Handy: Gegenstellen des Sprungtors als Karten statt fünfspaltiger Tabelle (Wörter brachen sonst buchstabenweise) */
+@media (max-width:1100px){body.game-client[data-rahmen] .mond-feld button{white-space:normal!important}
+body.game-client[data-rahmen] .mond-tabelle,body.game-client[data-rahmen] .mond-tabelle tbody{display:block;width:100%}
+body.game-client[data-rahmen] .mond-tabelle thead{display:none}
+body.game-client[data-rahmen] .mond-tabelle tr{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;padding:6px 0;border-top:1px solid var(--r-rand)}
+body.game-client[data-rahmen] .mond-tabelle td{display:block;white-space:normal;padding:0}
+body.game-client[data-rahmen] .mond-tabelle td:last-child{flex-basis:100%}}
+/* ---------- Motive immer vollständig (Karl, 17.10.: nichts abgeschnitten, keine Schrift über dem Motiv) ---------- */
+body.game-client[data-rahmen] #game img,body.game-client[data-rahmen] dialog img{object-fit:contain!important}
+body.game-client[data-rahmen] .bs-raster{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+body.game-client[data-rahmen] .bs-raster.quer{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+body.game-client[data-rahmen] .bs-kachel{aspect-ratio:auto!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;height:auto!important;text-align:left!important}
+body.game-client[data-rahmen] .bs-kachel .bs-bild{position:relative;display:block;aspect-ratio:1/1;background:#050b15;overflow:visible}
+body.game-client[data-rahmen] .bs-kachel.quer .bs-bild{aspect-ratio:5/3}
+body.game-client[data-rahmen] .bs-kachel img{position:static!important;inset:auto!important;display:block;width:100%!important;height:100%!important}
+body.game-client[data-rahmen] .bs-kachel .bs-fuss{display:flex;align-items:flex-start;justify-content:space-between;gap:4px;padding:3px 5px 4px;background:#0d1a2b;border-top:1px solid var(--r-rand);flex:1 0 auto}
+body.game-client[data-rahmen] .bs-kachel .bs-name{position:static!important;padding:0!important;background:none!important;font-size:11px;line-height:1.2;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:break-word;word-break:normal;-webkit-hyphens:auto;hyphens:auto;color:#e2eaf2} /* Silbentrennung statt Bruch an beliebiger Stelle („Agrarwissen-schaft“, nicht „Agrarwissenschaf|t“) */
+body.game-client[data-rahmen] .bs-kachel .bs-zahl{position:static!important;flex:0 0 auto;font-size:13px;line-height:1.1}
+body.game-client[data-rahmen] .bs-kachel.baut::after{display:none}
+body.game-client[data-rahmen] .bs-kachel.baut{border-color:var(--r-gruen2)!important}
+body.game-client[data-rahmen] .bs-kachel.baut .bs-fuss{background:repeating-linear-gradient(135deg,#1d4d30 0 6px,#0d1a2b 6px 12px)}
+body.game-client[data-rahmen] .bs-detail-bild img{width:200px!important;height:200px!important;background:#050b15}
+body.game-client[data-rahmen] .bs-detail.quer .bs-detail-bild img{height:120px!important}
+body.game-client[data-rahmen] .ti-info img{background:#050b15}
+body.game-client[data-rahmen] .bs-banner-bild{left:auto!important;right:0!important;width:62%!important;object-position:right center!important}
+body.game-client[data-rahmen] .mond-unterkopf{margin:6px 0 4px;font:600 12px var(--r-schrift);color:var(--r-leise)}
+body.game-client[data-rahmen] .bs-banner::before{background:linear-gradient(90deg,#050b16 0%,#050b16f0 34%,#050b1600 58%)!important}
+@media (max-width:767px){
+ body.game-client[data-rahmen] .bs-banner{padding:0 0 10px!important;min-height:0!important}
+ body.game-client[data-rahmen] .bs-banner::before{display:none}
+ body.game-client[data-rahmen] .bs-banner-bild{position:static!important;width:100%!important;height:130px!important;object-position:center!important;background:#050b15}
+ body.game-client[data-rahmen] .bs-banner>h2,body.game-client[data-rahmen] .bs-banner>p{padding:0 10px}
+ body.game-client[data-rahmen] .mond-banner .mond-banner-kugel{position:static;transform:none;display:block;margin:10px auto;width:90px;height:90px}
+}
+/* Nachbesserung nach automatischer Motivprüfung */
+body.game-client[data-rahmen] #game #resource-bar .resource{overflow:visible!important}
+body.game-client[data-rahmen] header img{object-fit:contain!important}
+body.game-client[data-rahmen] .bs-banner>h2,body.game-client[data-rahmen] .bs-banner>p{max-width:42%}
+body.game-client[data-rahmen] .mond-banner>h2,body.game-client[data-rahmen] .mond-banner>p{max-width:70%}
+body.game-client[data-rahmen] .fleet-location-preview>span{display:flex!important;flex-direction:column;align-items:center}
+body.game-client[data-rahmen] .fleet-location-preview b{position:static!important;margin-top:2px}
+body.game-client[data-rahmen] #game .hero-planet{overflow:visible!important}
+@media (max-width:767px){
+ body.game-client[data-rahmen] .bs-banner>h2,body.game-client[data-rahmen] .bs-banner>p{max-width:none}
+ body.game-client[data-rahmen] .bs-detail-bild img{width:96px!important;height:96px!important}
+ body.game-client[data-rahmen] .bs-detail.quer .bs-detail-bild img{height:58px!important}
+}
+body.game-client[data-rahmen] #game>.panel{overflow:visible!important}
+body.game-client[data-rahmen] #game .mond-banner .mond-banner-kugel{position:absolute!important;right:28px!important;top:15px!important;transform:none!important;width:120px!important;height:120px!important;border-radius:50%;z-index:1}
+body.game-client[data-rahmen] .mond-banner{min-height:150px!important}
+/* Handy: Kugel im Fluss, aber relativ – mit static spannte sich ihre Leinwand (inset:0) über den ganzen Banner und der Mond lag
+   groß unter dem Titel (Überlappungsprüfung 25.10.2026). inset:auto hebt die Desktop-Lage (right/top) auf. */
+@media (max-width:767px){body.game-client[data-rahmen] #game .mond-banner .mond-banner-kugel{position:relative!important;inset:auto!important;display:block;margin:10px auto!important;width:90px!important;height:90px!important}}
+
+/* ===== Handy-Rahmen (< 768 px) – Karl 18.10.2026 zur APK 0.4.0: „von der UI unbenutzbar auf dem Smartphone“.
+   DESIGNREGELN R1–R5 am Handy: Planetenliste als Auswahlknopf oben, Ressourcen als eine Zeile (Tippen zeigt Details),
+   Inhalt beginnt im oberen Drittel, nichts verdeckt die untere Menüleiste, nichts wird abgeschnitten.
+   Abnahme: tools/ui_abnahme/handy_pruefen.py (lokaler Server, Handyformat). */
+@media (max-width:767px){
+ body.game-client[data-rahmen] .site-ai-notice{font-size:10.5px!important;padding:2px 10px!important;min-height:0!important;line-height:1.45!important}
+ /* Kopf: Zeile 1 Marke · Spielzeit · Post · Abmelden, Zeile 2 Spielerleiste – quer wischbar statt abgeschnitten */
+ body.game-client[data-rahmen] header{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:4px 6px!important;padding:4px 10px 2px!important;min-height:0!important}
+ body.game-client[data-rahmen] header .brand{grid-column:1;grid-row:1;min-width:0}
+ body.game-client[data-rahmen] header #world-time{grid-column:2;grid-row:1;justify-self:end;white-space:nowrap}
+ body.game-client[data-rahmen] header #inbox-shortcut{grid-column:3;grid-row:1}
+ body.game-client[data-rahmen] header #logout{grid-column:4;grid-row:1}
+ body.game-client[data-rahmen] header #kopfzeile{grid-column:1/-1;grid-row:2;display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;gap:2px!important;min-width:0;max-width:100%;margin:0!important}
+ body.game-client[data-rahmen] header #kopfzeile::-webkit-scrollbar{display:none}
+ body.game-client[data-rahmen] header #kopfzeile{-webkit-mask-image:linear-gradient(90deg,#000 86%,transparent);mask-image:linear-gradient(90deg,#000 86%,transparent);padding-right:24px!important}
+ body.game-client[data-rahmen] header #kopfzeile>*{flex:0 0 auto!important;white-space:nowrap!important;max-width:none!important;overflow:visible!important;text-overflow:clip!important}
+ /* Planetenwahl: ein einzeiliger Auswahlknopf mit kleinem Planetenbild, daneben vor/zurück */
+ body.game-client[data-rahmen] #rahmen-planetenwahl .colony-context{display:flex!important;align-items:center!important;gap:6px!important;min-height:0!important;padding:0!important;margin:0!important}
+ body.game-client[data-rahmen] #context-planet{display:flex!important;flex-direction:row!important;align-items:center!important;gap:8px!important;flex:1 1 auto!important;width:auto!important;min-width:0!important;min-height:42px!important;height:auto!important;padding:4px 10px!important}
+ body.game-client[data-rahmen] #context-planet .planet-portrait{width:30px!important;height:30px!important;min-width:30px!important;flex:0 0 30px;box-sizing:border-box}
+ body.game-client[data-rahmen] #context-planet .planet-portrait img{width:100%!important;height:100%!important;min-width:0!important;object-fit:cover}
+ body.game-client[data-rahmen] #context-planet .planet-trigger-meta{display:none!important}
+ body.game-client[data-rahmen] #context-planet .planet-trigger-copy{min-width:0}
+ body.game-client[data-rahmen] #context-planet .planet-trigger-name{display:flex!important;flex-direction:row!important;gap:6px;align-items:baseline;white-space:nowrap}
+ body.game-client[data-rahmen] #rahmen-planetenwahl .colony-stepper{flex:0 0 auto;gap:4px!important}
+ body.game-client[data-rahmen] #rahmen-planetenwahl .colony-stepper button{width:42px!important;height:42px!important;min-height:42px!important}
+ /* Ressourcen: eine wischbare Zeile, je Gut Bild + Menge, darunter klein die Rate; Tippen öffnet die Details */
+ body.game-client[data-rahmen] #game>#resource-bar{flex-wrap:nowrap!important;overflow-x:auto!important;overscroll-behavior-x:contain;scrollbar-width:none;gap:4px!important;padding:4px!important}
+ body.game-client[data-rahmen] #game>#resource-bar::-webkit-scrollbar{display:none}
+ body.game-client[data-rahmen] #game #resource-bar .resource{flex:0 0 auto!important;display:grid!important;grid-template-columns:22px auto;grid-template-rows:auto auto;align-items:center!important;column-gap:5px!important;row-gap:0!important;min-height:40px!important;padding:3px 9px 3px 5px!important;border:1px solid var(--r-rand)!important;border-radius:var(--r-radius)!important}
+ body.game-client[data-rahmen] #game #resource-bar .resource-icon,body.game-client[data-rahmen] #game #resource-bar .resource-icon img{grid-column:1;grid-row:1/3;width:22px!important;height:22px!important;flex:none!important}
+ body.game-client[data-rahmen] #game #resource-bar .resource .resource-value{grid-column:2;grid-row:1;flex:none!important}
+ body.game-client[data-rahmen] #game #resource-bar .resource .resource-rate{grid-column:2;grid-row:2;flex:none!important;padding-left:0!important}
+ body.game-client[data-rahmen] #game #resource-bar .resource:is([data-resource="credits"],[data-resource="energie"]) .resource-rate{display:none!important}
+ body.game-client[data-rahmen] #game #resource-bar .resource:is([data-resource="credits"],[data-resource="energie"]) .resource-value{grid-row:1/3}
+ /* Platz für die feste Menüleiste: letzte Kachel bleibt erreichbar, Meldungen erscheinen darüber */
+ body.game-client[data-rahmen] main{padding-bottom:calc(72px + env(safe-area-inset-bottom))!important}
+ body.game-client[data-rahmen] #message.toast{top:auto!important;bottom:calc(70px + env(safe-area-inset-bottom))!important;left:10px!important;right:10px!important;max-width:none!important}
+ /* Marke nur als Sternsymbol: Schriftzug (171 px), Spielzeit, Post und Abmelden passen sonst nicht in 391 px */
+ body.game-client[data-rahmen] header .brand,body.game-client[data-rahmen][data-playing] header .brand{font-size:0!important;letter-spacing:0!important;gap:0!important;min-width:28px;overflow:hidden}
+ body.game-client[data-rahmen] header .brand span{display:none!important}
+ /* Kennzahlen der Übersicht: Kurzbeschriftung statt abgeschnittener Langform */
+ body.game-client[data-rahmen] .stat-label-full{display:none!important}
+ body.game-client[data-rahmen] .stat-label-compact{display:inline!important}
+ /* KI-Kennzeichnung im 30-px-Planetenbild hätte keinen Platz; der Hinweis oben gilt für alle Bilder */
+ body.game-client[data-rahmen] #context-planet .ai-image-label{display:none!important}
+}
+/* Gesperrte Aufstiegs-Knöpfe lesbar halten (vorher dunkelgrüne Schrift auf dunklem Grund, 46 % Deckkraft) */
+body.game-client[data-rahmen] .lage-aufstieg-knopf:disabled{color:#c9d8e4!important;background:#0e1d2c!important;border:1px dashed #4a6378!important;opacity:.85!important}
+/* Beitritt am Handy: Spielweise, Volk und Anfängerschutz untereinander statt in drei 115-px-Spalten (APK 0.4.0) */
+@media (max-width:767px){
+ #claim{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+ #claim>label:not(.start-protection){display:grid!important;gap:4px!important;width:100%!important;min-width:0}
+ #claim select{width:100%!important;max-width:none!important;min-width:0!important}
+ #claim .start-protection{display:flex!important;flex-direction:row!important;align-items:center!important;gap:10px!important;width:100%!important}
+ #claim .start-protection input{width:22px!important;height:22px!important;flex:0 0 22px!important;margin:0!important}
+}
+/* Fußzeile am Handy nicht unter „Nach oben“ verstecken */
+@media (max-width:767px){body.game-client footer{padding-bottom:calc(64px + env(safe-area-inset-bottom))!important}}
+/* Wörter im ganzen Spiel nach deutscher Silbentrennung umbrechen statt an beliebiger Stelle (ältere Stile setzen
+   overflow-wrap:anywhere – am Handy entstanden „Belagerungspanz|er“, „Verwaltungszentr|um“). Nur notfalls im Wort. */
+body.game-client[data-rahmen] :is(h1,h2,h3,h4,h5,p,li,dt,dd,th,td,span,small,strong,b,em,label,button,a,summary,figcaption){overflow-wrap:break-word!important;word-break:normal!important;-webkit-hyphens:auto;hyphens:auto}
+
+/* ===== Themenleiste (Handy < 768 px) – Karl 19.10.2026: vier wählbare Themen statt 14 Punkten + „Mehr“.
+   Links der Themenknopf (öffnet das Themenblatt), daneben die vier Ziele des Themas; Wischen wechselt das Thema. */
+#themenleiste,#themenblatt{display:none}
+@media (max-width:767px){
+ body.game-client[data-rahmen][data-playing="true"] #game>#tabs{display:none!important}
+ body.game-client[data-rahmen][data-playing="true"] #themenleiste{--t-farbe:#e8c26a;--t-glut:rgba(232,194,98,.22);display:flex;position:fixed;left:0;right:0;bottom:0;margin:0!important;z-index:60;touch-action:none;gap:6px;align-items:stretch;
+  padding:6px max(8px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
+  background:linear-gradient(180deg,rgba(10,22,38,.88),rgba(5,11,20,.97));border-top:1px solid var(--t-glut);
+  box-shadow:0 -10px 28px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.04);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);font-family:var(--r-schrift)}
+ #themenleiste[data-thema="flotte"]{--t-farbe:#5fd0ff;--t-glut:rgba(95,208,255,.22)}
+ #themenleiste[data-thema="galaxie"]{--t-farbe:#b691ff;--t-glut:rgba(182,145,255,.24)}
+ #themenleiste[data-thema="funk"]{--t-farbe:#6fe0a8;--t-glut:rgba(111,224,168,.22)}
+ #themenleiste button{-webkit-tap-highlight-color:transparent;font-family:inherit;cursor:pointer}
+ #themenleiste .thema-knopf{flex:0 0 66px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:54px;padding:4px 2px;
+  border:1px solid var(--t-farbe);border-radius:14px;color:var(--t-farbe);background:radial-gradient(circle at 50% 0,var(--t-glut),transparent 75%),rgba(8,18,31,.9);
+  box-shadow:0 0 14px var(--t-glut),inset 0 0 10px var(--t-glut);transition:border-color .25s,color .25s,box-shadow .25s}
+ #themenleiste .thema-knopf .menue-symbol{width:20px;height:20px}
+ #themenleiste .thema-name{font:700 11px/1 var(--r-schrift);letter-spacing:.4px;text-transform:uppercase}
+ #themenleiste .thema-punkte{display:flex;gap:3px}
+ #themenleiste .thema-punkte i{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.22)}
+ #themenleiste .thema-punkte i.an{background:var(--t-farbe);box-shadow:0 0 4px var(--t-farbe)}
+ #themenleiste .thema-ziele{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;min-width:0}
+ #themenleiste[data-wechsel] .thema-ziele{animation:thema-ein .28s ease-out}
+ #themenleiste[data-wechsel][data-richtung="rechts"] .thema-ziele{animation-name:thema-ein-rechts}
+ #themenleiste .thema-ziele button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:54px;padding:4px 2px;
+  border:0;border-radius:12px;background:transparent;color:#a9bccd;font:600 11px/1.1 var(--r-schrift);transition:background .2s,color .2s}
+ #themenleiste .thema-ziele button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ #themenleiste .thema-ziele .menue-symbol{width:22px;height:22px}
+ #themenleiste .thema-ziele button:active{background:rgba(255,255,255,.06)}
+ #themenleiste .thema-ziele button[aria-current="page"]{color:#fff;background:linear-gradient(180deg,var(--t-glut),transparent)}
+ #themenleiste .thema-ziele button[aria-current="page"]::before{content:"";position:absolute;top:-6px;left:22%;right:22%;height:3px;border-radius:0 0 3px 3px;background:var(--t-farbe);box-shadow:0 0 10px var(--t-farbe)}
+ #themenleiste .thema-ziele button[aria-current="page"] .menue-symbol{color:var(--t-farbe);filter:drop-shadow(0 0 5px var(--t-glut))}
+ #themenleiste .thema-ziele button:disabled{opacity:.35}
+ #themenleiste .thema-zahl{position:absolute;top:4px;right:calc(50% - 20px);min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--r-rot);color:#fff;font:700 10px/16px var(--r-schrift);text-align:center}
+ @keyframes thema-ein{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+ @keyframes thema-ein-rechts{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+ body.game-client[data-rahmen][data-playing="true"]{padding-bottom:calc(var(--themenleiste-h,74px) + 10px)!important}
+ body.game-client[data-rahmen][data-playing="true"] #message.toast{bottom:calc(var(--themenleiste-h,74px) + 8px)!important}
+ /* Themenblatt (Menü-Blatt): Gestaltung seit 0.4.7 in menue.css. */
+ @media (prefers-reduced-motion:reduce){#themenleiste .thema-ziele{animation:none!important}}
+}
+/* Starthinweis auf Bauseiten: warum hier noch nichts geht, mit direktem Schritt (19.10.2026) */
+body.game-client[data-rahmen] .bs-starthinweis{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:8px 0;padding:12px 14px;border:1px solid rgba(226,189,98,.45);border-left:3px solid var(--r-gold);border-radius:var(--r-radius);background:linear-gradient(90deg,rgba(226,189,98,.12),rgba(9,20,34,.86))}
+body.game-client[data-rahmen] .bs-starthinweis p{flex:1 1 220px;margin:0;color:var(--r-text);font-size:13.5px;line-height:1.45}
+body.game-client[data-rahmen] .bs-starthinweis>div{display:flex;flex-wrap:wrap;gap:6px}
+body.game-client[data-rahmen] .bs-schritt{min-height:36px;padding:6px 14px;border:1px solid var(--r-gold);border-radius:18px;background:rgba(226,189,98,.14);color:#fff1c9;font:600 13px/1.2 var(--r-schrift);cursor:pointer}
+body.game-client[data-rahmen] .bs-schritt:hover,body.game-client[data-rahmen] .bs-schritt:focus-visible{background:rgba(226,189,98,.28)}
+/* Globale Knopfgrafik (command-deck.css: Hintergrundbild + Waschung, !important) nicht in Themenleiste (Themenblatt: menue.css)
+   und Schritt-Knöpfen – dort zählen Farbe und Leuchten des Themas. */
+@media (max-width:767px){
+ body.game-client #themenleiste button{background-image:none!important;background-color:transparent!important;min-height:0;box-shadow:none;overflow-wrap:normal;line-height:1.1}
+ body.game-client #themenleiste .thema-knopf{background-image:radial-gradient(circle at 50% 0,var(--t-glut),transparent 75%)!important;background-color:rgba(8,18,31,.9)!important;box-shadow:0 0 14px var(--t-glut),inset 0 0 10px var(--t-glut);border-radius:14px;padding:4px 2px}
+ body.game-client #themenleiste .thema-ziele button{border-radius:12px;padding:4px 2px;min-height:54px}
+ body.game-client #themenleiste .thema-ziele button[aria-current="page"]{background-image:linear-gradient(180deg,var(--t-glut),transparent)!important}
+}
+body.game-client #game .lage-schritt,body.game-client #game .bs-schritt{background-image:none!important;background-color:rgba(226,189,98,.13)!important;border-radius:18px;box-shadow:none;overflow-wrap:normal;line-height:1.25;color:#fff1c9;border:1px solid rgba(226,189,98,.6)}
+body.game-client #game .lage-schritt:hover,body.game-client #game .bs-schritt:hover{background-color:rgba(226,189,98,.26)!important}
+
+/* Meldungen am Handy: Antippen schließt sie (sie lagen 9 s über Knöpfen wie „Labor bauen“) */
+@media (max-width:767px){body.game-client[data-rahmen] #message.toast{cursor:pointer}}
+
+/* ===== Rohstoffe lebendig (Karl 19.10.2026: „man kann es optisch nicht unterscheiden … keine Farben … keine Animation“).
+   Jede Ware in ihrer Farbe; „+N“ steigt grün auf, „−N“ rot; Puls in der Warenfarbe; Zusatzwaren einklappbar. */
+body.game-client[data-rahmen] #resource-bar [data-resource]{--rf:#8fb3d0}
+body.game-client[data-rahmen] #resource-bar [data-resource="erz"]{--rf:#d08a4e}
+body.game-client[data-rahmen] #resource-bar [data-resource="kristall"]{--rf:#6fd3ff}
+body.game-client[data-rahmen] #resource-bar [data-resource="deuterium"]{--rf:#7f8fff}
+body.game-client[data-rahmen] #resource-bar [data-resource="nahrung"]{--rf:#8bd36b}
+body.game-client[data-rahmen] #resource-bar [data-resource="energie"]{--rf:#ffd24a}
+body.game-client[data-rahmen] #resource-bar [data-resource="credits"]{--rf:#f0c45c}
+body.game-client[data-rahmen] #resource-bar [data-resource="legierung"]{--rf:#b4c3d2}
+body.game-client[data-rahmen] #resource-bar [data-resource="elektronik"]{--rf:#39e0c2}
+body.game-client[data-rahmen] #resource-bar [data-resource="konsumgut"]{--rf:#ff8fc8}
+body.game-client[data-rahmen] #resource-bar [data-resource="xenokristall"]{--rf:#c48cff}
+body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource{position:relative;overflow:visible!important;
+ background:linear-gradient(135deg,color-mix(in srgb,var(--rf) 22%,#0a1524) 0%,#0a1524 78%)!important;
+ border:1px solid color-mix(in srgb,var(--rf) 48%,transparent)!important;border-radius:10px!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 0 0 rgba(0,0,0,0)}
+body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource-icon img{border-radius:50%!important;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--rf) 70%,transparent),0 0 10px color-mix(in srgb,var(--rf) 45%,transparent)!important}
+body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource-value{color:#f4f7fb!important;text-shadow:0 0 8px color-mix(in srgb,var(--rf) 35%,transparent)!important}
+body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource-name{color:color-mix(in srgb,var(--rf) 75%,#fff)!important}
+body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource[data-trend="plus"] .resource-rate{color:#5fe08a!important}
+body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource[data-trend="minus"] .resource-rate{color:#ff6b6b!important}
+body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource[data-resource="energie"][data-trend="plus"] .resource-value{color:#9cf0b4!important}
+body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource[data-resource="energie"][data-trend="minus"] .resource-value{color:#ff7b7b!important}
+/* Aufsteigende Zahl */
+body.game-client[data-rahmen] #resource-bar .r-flug{position:absolute;right:6px;top:2px;z-index:5;pointer-events:none;font:800 15px/1 var(--r-schrift);letter-spacing:.2px;white-space:nowrap;
+ animation:r-steigen 2.1s cubic-bezier(.2,.7,.3,1) forwards;text-shadow:0 1px 3px rgba(0,0,0,.9)}
+body.game-client[data-rahmen] #resource-bar .r-flug.r-plus{color:#6dff9c}
+body.game-client[data-rahmen] #resource-bar .r-flug.r-minus{color:#ff6e6e;animation-name:r-sinken}
+@keyframes r-steigen{0%{opacity:0;transform:translateY(8px) scale(.8)}15%{opacity:1;transform:translateY(0) scale(1.08)}70%{opacity:1}100%{opacity:0;transform:translateY(-22px) scale(1)}}
+@keyframes r-sinken{0%{opacity:0;transform:translateY(-6px) scale(.8)}15%{opacity:1;transform:translateY(0) scale(1.08)}70%{opacity:1}100%{opacity:0;transform:translateY(18px) scale(1)}}
+body.game-client[data-rahmen] #game #resource-bar .resource.r-puls,body.game-client[data-rahmen] #game #resource-bar .rohstoff-mehr.r-puls{animation:r-puls .9s ease-out}
+body.game-client[data-rahmen] #game #resource-bar .resource.r-puls-minus,body.game-client[data-rahmen] #game #resource-bar .rohstoff-mehr.r-puls-minus{animation:r-puls-rot .9s ease-out}
+@keyframes r-puls{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--rf,#5fe08a) 70%,transparent)}100%{box-shadow:0 0 0 9px transparent}}
+@keyframes r-puls-rot{0%{box-shadow:0 0 0 0 rgba(255,96,96,.7)}100%{box-shadow:0 0 0 9px transparent}}
+/* Einklappknopf */
+body.game-client[data-rahmen] #game #resource-bar .rohstoff-mehr{--rf:#8fb3d0;background-image:none!important;background-color:transparent!important;border:1px dashed rgba(150,190,230,.3)!important;border-radius:10px;color:#a9bccd;font:600 11.5px/1 var(--r-schrift);min-height:26px;padding:4px 10px;box-shadow:none;cursor:pointer}
+body.game-client[data-rahmen] #game #resource-bar[data-offen="false"] .resource[data-extra="true"]{display:none!important}
+/* Handy: Hauptwaren als 3×2-Raster ohne Querscrollen, Zusatzwaren darunter (ausklappbar) */
+@media (max-width:767px){
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe]{display:grid!important;flex-wrap:nowrap!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-auto-flow:row!important;gap:5px!important;overflow:visible!important;padding:5px!important}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource{width:auto!important;min-width:0!important;min-height:44px!important;height:auto!important;padding:4px 6px!important;grid-template-columns:24px minmax(0,1fr)!important}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource-icon,body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource-icon img{width:24px!important;height:24px!important}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource-value{font-size:14px!important}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] [data-resource="erz"]{order:1}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] [data-resource="kristall"]{order:2}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] [data-resource="deuterium"]{order:3}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] [data-resource="nahrung"]{order:4}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] [data-resource="energie"]{order:5}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] [data-resource="credits"]{order:6}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .rohstoff-mehr{order:7;grid-column:1/-1}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource[data-extra="true"]{order:8}
+ /* Energie und Credits zeigen den Saldo/Bestand groß; die Rate darunter bleibt sichtbar */
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource:is([data-resource="credits"],[data-resource="energie"]) .resource-rate{display:block!important}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource:is([data-resource="credits"],[data-resource="energie"]) .resource-value{grid-row:1!important}
+ /* Neunstellige Bestände (Credits, 0.4.7): ohne Symbol und etwas kleiner – sonst ragte „497.774.920“ bei 360 px aus der Kachel */
+ /* 25.10.2026: Symbol klein in die Ratenzeile statt weg ab fünfstelligen Beständen (command-deck.css blendet es dort aus) – ohne Symbol war die Ware nur an
+    der Farbe erkennbar (DESIGNREGELN §5) */
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource.resource-large{grid-template-columns:16px minmax(0,1fr)!important;column-gap:4px!important}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource.resource-large .resource-icon,body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource.resource-large .resource-icon img{grid-column:1!important;grid-row:2!important;width:16px!important;height:16px!important;align-self:center;display:grid!important}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource.resource-large .resource-value{grid-column:1/-1!important;grid-row:1!important}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource.resource-large :is(.resource-rate,.resource-name){grid-column:2!important;grid-row:2!important}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource.resource-huge .resource-value{font-size:13px!important;letter-spacing:0!important}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource.resource-giant .resource-value{font-size:11px!important}
+}
+@media (prefers-reduced-motion:reduce){body.game-client[data-rahmen] #resource-bar .r-flug{animation-duration:.01s}body.game-client[data-rahmen] #game #resource-bar :is(.resource,.rohstoff-mehr):is(.r-puls,.r-puls-minus){animation:none}}
+
+/* ===== Übersicht wie Karls Vorbild (19.10.2026): Planet groß mit Kerndaten, darunter Gebäude · Forschung · Werft.
+   Nur am Handy; dort treten die bisherigen Doppelungen der Übersicht zurück (Statistikkacheln, alte Planetenkarte,
+   große Auftragsliste, Personal – alles weiter über Themenleiste/Themenblatt erreichbar). */
+#uebersicht-kopf{display:none}
+@media (max-width:767px){
+ body.game-client[data-rahmen] #reich>#uebersicht-kopf{display:flex;flex-direction:column;gap:8px;margin:0 0 10px}
+ body.game-client[data-rahmen] #reich>.row,body.game-client[data-rahmen] #reich>#empire-summary,body.game-client[data-rahmen] #reich>.overview-tools,
+ body.game-client[data-rahmen] #reich>#planets,body.game-client[data-rahmen] #reich>#orders-dashboard-host,body.game-client[data-rahmen] #reich>#workforce-summary,
+ body.game-client[data-rahmen] #reich .lage-ausbildung:not(.warn){display:none!important}
+ body.game-client[data-rahmen] #reich{display:flex;flex-direction:column}
+ body.game-client[data-rahmen] #reich>#uebersicht-kopf{order:1}
+ body.game-client[data-rahmen] #reich>#lagebericht{order:2}
+ body.game-client[data-rahmen] #reich>#overview-intel{order:3}
+ body.game-client[data-rahmen] #reich>*{order:4}
+ #uebersicht-kopf .uk-held{position:relative;display:grid;grid-template-columns:118px minmax(0,1fr);grid-template-areas:"bild titel" "fakten fakten";gap:8px 12px;padding:12px;overflow:hidden;
+  border:1px solid rgba(150,190,230,.24);border-radius:14px;background:radial-gradient(circle at 18% 22%,rgba(95,160,255,.18),transparent 55%),linear-gradient(160deg,#0f2036,#070f1b 70%)}
+ #uebersicht-kopf .uk-bild{grid-area:bild;position:relative;width:118px;height:118px;border-radius:50%;filter:drop-shadow(0 0 18px rgba(120,180,255,.35))}
+ #uebersicht-kopf .uk-bild img,#uebersicht-kopf .uk-bild canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover}
+ #uebersicht-kopf .uk-titel{grid-area:titel;align-self:center;min-width:0}
+ #uebersicht-kopf .uk-titel small{display:block;font:600 11px/1.2 var(--r-schrift);letter-spacing:1px;text-transform:uppercase;color:var(--r-gold)}
+ #uebersicht-kopf .uk-titel h2{margin:4px 0;font:700 19px/1.15 var(--r-schrift);color:#f3f6fa}
+ #uebersicht-kopf .uk-titel h2 .koord{color:#8fd0ff;font-weight:600}
+ #uebersicht-kopf .uk-titel>span{font-size:12.5px;color:var(--r-leise)}
+ #uebersicht-kopf .uk-fakten{grid-area:fakten;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0}
+ #uebersicht-kopf .uk-fakt{min-width:0;padding:6px 8px;border-radius:9px;background:rgba(8,18,31,.75);border:1px solid rgba(150,190,230,.14)}
+ #uebersicht-kopf .uk-fakt.uk-breit{grid-column:span 2}
+ #uebersicht-kopf .uk-fakt dt{font:600 10.5px/1.2 var(--r-schrift);letter-spacing:.4px;text-transform:uppercase;color:var(--r-leise)}
+ #uebersicht-kopf .uk-fakt dd{margin:2px 0 0;font:700 15px/1.2 var(--r-schrift);color:#eef3f8;white-space:nowrap;overflow:hidden;text-overflow:clip}
+ #uebersicht-kopf .uk-fakt dd small{font-weight:500;font-size:11.5px;color:var(--r-leise)}
+ #uebersicht-kopf .uk-fakt.uk-plus dd{color:#6ee597}
+ #uebersicht-kopf .uk-fakt.uk-minus dd{color:#ff7272}
+ #uebersicht-kopf .uk-balken{display:block;height:4px;margin-top:4px;border-radius:2px;background:rgba(255,255,255,.1);overflow:hidden}
+ #uebersicht-kopf .uk-balken b{display:block;height:100%;border-radius:2px;background:linear-gradient(90deg,#5fd0ff,#8bd36b)}
+ #uebersicht-kopf .uk-balken b[data-anteil="0"]{width:0%}
+ #uebersicht-kopf .uk-balken b[data-anteil="5"]{width:5%}
+ #uebersicht-kopf .uk-balken b[data-anteil="10"]{width:10%}
+ #uebersicht-kopf .uk-balken b[data-anteil="15"]{width:15%}
+ #uebersicht-kopf .uk-balken b[data-anteil="20"]{width:20%}
+ #uebersicht-kopf .uk-balken b[data-anteil="25"]{width:25%}
+ #uebersicht-kopf .uk-balken b[data-anteil="30"]{width:30%}
+ #uebersicht-kopf .uk-balken b[data-anteil="35"]{width:35%}
+ #uebersicht-kopf .uk-balken b[data-anteil="40"]{width:40%}
+ #uebersicht-kopf .uk-balken b[data-anteil="45"]{width:45%}
+ #uebersicht-kopf .uk-balken b[data-anteil="50"]{width:50%}
+ #uebersicht-kopf .uk-balken b[data-anteil="55"]{width:55%}
+ #uebersicht-kopf .uk-balken b[data-anteil="60"]{width:60%}
+ #uebersicht-kopf .uk-balken b[data-anteil="65"]{width:65%}
+ #uebersicht-kopf .uk-balken b[data-anteil="70"]{width:70%}
+ #uebersicht-kopf .uk-balken b[data-anteil="75"]{width:75%}
+ #uebersicht-kopf .uk-balken b[data-anteil="80"]{width:80%}
+ #uebersicht-kopf .uk-balken b[data-anteil="85"]{width:85%}
+ #uebersicht-kopf .uk-balken b[data-anteil="90"]{width:90%}
+ #uebersicht-kopf .uk-balken b[data-anteil="95"]{width:95%}
+ #uebersicht-kopf .uk-balken b[data-anteil="100"]{width:100%}
+ /* Drei Kästen nebeneinander wie im Vorbild, knapp: Bild, Name, Restzeit; Pause/Abbrechen auf der jeweiligen Seite */
+ body.game-client[data-rahmen] #uebersicht-kopf .bs-schlangen{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px;margin:0}
+ body.game-client[data-rahmen] #uebersicht-kopf .bs-schlange{padding:8px;border-radius:12px;background:linear-gradient(180deg,#0f2036,#0a1524);text-align:center}
+ body.game-client[data-rahmen] #uebersicht-kopf .bs-schlange h4{font-size:11px;color:#cfe0ee;border-bottom:1px solid rgba(150,190,230,.16);padding-bottom:5px;margin-bottom:6px}
+ body.game-client[data-rahmen] #uebersicht-kopf .bs-auftrag{grid-template-columns:1fr;justify-items:center;gap:4px}
+ body.game-client[data-rahmen] #uebersicht-kopf .bs-auftrag img{width:46px;height:46px;border-radius:8px;object-fit:cover}
+ body.game-client[data-rahmen] #uebersicht-kopf .bs-auftrag strong{font-size:12.5px;line-height:1.2}
+ body.game-client[data-rahmen] #uebersicht-kopf .bs-auftrag small{font-size:11px}
+ body.game-client[data-rahmen] #uebersicht-kopf .bs-knopfreihe,body.game-client[data-rahmen] #uebersicht-kopf .bs-weitere{display:none!important}
+ body.game-client[data-rahmen] #uebersicht-kopf .bs-leer{font-size:12px;line-height:1.35}
+ body.game-client[data-rahmen] #uebersicht-kopf .bs-leer .bs-link{display:block;margin:4px auto 0;color:#8fd0ff;background:none!important;border:0;padding:2px;min-height:0;font-size:12px}
+}
+/* Reine Meldung im Berichtfenster (Vertragsangebot, Produktion) */
+body.game-client .meldung-dossier{display:grid;gap:8px;padding:6px 2px}
+body.game-client .meldung-dossier h3{margin:0;font:600 17px/1.35 var(--r-schrift,system-ui);color:#eef3f8}
+body.game-client .meldung-dossier .eyebrow{color:var(--r-gold,#e2bd62)}
+/* Handy: Platz für den Inhalt (Regel: Inhalt beginnt oberhalb 40 %). Die Kopfzeile (Name · Rang · Notizen · Kontakte ·
+   Suche · Einstellungen · Hilfe) steht vollständig im Themenblatt, Name und Rang in der Übersicht. */
+@media (max-width:767px){
+ body.game-client[data-rahmen][data-playing="true"] #kopfzeile{display:none!important}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .resource{min-height:40px!important;padding:3px 6px!important}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe] .rohstoff-mehr{min-height:22px;padding:2px 10px;font-size:11px}
+ body.game-client[data-rahmen] #game #resource-bar[data-rohstoffe]{gap:4px!important;padding:4px!important}
+}
+/* Vertragsangebote an dich (Übersicht und Meldungsfenster) */
+body.game-client .uk-angebote{border:1px solid rgba(226,189,98,.45);border-radius:12px;padding:10px 12px;background:linear-gradient(180deg,rgba(226,189,98,.1),rgba(9,20,34,.86))}
+body.game-client .uk-angebote h3{margin:0 0 8px;font:700 14px/1.2 var(--r-schrift,system-ui);color:#f1e3bd;display:flex;align-items:center;gap:8px}
+body.game-client .uk-angebote h3 b{min-width:20px;height:20px;border-radius:10px;background:var(--r-gold,#e2bd62);color:#1a1405;font-size:12px;line-height:20px;text-align:center}
+body.game-client .uk-angebote ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+body.game-client .uk-angebote li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+body.game-client .uk-angebote li small{display:block;color:var(--r-leise,#8ea4b8);font-size:12px}
+body.game-client .uk-angebote li>span{display:flex;gap:6px}
+body.game-client .uk-angebote .uk-ablehnen{background-image:none!important;background-color:transparent!important;border:1px solid rgba(255,110,110,.5);color:#ffb3b3;border-radius:18px;min-height:36px;padding:6px 12px;font:600 13px/1.2 var(--r-schrift,system-ui)}
+body.game-client .uk-angebote .bs-schritt{background-image:none!important;background-color:rgba(226,189,98,.14)!important;border:1px solid var(--r-gold,#e2bd62);border-radius:18px;color:#fff1c9;min-height:36px;padding:6px 12px;font:600 13px/1.2 var(--r-schrift,system-ui)}
+/* „↑ Nach oben“ über der Themenleiste statt darauf (Konsolidierung M12) */
+@media (max-width:767px){body.game-client[data-rahmen][data-playing="true"] #back-to-top{bottom:calc(var(--themenleiste-h,74px) + 10px)!important;right:12px!important;z-index:58!important}}
+/* Übersicht am schmalen Handy (≤ 400 px): Kästen knapp, damit nichts in Schmalspalten zerbricht (M8) */
+@media (max-width:400px){
+ body.game-client[data-rahmen] #uebersicht-kopf .bs-schlangen{gap:4px}
+ body.game-client[data-rahmen] #uebersicht-kopf .bs-schlange{padding:6px 4px}
+ body.game-client[data-rahmen] #uebersicht-kopf .bs-schlange h4{font-size:10px;letter-spacing:.3px}
+ body.game-client[data-rahmen] #uebersicht-kopf .bs-leer{font-size:11.5px}
+}
+/* Gesperrter Eintrag im Detailfeld: Grund statt Anzahlfeld (M13) */
+body.game-client[data-rahmen] .bs-gesperrt{margin:0 0 6px;padding:6px 10px;border-left:3px solid var(--r-orange);background:rgba(242,164,58,.1);color:#ffd7a3;font-size:13px;line-height:1.4;border-radius:0 6px 6px 0}
+/* Großprojekt-Karte auf der Allianzseite (M10) */
+body.game-client[data-rahmen] #allianzbereich .grossprojekt-karte{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"titel pfeil" "stand pfeil";gap:2px 10px;width:100%;margin:0 0 10px;padding:12px 14px;text-align:left;border-radius:12px;border:1px solid rgba(255,190,90,.45);background-image:radial-gradient(circle at 0 50%,rgba(255,190,90,.22),transparent 60%)!important;background-color:#0d1a2a!important;color:#f4e6c4;min-height:56px}
+body.game-client[data-rahmen] #allianzbereich .gk-titel{grid-area:titel;font:700 15px/1.2 var(--r-schrift)}
+body.game-client[data-rahmen] #allianzbereich .gk-stand{grid-area:stand;font-size:12.5px;color:var(--r-leise)}
+body.game-client[data-rahmen] #allianzbereich .gk-pfeil{grid-area:pfeil;align-self:center;font-size:22px;color:var(--r-gold)}
+/* ===== Versorgung auf einen Blick: sechs Symbole mit Ringanzeige (Karl 19.10.2026: Icons statt Textbox, freundlich) */
+#uebersicht-kopf .uk-held{grid-template-areas:"bild titel" "fakten fakten" "vs vs"}
+.uk-versorgung{grid-area:vs;display:grid;grid-template-columns:repeat(auto-fit,minmax(48px,1fr));gap:4px;margin:2px 0 0}
+#kolonie-versorgung .uk-versorgung{margin:0 0 10px;padding:8px 6px;border-radius:14px;background:linear-gradient(160deg,#0f2036,#070f1b);border:1px solid rgba(150,190,230,.18)}
+body.game-client .uk-versorgung .vs{--vs:#5fe08a;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;min-height:0;padding:2px 0;border:0;border-radius:12px;background-image:none!important;background-color:transparent!important;box-shadow:none;color:#dbe6f0;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .15s}
+body.game-client .uk-versorgung .vs:active{transform:scale(.94)}
+.uk-versorgung .vs-knapp{--vs:#f2c14a}
+.uk-versorgung .vs-fehlt{--vs:#ff6b6b}
+.uk-versorgung .vs-ruht{--vs:#6f8296}
+.uk-versorgung .vs-ring{width:40px;height:40px;overflow:visible}
+.uk-versorgung .vs-spur{fill:rgba(8,18,31,.85);stroke:rgba(255,255,255,.1);stroke-width:3.2}
+.uk-versorgung .vs-fuell{fill:none;stroke:var(--vs);stroke-width:3.2;stroke-linecap:round;filter:drop-shadow(0 0 3px var(--vs));transition:stroke-dasharray .6s ease}
+.uk-versorgung .vs-ring path{fill:none;stroke:var(--vs);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.uk-versorgung .vs b{font:700 11.5px/1.15 var(--r-schrift,system-ui);color:#f1f5f9;white-space:nowrap}
+.uk-versorgung .vs small{font:500 9.5px/1.1 var(--r-schrift,system-ui);color:var(--r-leise,#8ea4b8);white-space:nowrap}
+.uk-versorgung .vs-fehlt b{color:#ffb0b0}
+.uk-versorgung .vs-bremse .vs-ring{animation:vs-puls 1.8s ease-in-out infinite}
+@keyframes vs-puls{0%,100%{filter:none}50%{filter:drop-shadow(0 0 7px var(--vs))}}
+@media (prefers-reduced-motion:reduce){.uk-versorgung .vs-bremse .vs-ring{animation:none}}
+/* Wachstum am Bevölkerungswert */
+#uebersicht-kopf .uk-wachstum{display:inline-block;margin-left:6px;font:700 11.5px/1 var(--r-schrift,system-ui);padding:2px 6px;border-radius:9px;vertical-align:2px}
+#uebersicht-kopf .uk-w-plus{color:#7ff0a4;background:rgba(95,224,138,.12)}
+#uebersicht-kopf .uk-w-null{color:#f2c14a;background:rgba(242,193,74,.12)}
+#uebersicht-kopf .uk-w-minus{color:#ff8a8a;background:rgba(255,107,107,.12)}
+/* Hinweis-Chip: Symbol, wenige Worte, ein Schritt – statt Textkasten (19.10.2026) */
+body.game-client .hinweis-chip{display:flex;align-items:center;gap:8px;margin:6px 0;padding:5px 6px 5px 10px;border-radius:22px;background:rgba(226,189,98,.1);border:1px solid rgba(226,189,98,.35);color:#f3e6c6;font:600 13px/1.25 var(--r-schrift,system-ui);width:fit-content;max-width:100%}
+body.game-client .hinweis-chip svg{flex:0 0 18px;width:18px;height:18px;fill:none;stroke:var(--r-gold,#e2bd62);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+body.game-client .hinweis-chip span{min-width:0}
+body.game-client .hinweis-chip .bs-schritt{flex:0 0 auto;min-height:30px;padding:4px 12px;margin-left:auto}
+/* Symbole frei stehend: globale Knopfgrafik (command-deck.css) hier aus */
+body.game-client #game .uk-versorgung button.vs{background-image:none!important;background-color:transparent!important;border:0!important;box-shadow:none!important;min-height:0!important;padding:2px 0!important}
+body.game-client .uk-versorgung .vs.vs-knapp{--vs:#f2c14a}
+body.game-client .uk-versorgung .vs.vs-fehlt{--vs:#ff6b6b}
+body.game-client .uk-versorgung .vs.vs-ruht{--vs:#6f8296}
+
+/* Angebote-Halter in der Übersicht (eigene Reihenfolge nach dem Kopf) und Antwortleiste */
+@media (max-width:767px){body.game-client[data-rahmen] #reich>#uk-angebote-halter{order:1;margin:0 0 10px}}
+#uk-angebote-halter:empty{display:none}
+body.game-client .uk-angebote li{display:block}
+body.game-client .uk-angebote .angebot-kopf{margin-bottom:6px}
+body.game-client .antwortleiste{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;align-items:center}
+body.game-client .antwortleiste .antwort-text{min-width:0;height:38px;padding:0 12px;border-radius:19px;border:1px solid rgba(150,190,230,.25);background:rgba(4,10,18,.6);color:#e7eef6;font:500 13px var(--r-schrift,system-ui)}
+body.game-client .antwortleiste .antwort-text::placeholder{color:#6f8296}
+body.game-client .antwortleiste button{display:inline-flex;align-items:center;gap:4px;height:38px;min-height:38px!important;padding:0 12px!important;border-radius:19px!important;background-image:none!important;font:700 13px var(--r-schrift,system-ui);box-shadow:none}
+body.game-client .antwortleiste .antwort-ja{background-color:rgba(95,224,138,.16)!important;border:1px solid rgba(95,224,138,.6)!important;color:#bdf7cf}
+body.game-client .antwortleiste .antwort-nein{background-color:rgba(255,107,107,.1)!important;border:1px solid rgba(255,107,107,.5)!important;color:#ffc2c2}
+@media (max-width:420px){body.game-client .antwortleiste{grid-template-columns:1fr 1fr}body.game-client .antwortleiste .antwort-text{grid-column:1/-1}}
+/* Ladehinweis der Karte am Handy unten statt oben links: dort liegen die Brotkrumen-Knöpfe darüber (Emulator 19.10.2026) */
+@media (max-width:760px){body.game-client #galaxy-loading,body.game-client #galaxy-fallback{top:auto;bottom:15px;left:50%;transform:translateX(-50%);max-width:80%;text-align:center}}
+/* Knöpfe nicht als Text markierbar: langes Antippen markierte sonst die Beschriftung („Copy · Select all“, Emulator 19.10.2026) */
+body.game-client button,body.game-client [role=button],body.game-client .g3-chip{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+/* Kachel = Bild (öffnet Detail) + direkt Bauen + Timer (Karl 22.10.2026: „gleich auf dem Bild bauen“, „ich muss den Timer sehen“).
+   ID-Bereich, weil cockpit-look.css alle Knöpfe mit sehr hoher Spezifität färbt. */
+body.game-client[data-rahmen] :is(#versorgung-bauseite,#anlagen-bauseite,#forschung-bauseite,#werft-bauseite,#verteidigung-bauseite,#truppen-bauseite) .bs-kachel{cursor:default}
+body.game-client[data-rahmen] :is(#versorgung-bauseite,#anlagen-bauseite,#forschung-bauseite,#werft-bauseite,#verteidigung-bauseite,#truppen-bauseite) .bs-kachel-auf{display:flex!important;flex-direction:column;align-items:stretch;width:100%;min-height:0;margin:0;padding:0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:inherit;text-align:left;cursor:pointer;flex:1 0 auto}
+body.game-client[data-rahmen] .bs-kachel-unten{display:flex;flex-direction:column;gap:3px;padding:4px 5px 5px;background:#0a1524;border-top:1px solid var(--r-rand)}
+body.game-client[data-rahmen] .bs-kachel-job small{display:block;font-size:10px;color:#9fb3c8}
+body.game-client[data-rahmen] .bs-kachel-job .queue-bottom{margin:0}
+body.game-client[data-rahmen] .bs-kachel-job .job-time{display:block;color:var(--r-orange);font:600 11px/1.25 var(--r-schrift);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.game-client[data-rahmen] .bs-kachel-job .job-meter{height:5px;margin-top:3px;border-radius:3px}
+body.game-client[data-rahmen] .bs-kachel-job .job-fill{background:linear-gradient(90deg,#3fbf74,#9af0b8);transition:transform .25s linear}
+body.game-client[data-rahmen] .bs-kachel-job .job-paused .job-fill{background:#b59a52;transition:none}
+body.game-client[data-rahmen] :is(#versorgung-bauseite,#anlagen-bauseite,#forschung-bauseite,#werft-bauseite,#verteidigung-bauseite,#truppen-bauseite) .bs-kachel-bauen{display:block;width:100%;min-height:34px;margin:0;padding:4px 6px!important;border-radius:6px!important;border:1px solid #3fbf74!important;background:linear-gradient(#1f5a3b,#16402b)!important;color:#e9fff1!important;font:700 12px/1.1 var(--r-schrift);letter-spacing:.02em;cursor:pointer;touch-action:manipulation}
+body.game-client[data-rahmen] :is(#versorgung-bauseite,#anlagen-bauseite,#forschung-bauseite,#werft-bauseite,#verteidigung-bauseite,#truppen-bauseite) .bs-kachel-bauen.vormerken{border-color:#b59a52!important;background:linear-gradient(#4a3d1c,#2f2712)!important;color:#ffefc4!important}
+body.game-client[data-rahmen] :is(#versorgung-bauseite,#anlagen-bauseite,#forschung-bauseite,#werft-bauseite,#verteidigung-bauseite,#truppen-bauseite) .bs-kachel-bauen.bs-kachel-pause{border-color:#6f8aa3!important;background:#13243a!important;color:#d7e6f5!important}
+body.game-client[data-rahmen] :is(#versorgung-bauseite,#anlagen-bauseite,#forschung-bauseite,#werft-bauseite,#verteidigung-bauseite,#truppen-bauseite) .bs-kachel-bauen:disabled{border-color:#33475b!important;background:#111c29!important;color:#7d8ea0!important;cursor:not-allowed}
+body.game-client[data-rahmen] :is(#versorgung-bauseite,#anlagen-bauseite,#forschung-bauseite,#werft-bauseite,#verteidigung-bauseite,#truppen-bauseite) .bs-kachel-bauen.sendet{opacity:.75}
+body.game-client[data-rahmen] .bs-kachel-platz{display:block;font-size:11px;color:#c8b27a;text-align:center;padding:6px 0}
+body.game-client[data-rahmen] .bs-kachel-form{margin:0}
+body.game-client[data-rahmen] .bs-kachel-serie{display:block;font-size:10px;line-height:1.25;color:#9fdcb8}
+body.game-client[data-rahmen] .bs-kachel-serie.wartet{color:#e6c37a}
+/* Flottenbestand als Zahlentabelle (Hangar) */
+body.game-client .hg-tabelle-rahmen{overflow-x:auto;contain:inline-size;margin:8px 0 4px;border:1px solid var(--r-rand,#2a4058);border-radius:6px}
+body.game-client .hg-tabelle{width:100%;border-collapse:collapse;font:500 13px/1.25 var(--r-schrift,system-ui);font-variant-numeric:tabular-nums}
+body.game-client .hg-tabelle :is(th,td){padding:6px 8px;border-bottom:1px solid #1d3047;text-align:right;white-space:nowrap}
+body.game-client .hg-tabelle thead th{position:sticky;top:0;background:#0e1c2e;color:#9fb3c8;font-size:11px;font-weight:600}
+body.game-client .hg-tabelle :is(tbody,tfoot) th{text-align:left;position:sticky;left:0;background:#0b1626;z-index:1}
+body.game-client .hg-tabelle thead th:first-child{text-align:left;left:0;z-index:2}
+body.game-client .hg-tabelle tbody tr:nth-child(even) :is(td,th){background:#0d1a2b}
+body.game-client .hg-tabelle tr.hg-an :is(td,th){background:#16324a}
+body.game-client .hg-tabelle .hg-tab-summe{color:var(--r-orange,#f2b45c);font-weight:700}
+body.game-client .hg-tabelle tfoot :is(th,td){border-top:2px solid #2a4058;border-bottom:0;font-weight:700;color:#dbe7f3}
+body.game-client .hg-tabelle .hg-null{color:#4c6077}
+body.game-client .hg-tabelle th .bs-link{padding:0;border:0;background:none;color:#dbe7f3;font:inherit;text-align:left;white-space:nowrap}
+body.game-client[data-rahmen] #uebersicht-kopf .uk-flotte{margin:10px 0 0}
+body.game-client[data-rahmen] #uebersicht-kopf .uk-flotte h4{margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#9fb3c8}
+body.game-client .hg-tabelle-klapp>summary{cursor:pointer;padding:6px 2px;font:600 13px/1.3 var(--r-schrift,system-ui);color:#dbe7f3;list-style:revert}
+body.game-client .hg-tabelle-klapp:not([open])>summary{color:#9fb3c8}
+/* Bestände je Planet (Verteidigung, Solarsatelliten, Bodentruppen, Raketen) unter dem Flottenbestand, Karl 25.10.2026 */
+body.game-client .hg-bestaende{display:grid;gap:2px;margin-top:4px}
+body.game-client .hg-tabelle tr.hg-zusatz :is(th,td){color:#9fb3c8;font-weight:500;border-top:0}
+body.game-client .hg-bestand-leer .hg-leer{margin:4px 2px 8px}
+body.game-client .hg-verbuendete-kurz{margin:6px 2px;font-size:13px;color:#cfe3d6}
+body.game-client .hg-verbuendete li{border-left:2px solid #6fe39a}
+/* Schutz vor Bots (Übersicht) */
+body.game-client[data-rahmen] #uebersicht-kopf .uk-schutz{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;margin:8px 0 0;padding:7px 10px!important;border-radius:8px!important;font:700 13px/1.25 var(--r-schrift)!important;text-align:left;cursor:pointer}
+body.game-client[data-rahmen] #uebersicht-kopf .uk-schutz small{font-weight:500;font-size:11px;opacity:.85}
+body.game-client[data-rahmen] #uebersicht-kopf .uk-schutz-schutz{border:1px solid #3fbf74!important;background:#12301f!important;color:#c9f5da!important}
+body.game-client[data-rahmen] #uebersicht-kopf .uk-schutz-offen{border:1px solid #d08a4a!important;background:#3a2412!important;color:#ffd9b3!important}
+body.game-client[data-rahmen] #uebersicht-kopf .uk-schutz-aus{border:1px solid #d05a5a!important;background:#3a1414!important;color:#ffc9c9!important}
+/* Offener Gesamt-Technologiebaum deckt alles ab: Spiel darunter nicht malen und Animationen anhalten (Flackern am Handy). */
+body[data-techbaum-offen] #game,body[data-techbaum-offen] #lobby,body[data-techbaum-offen] #server,body[data-techbaum-offen] #space-ambience{visibility:hidden}
+body[data-techbaum-offen].game-client::after,body[data-techbaum-offen].game-client::before{animation-play-state:paused}
+/* Werft und Bauteile: „Noch nicht baubar (N)“ eingeklappt unter den baubaren (Karl 24.10.2026) */
+body.game-client[data-rahmen] .bs-zugeklappt{margin:4px 0 10px;border:1px solid var(--r-rand);border-radius:3px;background:rgba(9,20,34,.55)}
+body.game-client[data-rahmen] .bs-zugeklappt>summary{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-height:36px;padding:8px 10px;cursor:pointer;list-style:none;font:600 13px var(--r-schrift);color:#b9c8d6;box-sizing:border-box}
+body.game-client[data-rahmen] .bs-zugeklappt>summary::-webkit-details-marker{display:none}
+body.game-client[data-rahmen] .bs-zugeklappt>summary::before{content:'▸';display:inline-block;width:1em;color:var(--r-blau);transition:transform .15s}
+body.game-client[data-rahmen] .bs-zugeklappt[open]>summary::before{transform:rotate(90deg)}
+body.game-client[data-rahmen] .bs-zugeklappt>summary span{flex:1}
+body.game-client[data-rahmen] .bs-zugeklappt>summary small{color:var(--r-leise);font-weight:400}
+body.game-client[data-rahmen] .bs-zugeklappt>.bs-raster{padding:0 6px 6px}
+body.game-client[data-rahmen] .bs-kachel-grund{display:block;min-height:34px;padding:4px 6px;box-sizing:border-box;border:1px solid #4a3a2a;border-radius:6px;background:#1d1610;color:#e6c37a;font-size:11px;line-height:1.3;text-align:center;overflow-wrap:anywhere}
+body.game-client[data-rahmen] .bs-kachel-fehlt{display:block;margin:0 0 3px;font-size:10.5px;line-height:1.2;color:var(--r-rot);text-align:center}
+body.game-client[data-rahmen] .bs-bauteil-gruende{margin:0;padding:0 10px 8px;list-style:none;display:grid;gap:6px}
+body.game-client[data-rahmen] .bs-bauteil-gruende li{display:flex;align-items:center;gap:8px;font-size:13px}
+body.game-client[data-rahmen] .bs-bauteil-gruende img{width:28px;height:28px;object-fit:contain}
+body.game-client[data-rahmen] .bs-bauteil-gruende span{margin-left:auto;color:#e6c37a;text-align:right}
+
+/* ===== Werft: Bauteile (0.4.7, Karl 24.10.2026: Recycler zu Habitatmodul umbauen direkt in der Werft) ===== */
+body.game-client[data-rahmen] .bs-bauteil{display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;padding:10px;border:1px solid var(--r-rand);border-radius:8px;background:var(--r-glas)}
+body.game-client[data-rahmen] .bs-bauteil-bild{width:72px;height:72px;object-fit:contain}
+body.game-client[data-rahmen] .bs-bauteil-text{display:flex;flex-direction:column;gap:6px;min-width:0}
+body.game-client[data-rahmen] .bs-bauteil-kopf{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+body.game-client[data-rahmen] .bs-bauteil-kopf b{font-size:14px}
+body.game-client[data-rahmen] .bs-bauteil-satz{margin:0;font-size:12.5px;line-height:1.4;color:#c9d6e2}
+body.game-client[data-rahmen] .bs-bauteil-grund{margin:0;padding:6px 8px;border:1px solid #4a3a2a;border-radius:6px;background:#1d1610;color:#e6c37a;font-size:12px;line-height:1.35}
+body.game-client[data-rahmen] .bs-bauteil .bs-knopfreihe{display:flex;flex-wrap:wrap;gap:6px}
+body.game-client[data-rahmen] #werft-bauseite .bs-bauteil .bs-bauteil-los{width:auto;flex:1 1 160px;min-height:44px}
+body.game-client[data-rahmen] .bs-bauteil .bs-zweit{min-height:44px}
+/* Mond immer direkt anwählbar (Karl 25.10.2026: „in jeder Boxgröße immer der Mond des Planeten anwählbar“).
+ Seitenleiste: Mondbild 26 px, Tippfläche genau die Mondscheibe – Karl 25.10.: Tipp auf den Planeten landet auf dem Planeten, nur der
+ Mond öffnet den Mond (eine vergrößerte Mondfläche lag vorher über dem Planetenbild). Ring bei Zeiger/Fokus.
+ Handy-Planetenleiste: eigener Mondknopf neben den Pfeilen (colony-console.js context). */
+body.game-client[data-rahmen] #game #planet-sidebar .planet-mond{width:26px!important;height:26px!important;left:32px;top:26px;overflow:visible!important;cursor:pointer;box-shadow:0 0 0 2px #0b1828!important}
+body.game-client[data-rahmen] #game #planet-sidebar .planet-mond .planet-mond-bild{width:24px;height:24px}
+body.game-client[data-rahmen] #game #planet-sidebar .planet-mond:is(:hover,:focus-visible){border-color:#a9cdf5!important;box-shadow:0 0 0 2px #0b1828,0 0 10px rgba(150,200,255,.6)!important}
+body.game-client[data-rahmen] #rahmen-planetenwahl .kontext-mond{flex:0 0 auto;display:inline-flex!important;align-items:center;gap:5px;height:42px!important;min-height:42px!important;width:auto!important;padding:0 9px 0 5px!important;border-radius:21px!important;white-space:nowrap}
+body.game-client[data-rahmen] #rahmen-planetenwahl .kontext-mond .kontext-mond-bild{width:28px;height:28px;flex:none}
+body.game-client[data-rahmen] #rahmen-planetenwahl .kontext-mond>span{font-size:12px;font-weight:600}
+@media (max-width:380px){body.game-client[data-rahmen] #rahmen-planetenwahl .kontext-mond>span{display:none}body.game-client[data-rahmen] #rahmen-planetenwahl .kontext-mond{padding:0 6px!important}}
+/* Rohstoffleiste ab 768 px (Karl 25.10.2026: „+3.207 / h“ lag unter „4 weitere Rohstoffe“, Raten ragten aus den Kacheln): die Kachel
+ wächst mit ihrem Inhalt – Bild links über zwei Zeilen, Menge oben, Rate darunter, Breite nach dem längsten Text. Vorher hielt
+ height:36px!important (oben) die Kachel fest und die Rate hing 16 px darunter. Handy (≤767 px) hat sein eigenes Raster. */
+@media (min-width:768px){
+ body.game-client[data-rahmen] #game #resource-bar .resource{height:auto!important;min-height:36px!important;display:grid!important;grid-template-columns:26px max-content;grid-template-rows:auto auto;column-gap:6px!important;row-gap:1px!important;align-content:center;align-items:center!important;flex:1 0 auto}
+ /* command-deck.css blendet bei fünfstelligen Beständen bis 950 px das Symbol aus – im Rahmen bleibt es (Ware nicht nur an der Farbe) */
+ body.game-client[data-rahmen] #game #resource-bar .resource-icon{grid-column:1;grid-row:1/3;display:grid!important}
+ body.game-client[data-rahmen] #game #resource-bar .resource .resource-value{grid-column:2;grid-row:1;flex:none}
+ body.game-client[data-rahmen] #game #resource-bar .resource .resource-rate{grid-column:2;grid-row:2;flex:none;padding-left:0!important}
+}
+/* Kopfmenü 768–1099 px: eigene zweite Kopfzeile statt abgeschnitten (Überlappungsprüfung 25.10.2026: Notizen, Kontakte, Suche,
+ Einstellungen und Hilfe lagen unsichtbar hinter overflow:hidden – nicht erreichbar). */
+@media (min-width:768px) and (max-width:1099px){
+ body.game-client[data-rahmen][data-playing="true"] header{flex-wrap:wrap!important;row-gap:4px}
+ body.game-client[data-rahmen][data-playing="true"] header #kopfzeile{order:20;flex:1 1 100%!important;overflow:visible!important;flex-wrap:wrap!important;margin:0!important}
+}
+/* Kachelname und Stufe: der Name trennt nach Silben, statt die Stufenzahl aus der Kachel zu schieben („Automatisierung 1|0“) */
+body.game-client[data-rahmen] .bs-kachel .bs-name{min-width:0;flex:1 1 auto;hyphens:auto}
+/* Übersicht: Werte umbrechen statt abschneiden („↗ +1.386/Tag“ fehlte am Handy halb) */
+#uebersicht-kopf .uk-fakt dd{white-space:normal;overflow:visible}
+/* Mondname mit Umbenennen-Stift über offenem Mond-Detail (Funktionsprüfung 25.10.2026) */
+body.game-client[data-rahmen] .mond-detailname{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 6px;font-weight:600}
+body.game-client[data-rahmen] .colony-name{display:flex;align-items:center;gap:6px;margin:0 0 6px;font-weight:600}
+/* Regeln dieser Welt: „aurelianer“ brach mitten im Wort (26.10.2026) – nur überlange Zeichenketten umbrechen */
+body.game-client[data-rahmen] #regeln pre#rules-text{white-space:pre-wrap;overflow-wrap:break-word!important;word-break:normal!important}

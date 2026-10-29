@@ -44,7 +44,7 @@ pub fn quote(name: &str) -> u32 {
 /// Ordnet Browser- und Harness-Pfade demselben Quotentopf zu.
 pub fn quote_fuer_pfad(pfad: &str) -> &'static str {
     match pfad {
-        "/api/view" | "/api/context" | "/api/harness/v1/lage" => "lage",
+        "/api/view" | "/api/context" | "/api/harness/v1/lage" | "/api/harness/v1/agenda" => "lage",
         "/api/tool" | "/api/harness/v1/werkzeug" => "werkzeug",
         "/api/command" | "/api/harness/v1/handeln" => "handeln",
         "/api/lease" | "/api/harness/v1/freigabe" => "freigabe",
@@ -139,13 +139,23 @@ impl Game {
             "welt":{"world_id":self.runtime.world_id,"sekunden":self.world.zeit,"paused":self.runtime.paused,"beendet":self.world.beendet(),"tempo":self.runtime.tempo,"regeln":self.world.regeln.version},
             "anmeldung":{"art":"Authorization: Bearer sep_…","erstellen":"Angemeldet im Browser unter „Modelle & Team → Harness-Schlüssel“, im Harness-Cockpit (Werkstatt → Konto) oder mit Sitzung per POST /api/harness/v1/schluessel","rollen_je_schluessel":"1 bis 4, fest beim Erstellen","hoechstens_aktiv":MAX_AKTIVE_SCHLUESSEL},
             "quoten_je_minute":QUOTEN.iter().map(|(n, m)| (n.to_string(), json!(m))).collect::<serde_json::Map<_, _>>(),
+            "agentenzugang":{"vertrag":"docs/AGENTEN-ZUGANG.md","skills":crate::agenten::skill_liste(),
+                "werkzeuge":kern::aktion::antwortschema(Rolle::Alle)["properties"]["abfragen"]["items"]["anyOf"].as_array().map(|a|a.iter().filter_map(|v|v["properties"]["typ"]["enum"][0].as_str().map(str::to_string)).collect::<Vec<_>>()).unwrap_or_default(),
+                "pinwand":{"arten":crate::agenten::ARTEN,"status":crate::agenten::STATUS},
+                "mcp":{"pfad":"/api/harness/v1/mcp","protokolle":mcp::PROTOKOLLE,"werkzeuge":mcp::WERKZEUGNAMEN}},
             "grenzen":{"aktionen_je_zug":8,"anfrage_bytes":65536,"json_tiefe":eingabe::MAX_TIEFE,"text_zeichen":eingabe::MAX_TEXT,"freigabe_sekunden":90,"begruendung_zeichen":1500},
             "endpunkte":[
                 {"methode":"GET","pfad":"/api/harness/v1/info","zweck":"Diese Beschreibung, ohne Anmeldung"},
                 {"methode":"GET","pfad":"/api/harness/v1/ich","zweck":"Konto, Reich, Rollen des Schlüssels, Fair-Play-Status"},
                 {"methode":"GET","pfad":"/api/harness/v1/schema?rolle=verwalter","zweck":"Antwortschema, Regeltext und öffentlicher Katalog der Rolle"},
-                {"methode":"GET","pfad":"/api/harness/v1/lage?rolle=verwalter","zweck":"Gefilterte Lage der Rolle, fremdtexte, Serverhinweise"},
-                {"methode":"POST","pfad":"/api/harness/v1/werkzeug","zweck":"Lesende Abfrage: {\"abfrage\":{\"typ\":\"kosten|flugzeit|kampfsimulator|regel|galaxie|kolonieplan|briefarchiv\",…}}"},
+                {"methode":"GET","pfad":"/api/harness/v1/lage?rolle=verwalter","zweck":"Lage der Rolle, fremdtexte, Serverhinweise, Pinwand; kompakt=1 (Kurzzeilen), planet=K (ein Planet voll), teile=a,b (Abschnitte)"},
+                {"methode":"GET","pfad":"/api/harness/v1/agenda?rolle=verwalter","zweck":"Was jetzt auf die Rolle wartet, mit fertigen Aktionsvorlagen"},
+                {"methode":"GET","pfad":"/api/harness/v1/aktionen?rolle=verwalter","zweck":"Aktionskatalog der Rolle: Zweck, Kennungen, Vorprüfung, Fallen, Beispiel, Schema; &typ=T für eine Aktion"},
+                {"methode":"GET","pfad":"/api/harness/v1/skills","zweck":"Skill-Paket für Agenten; ?name=N liefert das SKILL.md"},
+                {"methode":"GET","pfad":"/api/harness/v1/pinwand?rolle=verwalter","zweck":"Rats-Pinwand des Reichs; umfang=alle für abgeschlossene Karten"},
+                {"methode":"POST","pfad":"/api/harness/v1/pinwand","zweck":"{\"rolle\",\"freigabe\",\"op\":\"neu|antworten|status|aendern\",…} – Vertrag Abschnitt 4"},
+                {"methode":"POST","pfad":"/api/harness/v1/akte","zweck":"{\"freigabe\",\"spieler\",\"text\"}: eigene Notiz zu einem fremden Reich (leer = löschen)"},
+                {"methode":"POST","pfad":"/api/harness/v1/werkzeug","zweck":"Lesende Abfrage {\"abfrage\":{\"typ\":…},\"rolle\":…}; mit rolle prüfen Vorschauen wie der echte Befehl dieser Rolle. Typen: agentenzugang.werkzeuge"},
                 {"methode":"POST","pfad":"/api/harness/v1/freigabe","zweck":"Exklusive Steuerung: {\"aktion\":\"start\",\"rollen\":[…]}, {\"aktion\":\"puls\",\"freigabe\":…} alle 20–60 s, {\"aktion\":\"stop\"}"},
                 {"methode":"POST","pfad":"/api/harness/v1/handeln","zweck":"Bis zu 8 Aktionen: {\"request_id\",\"rolle\",\"freigabe\",\"aktionen\",\"notiz\"?,\"wecker_stunden\"?,\"begruendung\"?,\"probe\"?}; probe=true prüft ohne Wirkung"},
                 {"methode":"POST","pfad":"/api/harness/v1/bericht","zweck":"Status für Spielleitung und eigenes Konto (Aufrufe, Latenz, Modell)"}],
@@ -254,15 +264,36 @@ impl Game {
 
     pub fn harness_schema(&self, s: &Schluessel, rolle: Option<&str>) -> Reply {
         let r = rolle_lesen(rolle, &s.rollen)?;
-        Ok(json!({"rolle":r,"schema":kern::aktion::antwortschema(r),"erlaubte_aktionen":kern::aktion::erlaubte_typen(r),
-            "regeltext":format!("{}\n{}\n{}", kern::regeltext::regeltext(&self.world.regeln, r), kern::kolonisation::REGELTEXT_V2, kern::ausscheiden::REGELTEXT),
+        // Schema und erlaubte Aktionen aus derselben weltgenauen Quelle (Kern `Welt::antwortschema`).
+        let erlaubt = self.world.aktionstypen(r);
+        Ok(json!({"rolle":r,"schema":self.world.antwortschema(r),"erlaubte_aktionen":erlaubt,"aktionskatalog":"GET /api/harness/v1/aktionen?rolle=…",
+            "regeltext":self.regeltext_fuer(r),
             "regel_hash":self.world.regeln.hash}))
     }
 
+    /// Regeltext einer Rolle für diese Welt (Harness, MCP und Browserteam gleich; vorher bekam das Browserteam die
+    /// Kolonisations-, Ausscheidens- und Invasionsregeln nicht).
+    pub fn regeltext_fuer(&self, r: Rolle) -> String {
+        let invasion = self.world.regeltext_invasion();
+        format!("{}\n{}\n{}{}", kern::regeltext::regeltext(&self.world.regeln, r), kern::kolonisation::REGELTEXT_V2, kern::ausscheiden::REGELTEXT,
+            if invasion.is_empty() { invasion } else { format!("\n{invasion}") })
+    }
+
     pub fn harness_lage(&self, a: &Account, s: &Schluessel, rolle: Option<&str>) -> Reply {
+        self.harness_lage_mit(a, s, rolle, &LageWahl::default())
+    }
+
+    /// Lage mit Zuschnitt (kompakt, ein Planet, Abschnitte) und den Zusätzen, die auch der Browser hat:
+    /// Rats-Pinwand der Rolle, eigene Akten-Notizen, Schutz gegenüber den Skriptbots.
+    pub fn harness_lage_mit(&self, a: &Account, s: &Schluessel, rolle: Option<&str>, wahl: &LageWahl) -> Reply {
         let sid = Self::sid(a)?;
         let r = rolle_lesen(rolle, &s.rollen)?;
-        let lage = self.world.sicht(sid, r);
+        let mut lage = self.world.sicht(sid, r);
+        lage["pinwand"] = self.rat_pinwand_kurz(a.id, r.name());
+        lage["allianz_pinwand"] = self.allianz_pinwand_kurz(sid);
+        lage["gegner_notizen"] = self.gegner_notizen(a.id)?;
+        lage["bot_schutz"] = lauf::bots::schutz_sicht(&self.world, &self.runtime.opferschutz, sid, !self.runtime.bots.contains_key(&sid));
+        let lage = crate::agenten::lage_zuschnitt(lage, wahl.kompakt, wahl.planet.as_deref(), wahl.teile.as_deref())?;
         let fremd = fremdtexte(&lage, "/lage");
         Ok(json!({"api":HARNESS_API,"rolle":r,
             "welt":{"world_id":self.runtime.world_id,"revision":self.runtime.revision,"sekunden":self.world.zeit,"paused":self.runtime.paused,"beendet":self.world.beendet(),"tempo":self.runtime.tempo},
@@ -270,9 +301,12 @@ impl Game {
             "freigabe":self.runtime.leases.get(&sid).filter(|l| l.until > now()).map(|l| json!({"eigene":l.token == Some(s.id),"rollen":l.roles,"bis":l.until}))}))
     }
 
-    pub fn harness_werkzeug(&self, a: &Account, v: &Value) -> Reply {
-        nur_felder(v, &["abfrage"])?;
-        let ergebnis = self.tool(a, &v["abfrage"])?;
+    pub fn harness_werkzeug(&self, a: &Account, s: &Schluessel, v: &Value) -> Reply {
+        nur_felder(v, &["abfrage", "rolle"])?;
+        // Mit Rolle prüfen Vorschauen (missionsplan, marktplan, flugkoordination, ablaufplan) wie der echte Befehl
+        // dieser Rolle – vorher als „alle“, und der echte Zug scheiterte dann an Zuständigkeit oder Topf.
+        let r = match v.get("rolle").filter(|x| !x.is_null()) { Some(x) => rolle_lesen(x.as_str(), &s.rollen)?, None => Rolle::Alle };
+        let ergebnis = self.tool_als(a, r, &v["abfrage"])?;
         let fremd = fremdtexte(&json!({"ergebnis":ergebnis}), "");
         Ok(json!({"ergebnis":ergebnis,"fremdtexte":fremd}))
     }
@@ -313,7 +347,7 @@ impl Game {
         })
     }
 
-    fn eigene_freigabe(&self, a: &Account, s: &Schluessel, raw: Option<&str>) -> Result<(), (u16, String)> {
+    pub(crate) fn eigene_freigabe(&self, a: &Account, s: &Schluessel, raw: Option<&str>) -> Result<(), (u16, String)> {
         let sid = Self::sid(a)?;
         self.runtime.leases.get(&sid).filter(|l| l.account == a.id && l.until > now() && l.token == Some(s.id) && raw.is_some_and(|r| l.hash == digest(r)))
             .map(|_| ()).ok_or_else(|| err(409, "Keine gültige Freigabe dieses Schlüssels; /freigabe start aufrufen"))
@@ -355,6 +389,117 @@ impl Game {
         bericht["lease"] = v["freigabe"].clone();
         if let Some(d) = v["decision"].as_str() { bericht["decision"] = json!(eingabe::bereinigen(d, true)); }
         self.agent_report(a, &bericht)
+    }
+}
+
+/// Zuschnitt der Harness-Lage (Agentenzugang): volle Lage ist bei 15 Planeten mit Monden etwa 1 MB.
+#[derive(Default)]
+pub struct LageWahl { pub kompakt: bool, pub planet: Option<String>, pub teile: Option<String> }
+
+/// Abfrageparameter mit Prozentdekodierung (Online- und lokaler Server).
+pub fn param(query: &str, key: &str) -> Option<String> {
+    query.split('&').filter_map(|p| p.split_once('=')).find(|(k, _)| *k == key).map(|(_, v)| {
+        let b = v.as_bytes();
+        let mut out = Vec::with_capacity(b.len());
+        let mut i = 0;
+        while i < b.len() {
+            match b[i] {
+                b'+' => { out.push(b' '); i += 1 }
+                b'%' if i + 2 < b.len() => match ((b[i + 1] as char).to_digit(16), (b[i + 2] as char).to_digit(16)) {
+                    (Some(h), Some(l)) => { out.push((h * 16 + l) as u8); i += 3 }
+                    _ => { out.push(b'%'); i += 1 }
+                },
+                c => { out.push(c); i += 1 }
+            }
+        }
+        String::from_utf8_lossy(&out).into_owned()
+    })
+}
+
+impl Game {
+    pub fn harness_agenda(&self, a: &Account, s: &Schluessel, rolle: Option<&str>) -> Reply {
+        let sid = Self::sid(a)?;
+        let r = rolle_lesen(rolle, &s.rollen)?;
+        let agenda = self.agenda(a.id, sid, r);
+        let fremd = fremdtexte(&agenda, "");
+        Ok(json!({"api":HARNESS_API,"agenda":agenda,"fremdtexte":fremd,"server_hinweise":self.server_hinweise(a),
+            "freigabe":self.runtime.leases.get(&sid).filter(|l| l.until > now()).map(|l| json!({"eigene":l.token == Some(s.id),"rollen":l.roles,"bis":l.until}))}))
+    }
+
+    pub fn harness_aktionen(&self, s: &Schluessel, rolle: Option<&str>, typ: Option<&str>) -> Reply {
+        let r = rolle_lesen(rolle, &s.rollen)?;
+        crate::agenten::aktionskatalog(&self.world, r, typ)
+    }
+
+    pub fn harness_skills(name: Option<&str>) -> Reply {
+        match name {
+            None => Ok(json!({"skills":crate::agenten::skill_liste(),"hinweis":"Zuerst sternenepoche-grundlagen lesen; ?name=… liefert das SKILL.md"})),
+            Some(n) => crate::agenten::skill(n).map(|t| json!({"name":n,"text":t}))
+                .ok_or_else(|| err(404, &format!("Skill {n} unbekannt; Liste: GET /api/harness/v1/skills"))),
+        }
+    }
+
+    pub fn harness_pinwand_lesen(&self, a: &Account, s: &Schluessel, rolle: Option<&str>, umfang: Option<&str>, bereich: Option<&str>) -> Reply {
+        let sid = Self::sid(a)?;
+        let r = rolle_lesen(rolle, &s.rollen)?;
+        let umfang = match umfang { None | Some("offen") => "offen", Some("alle") => "alle", Some(_) => return Err(err(400, "umfang: offen oder alle")) };
+        match bereich {
+            None | Some("rat") => self.rat_pinwand(a.id, Some(r.name()), umfang),
+            // Allianz: Karten an dieses Reich, an alle oder von ihm; umfang=alle zeigt die ganze Wand.
+            Some("allianz") => self.allianz_pinwand(sid, umfang, umfang == "alle"),
+            Some(_) => Err(err(400, "bereich: rat oder allianz")),
+        }
+    }
+
+    /// Schreiben verlangt die Freigabe dieses Schlüssels: Nur der steuernde Harness spricht für den Rat.
+    pub fn harness_pinwand_schreiben(&mut self, a: &Account, s: &Schluessel, v: &Value) -> Reply {
+        nur_felder(v, &["rolle", "freigabe", "bereich", "op", "art", "an", "titel", "text", "prioritaet", "frist_stunden", "bezug", "karte", "status", "beleg_request_id", "version"])?;
+        maschine_erlaubt(a)?;
+        let sid = Self::sid(a)?;
+        let r = rolle_lesen(v["rolle"].as_str(), &s.rollen)?;
+        self.eigene_freigabe(a, s, v["freigabe"].as_str())?;
+        match v["bereich"].as_str() {
+            None | Some("rat") => self.rat_pinwand_schreiben(a.id, r.name(), v),
+            Some("allianz") => self.allianz_pinwand_schreiben(a.id, sid, r.name(), v),
+            Some(_) => Err(err(400, "bereich: rat oder allianz")),
+        }
+    }
+
+    pub fn harness_akte(&mut self, a: &Account, s: &Schluessel, v: &Value) -> Reply {
+        nur_felder(v, &["freigabe", "spieler", "text"])?;
+        maschine_erlaubt(a)?;
+        self.eigene_freigabe(a, s, v["freigabe"].as_str())?;
+        let text = v["text"].as_str().unwrap_or("");
+        eingabe::text_pruefen(text, "text", true).map_err(|e| err(400, &e))?;
+        self.gegner_notiz(a, &json!({"world_id":self.runtime.world_id,"spieler":v["spieler"],"text":text}))
+    }
+
+    /// Eine Weiche für Online- und lokalen Server (vorher doppelt gepflegt). Anmeldung, Fair Play und Quoten prüft
+    /// der Aufrufer; MCP läuft über dieselben Funktionen.
+    pub fn harness_route(&mut self, get: bool, path: &str, query: &str, a: &Account, s: &Schluessel, body: &Value) -> Reply {
+        let q = |k: &str| param(query, k);
+        let rolle = q("rolle");
+        let rolle = rolle.as_deref();
+        match (get, path) {
+            (true, "/api/harness/v1/ich") => Ok(self.harness_ich(a, s)),
+            (true, "/api/harness/v1/schema") => self.harness_schema(s, rolle).map(|mut v| { v["katalog"] = public_catalog::catalog(&self.world.regeln); v }),
+            (true, "/api/harness/v1/lage") => {
+                let wahl = LageWahl { kompakt: q("kompakt").is_some_and(|k| k == "1" || k == "true"), planet: q("planet"), teile: q("teile") };
+                self.harness_lage_mit(a, s, rolle, &wahl)
+            }
+            (true, "/api/harness/v1/agenda") => self.harness_agenda(a, s, rolle),
+            (true, "/api/harness/v1/aktionen") => self.harness_aktionen(s, rolle, q("typ").as_deref()),
+            (true, "/api/harness/v1/skills") => Self::harness_skills(q("name").as_deref()),
+            (true, "/api/harness/v1/pinwand") => self.harness_pinwand_lesen(a, s, rolle, q("umfang").as_deref(), q("bereich").as_deref()),
+            (false, "/api/harness/v1/pinwand") => self.harness_pinwand_schreiben(a, s, body),
+            (false, "/api/harness/v1/akte") => self.harness_akte(a, s, body),
+            (false, "/api/harness/v1/werkzeug") => self.harness_werkzeug(a, s, body),
+            (false, "/api/harness/v1/freigabe") => self.harness_freigabe(a, s, body),
+            (false, "/api/harness/v1/handeln") => self.harness_handeln(a, s, body),
+            (false, "/api/harness/v1/bericht") => self.harness_bericht(a, s, body),
+            (false, "/api/harness/v1/mcp") => mcp::bearbeiten(self, a, s, body, public_catalog::catalog).ok_or_else(|| err(400, "Keine MCP-Antwort")),
+            _ => Err(err(404, "Unbekannter Harness-Endpunkt; siehe GET /api/harness/v1/info")),
+        }
     }
 }
 

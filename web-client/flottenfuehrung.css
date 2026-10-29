@@ -1,0 +1,220 @@
+/* Flottenführung & Auftragssymbole (18.10.2026). Farben je Auftragsgruppe kommen aus auftraege.js (--auftrag). */
+.auftrag-badge{--auftrag:#9aa7bd;display:inline-flex;align-items:center;gap:6px;vertical-align:middle;color:var(--auftrag);line-height:1}
+.auftrag-badge>.auftrag-svg{box-sizing:content-box;padding:3px;border-radius:50%;background:color-mix(in srgb,var(--auftrag) 18%,transparent);border:1px solid color-mix(in srgb,var(--auftrag) 55%,transparent);flex:none}
+.auftrag-badge>b{color:var(--r-text,#dbe6f0);font-weight:600}
+.auftrag-punkt{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--auftrag);margin-right:4px}
+.auftrag-legende{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px 14px;font-size:13px}
+.auftrag-legende>div{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+
+/* Schritte */
+#fleet.ff-aktiv{display:block!important;position:relative}
+#fleet .ff-versteckt{display:none!important}
+#fleet .ff-schritte{display:flex;gap:4px;margin:0 0 10px;padding:0;position:sticky;top:0;z-index:4;background:var(--r-grund,#060c18)}
+#fleet .ff-schritte button{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:6px 8px;border:1px solid var(--r-rand,rgba(150,190,230,.2));border-radius:var(--r-radius,4px);background:var(--r-glas,rgba(9,20,34,.86));color:var(--r-leise,#8ea4b8);font:600 13px var(--r-schrift,Oxanium,sans-serif);cursor:pointer}
+#fleet .ff-schritte button span{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;border:1px solid currentColor;font-size:12px;flex:none}
+#fleet .ff-schritte button.aktiv{color:var(--r-text,#dbe6f0);border-color:var(--r-gruen,#3fae5f);box-shadow:inset 0 -3px 0 var(--r-gruen,#3fae5f)}
+#fleet .ff-schritte button.erledigt span{background:var(--r-gruen,#3fae5f);color:#04120a;border-color:transparent}
+#fleet .ff-schritt{display:grid;gap:10px}
+#fleet .ff-schritt[hidden]{display:none!important}
+#fleet .ff-block{border:1px solid var(--r-rand,rgba(150,190,230,.2));border-radius:var(--r-radius,4px);background:var(--r-glas,rgba(9,20,34,.86));padding:10px}
+#fleet .ff-block:empty,#fleet .ff-block[hidden]{display:none}
+#fleet #ff-zielwahl{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+#fleet .ff-chips-titel{font:600 12px var(--r-schrift,Oxanium,sans-serif);letter-spacing:.04em;text-transform:uppercase;color:var(--r-leise,#8ea4b8);margin:0 0 6px;width:100%;display:flex;align-items:center;gap:6px}
+#fleet .ff-leise,.ff-panel .ff-leise{color:var(--r-leise,#8ea4b8);font-size:13px;margin:6px 0 0}
+.ff-gut{color:var(--r-gruen,#3fae5f)}.ff-warn{color:var(--r-orange,#f2a43a)}.ff-schlecht{color:var(--r-rot,#ff6464)}
+
+/* Schnellziele */
+#fleet .ff-chips{display:flex;flex-wrap:wrap;gap:6px}
+#fleet .ff-chips:empty{display:none}
+#fleet .ff-chip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:4px 10px 4px 6px;border:1px solid var(--r-rand,rgba(150,190,230,.2));border-radius:18px;background:rgba(255,255,255,.03);color:var(--r-text,#dbe6f0);font:500 13px var(--r-schrift,Oxanium,sans-serif);cursor:pointer;width:auto}
+#fleet .ff-chip small{color:var(--r-blau,#8fd0ff)}
+#fleet .ff-chip.aktiv{border-color:var(--r-gruen,#3fae5f);background:rgba(63,174,95,.12)}
+
+/* Zielkarte */
+#fleet .ff-zielkopf{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font-size:14px}
+#fleet .ff-zielart{padding:2px 8px;border-radius:10px;font-size:12px;background:rgba(255,255,255,.06)}
+#fleet .ff-art-fremd{color:var(--r-rot,#ff6464)}#fleet .ff-art-eigen{color:var(--r-gruen,#3fae5f)}#fleet .ff-art-verbuendet{color:#4fa8ff}#fleet .ff-art-leer,#fleet .ff-art-truemmer{color:var(--r-blau,#8fd0ff)}
+#fleet .ff-zielkarte p,#fleet #ff-zielkarte p{margin:6px 0 0;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+#fleet .ff-kette{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+#fleet .ff-kette li{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:var(--r-radius,4px);border:1px dashed var(--r-rand,rgba(150,190,230,.2));opacity:.75;font-size:13px}
+#fleet .ff-kette li.ok{border-style:solid;border-color:rgba(63,174,95,.6);opacity:1}
+#fleet .ff-kette li.ok::after{content:'✓';color:var(--r-gruen,#3fae5f);font-weight:700}
+
+/* Auftragsraster */
+/* Mindestbreite 216 px: der längste Auftragsname („Kampfkolonisieren“, 14 px) plus Zeichen und Platz für das Häkchen oben rechts –
+   bei 176 px lief „Flottenübergabe“ unter das Häkchen (1024 px, Überlappungsprüfung 25.10.2026); Umbruch mitten im Wort will Karl nicht. */
+#fleet .ff-auftragsraster{display:grid;grid-template-columns:repeat(auto-fill,minmax(216px,1fr));gap:8px}
+#fleet .ff-auftragsraster>.ff-chips-titel{grid-column:1/-1;margin:0}
+#fleet .ff-auftrag{position:relative;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;align-items:center;column-gap:8px;row-gap:2px;min-height:64px;padding:8px 10px;text-align:left;border:1px solid color-mix(in srgb,var(--auftrag) 35%,transparent);border-left:4px solid var(--auftrag);border-radius:var(--r-radius,4px);background:color-mix(in srgb,var(--auftrag) 7%,rgba(9,20,34,.86));color:var(--r-text,#dbe6f0);cursor:pointer;width:auto}
+#fleet .ff-auftrag .auftrag-badge{grid-row:1/3}
+#fleet .ff-auftrag b{font:600 14px var(--r-schrift,Oxanium,sans-serif);hyphens:auto;-webkit-hyphens:auto;word-break:normal;overflow-wrap:normal;padding-right:18px}
+#fleet .ff-auftrag small{font-size:11.5px;color:var(--r-leise,#8ea4b8);line-height:1.25}
+#fleet .ff-auftrag.hinweis small{color:var(--r-orange,#f2a43a)}
+#fleet .ff-auftrag.unpassend{opacity:.38;filter:saturate(.3)}
+#fleet .ff-auftrag.unpassend small{color:var(--r-leise,#8ea4b8)}
+#fleet .ff-auftrag.aktiv{background:color-mix(in srgb,var(--auftrag) 22%,rgba(9,20,34,.9));box-shadow:0 0 0 2px var(--auftrag)}
+#fleet .ff-haken{position:absolute;top:4px;right:6px;font-style:normal;color:var(--r-gruen,#3fae5f);font-size:13px}
+#fleet .ff-auftrag:focus-visible,#fleet .ff-chip:focus-visible,#fleet .ff-tempo-knopf:focus-visible{outline:2px solid var(--r-blau,#8fd0ff);outline-offset:2px}
+
+/* Bedarf */
+#fleet .ff-bedarfzeile{display:grid;grid-template-columns:28px minmax(0,1fr);align-items:start;gap:4px 8px;padding:8px 0;border-top:1px solid rgba(150,190,230,.1);font-size:13.5px;text-align:left}
+#fleet .ff-bedarf-aktionen{grid-column:2;display:flex;flex-wrap:wrap;gap:6px}
+#fleet .ff-bedarf-aktionen:empty{display:none}
+#fleet .ff-bedarfzeile:first-of-type{border-top:0}
+#fleet .ff-mini,.ff-panel .ff-mini{width:auto;min-height:32px;padding:4px 10px;border:1px solid var(--r-rand,rgba(150,190,230,.2));border-radius:var(--r-radius,4px);background:rgba(63,174,95,.14);color:var(--r-text,#dbe6f0);font:500 12.5px var(--r-schrift,Oxanium,sans-serif);cursor:pointer}
+#fleet .ff-mini.knapp{background:rgba(242,164,58,.14)}
+#fleet .ff-mini[disabled]{opacity:.45;cursor:default}
+#fleet .ff-tag{padding:2px 8px;border-radius:10px;background:rgba(47,208,192,.12);color:#2fd0c0;font-size:12px}
+
+/* Tempo */
+#fleet .ff-tempo{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
+#fleet .ff-tempo-knopf{display:flex;flex-direction:column;align-items:center;gap:1px;min-height:58px;padding:4px 2px;border:1px solid var(--r-rand,rgba(150,190,230,.2));border-radius:var(--r-radius,4px);background:rgba(255,255,255,.03);color:var(--r-text,#dbe6f0);cursor:pointer;width:auto}
+#fleet .ff-tempo-knopf b{font:600 14px var(--r-schrift,Oxanium,sans-serif)}
+#fleet .ff-tempo-knopf small{font-size:10.5px;color:var(--r-leise,#8ea4b8);white-space:nowrap}
+#fleet .ff-tempo-knopf.aktiv{border-color:var(--r-gruen,#3fae5f);box-shadow:inset 0 0 0 1px var(--r-gruen,#3fae5f);background:rgba(63,174,95,.14)}
+#fleet .ff-tempo-knopf.ff-gut{border-bottom:3px solid var(--r-gruen,#3fae5f)}
+#fleet .ff-tempo-knopf.ff-warn{border-bottom:3px solid var(--r-orange,#f2a43a)}
+#fleet .ff-tempo-knopf.ff-schlecht{border-bottom:3px solid var(--r-rot,#ff6464);opacity:.6}
+
+/* Verband & Kopplung */
+#fleet .ff-verbandzeile{display:flex!important;flex-direction:row!important;grid-template-columns:none!important;align-items:flex-start;gap:8px;padding:8px;margin:0 0 6px;border:1px solid var(--r-rand,rgba(150,190,230,.2));border-radius:var(--r-radius,4px);cursor:pointer;font-size:13.5px}
+#fleet .ff-verbandzeile.aktiv{border-color:#ff5a5f;background:rgba(255,90,95,.07)}
+#fleet .ff-verbandzeile input{width:20px!important;min-width:20px!important;height:20px;min-height:20px!important;margin:2px 0 0;flex:none}
+#fleet .ff-verbandzeile>span:last-child{flex:1 1 auto;min-width:0}
+#fleet .ff-verbandzeile small{color:var(--r-leise,#8ea4b8)}
+#fleet .ff-kopplung{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#fleet .ff-kopplung select{flex:1 1 260px;min-width:0}
+#fleet .ff-kopplung label{display:flex!important;align-items:center;gap:6px}
+#fleet .ff-kopplung input{width:90px!important}
+
+/* Leiste unten */
+#fleet .ff-leiste{position:sticky;bottom:0;z-index:6;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px -2px 0;padding:8px 10px;border:1px solid var(--r-rand,rgba(150,190,230,.2));border-radius:var(--r-radius,4px);background:rgba(6,12,24,.96);backdrop-filter:blur(6px);box-shadow:0 -6px 18px rgba(0,0,0,.45)}
+#fleet .ff-leiste-info{display:flex;align-items:center;gap:10px;min-width:0}
+#fleet .ff-leiste-info span{display:flex;flex-direction:column;min-width:0}
+#fleet .ff-leiste-info small{color:var(--r-blau,#8fd0ff);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#fleet .ff-leiste-knoepfe{display:flex;gap:6px;flex:none}
+#fleet .ff-leiste-knoepfe button{width:auto;min-height:44px;min-width:96px;padding:6px 16px;font:600 14px var(--r-schrift,Oxanium,sans-serif)}
+#fleet .ff-leiste-knoepfe [data-ff-weiter],#fleet .ff-leiste-knoepfe .ff-start{background:var(--r-gruen,#3fae5f)!important;background-image:none!important;color:#04120a!important;border:0!important;text-shadow:none!important}
+#fleet .ff-leiste-knoepfe .secondary{background:rgba(255,255,255,.05)!important;color:var(--r-text,#dbe6f0)!important}
+#fleet .ff-leiste-knoepfe [aria-disabled="true"]{opacity:.5}
+#fleet.ff-aktiv>.ff-schritt[data-schritt="3"] .row{display:flex;gap:8px}
+#fleet.ff-aktiv>.ff-schritt[data-schritt="3"] .row>button:not(.secondary){display:none}
+
+/* Panels Zusammenarbeit & Zielauswahl */
+.ff-panel{border:1px solid var(--r-rand,rgba(150,190,230,.2));border-radius:var(--r-radius,4px);background:var(--r-glas,rgba(9,20,34,.86));margin:0 0 10px}
+.ff-panel>summary{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;font:600 14px var(--r-schrift,Oxanium,sans-serif);list-style:none}
+.ff-panel>summary::-webkit-details-marker{display:none}
+.ff-panel>summary::after{content:'▾';margin-left:auto;color:var(--r-leise,#8ea4b8)}
+.ff-panel[open]>summary::after{content:'▴'}
+.ff-panel-inhalt{padding:0 12px 12px}
+.ff-kartenzeile{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid rgba(150,190,230,.1)}
+.ff-kartenzeile small{display:block;color:var(--r-leise,#8ea4b8);font-size:12.5px}
+.ff-knoepfe{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.ff-legende-box{margin-top:10px}.ff-legende-box>summary{cursor:pointer;color:var(--r-leise,#8ea4b8);font-size:13px;padding:4px 0}
+table.ff-ziele{width:100%;border-collapse:collapse;font-size:13.5px}
+table.ff-ziele th,table.ff-ziele td{padding:6px 8px;border-bottom:1px solid rgba(150,190,230,.1);text-align:left}
+table.ff-ziele th button{background:none;border:0;color:var(--r-leise,#8ea4b8);font:600 12px var(--r-schrift,Oxanium,sans-serif);padding:0;cursor:pointer;width:auto;min-height:0}
+table.ff-ziele th button.aktiv{color:var(--r-text,#dbe6f0)}
+table.ff-ziele td:nth-child(n+4):nth-child(-n+6){text-align:right;font-variant-numeric:tabular-nums}
+table.ff-ziele tfoot td{color:var(--r-leise,#8ea4b8);font-size:12px;border:0}
+.ff-aktionen{display:flex;gap:4px;justify-content:flex-end}
+.ff-icon{--auftrag:var(--r-blau,#8fd0ff);display:inline-grid;place-items:center;width:36px!important;height:36px;min-height:36px!important;padding:0!important;border:1px solid color-mix(in srgb,var(--auftrag) 45%,transparent);border-radius:50%;background:color-mix(in srgb,var(--auftrag) 14%,transparent);color:var(--auftrag);cursor:pointer}
+
+/* Ereignisliste: Symbol + Farbe je Auftrag */
+.ereignis-liste .auftrag-badge{margin-right:4px}
+.ereignis-liste tr.rueck td{opacity:.62}
+.ereignis-liste tr[data-gruppe] td:first-child span{color:var(--auftrag,inherit)}
+.ereignis-liste .ereignis-verband{font-size:11px;padding:1px 6px;border-radius:8px;background:rgba(255,90,95,.14);color:#ff5a5f;margin-left:4px}
+
+@media (max-width:767px){
+ #fleet .ff-schritte{top:0}
+ #fleet .ff-schritte button{font-size:11.5px;gap:5px;padding:4px}
+ #fleet .ff-auftragsraster{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #fleet .ff-auftrag{min-height:72px}
+ #fleet .ff-tempo{grid-template-columns:repeat(5,minmax(0,1fr))}
+ #fleet .ff-leiste{bottom:var(--themenleiste-h,calc(78px + env(safe-area-inset-bottom,0px)));margin:12px -6px 0;border-radius:10px 10px 0 0}
+ #fleet .ff-leiste-knoepfe button{min-width:84px;padding:6px 12px}
+ .ff-kartenzeile{grid-template-columns:auto 1fr}
+ .ff-kartenzeile .ff-knoepfe{grid-column:1/-1;justify-content:flex-start}
+ table.ff-ziele thead{display:none}
+ table.ff-ziele,table.ff-ziele tbody,table.ff-ziele tr,table.ff-ziele td{display:block}
+ table.ff-ziele tr{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px 8px;padding:8px 0;border-bottom:1px solid rgba(150,190,230,.14)}
+ table.ff-ziele td{border:0;padding:2px 0;text-align:left!important}
+ table.ff-ziele td[data-label]::before{content:attr(data-label);display:block;font-size:10.5px;color:var(--r-leise,#8ea4b8)}
+ table.ff-ziele td.ff-aktionen{grid-column:1/-1;justify-content:flex-start}
+ table.ff-ziele tfoot tr{display:block}
+}
+#fleet .ff-schritte em{font-style:normal}#fleet .ff-schritte .ff-kurz{display:none}
+#fleet .ff-auftrag,#fleet .ff-schritte button,#fleet .ff-chip,#fleet .ff-tempo-knopf,#fleet .ff-mini,.ff-panel .ff-mini,.ff-icon,#fleet .ff-leiste-knoepfe button{background-image:none!important;text-shadow:none!important}
+@media (max-width:767px){
+ #fleet .ff-schritte .ff-lang{display:none}#fleet .ff-schritte .ff-kurz{display:inline}
+ #fleet .ff-auftrag{grid-template-columns:1fr;grid-template-rows:auto auto auto;justify-items:start;row-gap:4px;min-height:96px;padding:8px}
+ #fleet .ff-auftrag .auftrag-badge{grid-row:auto}
+ #fleet .ff-auftrag b{font-size:13.5px;padding-right:18px}
+ #fleet .ff-auftrag small{font-size:11px}
+}
+@media (max-width:330px){#fleet .ff-auftragsraster{grid-template-columns:1fr}}
+
+/* Schiffsauswahl als Kachelraster (Kampfschiffe | Zivile Schiffe), Motiv vollständig, Name unter dem Bild */
+body.game-client #game #fleet.ff-aktiv #ship-inputs{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px}
+#fleet.ff-aktiv #ship-inputs>.ff-gruppe{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:var(--r-radius,4px);background:rgba(143,208,255,.07);color:var(--r-blau,#8fd0ff);font:600 13px var(--r-schrift,Oxanium,sans-serif)}
+#fleet.ff-aktiv #ship-inputs>.ff-gruppe small{color:var(--r-orange,#f2a43a)}
+#fleet.ff-aktiv .fleet-pick-row{display:grid!important;grid-template-columns:1fr auto;grid-template-rows:auto auto auto;gap:4px 6px;padding:6px;border-radius:var(--r-radius,4px);border-color:var(--r-rand,rgba(150,190,230,.2));background:rgba(9,20,34,.86)}
+/* Verborgen heißt verborgen: die Regel darüber schlug sonst .fleet-pick-row[hidden] (mobile035.css) und zeigte alle
+   Schiffstypen, auch ohne Bestand (Karl 24.10.2026). */
+#fleet.ff-aktiv .fleet-pick-row[hidden],#fleet.ff-aktiv #ship-inputs>.ff-gruppe[hidden],#fleet.ff-aktiv #ship-inputs>.ff-schiffe-leer[hidden]{display:none!important}
+#fleet.ff-aktiv #ship-inputs>.ff-schiffe-leer{grid-column:1/-1;order:0;margin:0;padding:8px 10px;color:var(--r-leise,#8ea4b8);font-size:13px}
+#fleet.ff-aktiv .fleet-pick-row>img{grid-column:1/-1;grid-row:1;width:100%;height:auto;aspect-ratio:5/3;object-fit:contain;background:rgba(0,0,0,.25)}
+/* Name über die volle Kachelbreite, i-Knopf in der oberen Bildecke (vorher brachen Namen mitten im Wort:
+   „Spionagesond|e“, „Truppentransp|orter“). */
+#fleet.ff-aktiv .fleet-pick-row>.fleet-pick-name{grid-column:1/-1;grid-row:2}
+#fleet.ff-aktiv .fleet-pick-row>.fleet-pick-quantity{grid-row:3}
+#fleet.ff-aktiv .fleet-pick-name label{font-size:13px;overflow-wrap:normal;hyphens:auto}
+#fleet.ff-aktiv .fleet-pick-name small{margin-top:1px;color:var(--r-orange,#f2a43a);font-size:12px}
+#fleet.ff-aktiv .fleet-pick-row>.ship-info{grid-column:2;grid-row:1;align-self:start;justify-self:end;z-index:1;margin:4px;width:28px!important;height:28px;min-height:28px!important;padding:0!important}
+#fleet.ff-aktiv .fleet-pick-quantity{grid-column:1/-1;grid-template-columns:minmax(0,1fr) auto;gap:4px}
+#fleet.ff-aktiv .fleet-pick-quantity>span{display:none}
+#fleet.ff-aktiv .fleet-pick-quantity input{min-height:38px;font-size:16px}
+#fleet.ff-aktiv .fleet-pick-quantity button{min-height:38px!important;padding:0 8px!important;width:auto}
+#fleet.ff-aktiv .fleet-pick-row.gewaehlt{border-color:var(--r-gruen,#3fae5f);box-shadow:inset 0 0 0 1px var(--r-gruen,#3fae5f)}
+@media (max-width:767px){body.game-client #game #fleet.ff-aktiv #ship-inputs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.gt-aktion .gt-angriff{color:#ff5a5f}
+.gt-aktion .gt-angriff svg{vertical-align:middle}
+#fleet .ff-kopplung select{width:100%!important;max-width:100%;min-width:0!important}
+#fleet .ff-block,#fleet .ff-schritt,#fleet .ff-schritt>*{min-width:0;max-width:100%;box-sizing:border-box}
+#fleet .ff-tempo-knopf{min-width:0;overflow:hidden}
+@media (max-width:767px){#fleet .ff-tempo-knopf small{font-size:10px;letter-spacing:-.02em}}
+#fleet .ff-leiste{max-width:100%;box-sizing:border-box}
+#fleet .ff-leiste-info{flex:1 1 auto;overflow:hidden}
+#fleet .ff-leiste-info span{overflow:hidden}
+#fleet .ff-leiste-info b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:767px){
+ #fleet .ff-leiste{margin:12px 0 0;padding:8px}
+ #fleet .ff-leiste-knoepfe button{min-width:0;padding:6px 10px;font-size:13px}
+}
+/* Die Leiste darf die Seitenbreite nie bestimmen (Flex-Vorfahren übernehmen sonst ihre Mindestbreite). */
+#fleet .ff-leiste,#fleet .ff-schritte,#fleet .ff-block{contain:inline-size}
+#fleet .ff-leiste-info>.auftrag-badge{flex:none;overflow:visible}
+.ff-icon{color:var(--auftrag)!important;border-color:color-mix(in srgb,var(--auftrag) 45%,transparent)!important;background-color:color-mix(in srgb,var(--auftrag) 14%,transparent)!important}
+
+/* Gruppenfarben als Klassen (CSP style-src 'self' sperrt style-Attribute); Werte = auftraege.js G */
+.auftrag-kampf{--auftrag:#ff5a5f}
+.auftrag-boden{--auftrag:#ff9d3c}
+.auftrag-aufklaerung{--auftrag:#b48cff}
+.auftrag-fracht{--auftrag:#f2c94c}
+.auftrag-verlegung{--auftrag:#7bd88f}
+.auftrag-schutz{--auftrag:#4fa8ff}
+.auftrag-rohstoffe{--auftrag:#2fd0c0}
+.auftrag-ausbreitung{--auftrag:#f472b6}
+
+/* Klima eines freien Platzes in der Zielkarte (Ablauf-Version 1: Wachstum je Tag je Volk) */
+#fleet .ff-klima{margin-top:8px}
+#fleet .ff-klima-voelker{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px}
+#fleet .ff-klima-voelker span{display:flex;flex-direction:column;padding:4px 8px;border-radius:var(--r-radius,4px);background:rgba(255,255,255,.04);font-size:12.5px}
+#fleet .ff-klima-voelker span.eigen{box-shadow:inset 0 0 0 1px var(--r-gruen,#3fae5f)}
+#fleet .ff-klima-voelker span.unbewohnbar{opacity:.55}
+/* Versandleiste: Auftragsname und Ziel nie kürzen (DESIGNREGELN „Namen nicht kürzen“, M4); Sperrgrund unter der Leiste */
+#fleet .ff-leiste{flex-wrap:wrap}
+#fleet .ff-leiste-info b,#fleet .ff-leiste-info small{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere}
+#fleet .ff-leiste-info,#fleet .ff-leiste-info span{overflow:visible!important}
+#fleet .ff-leiste-grund{flex:1 0 100%;margin:2px 0 0;color:var(--r-gelb,#f2c66d);font-size:12px;line-height:1.35}

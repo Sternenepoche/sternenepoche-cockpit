@@ -140,7 +140,7 @@ impl Game {
             let a=g.account_by_name(&name).ok_or_else(||err(503,"Konto nicht lesbar"))?;
             g.db.execute("UPDATE email_challenges SET consumed=1,grant_hash=NULL WHERE id=?1",[id]).map_err(|_|err(503,"Bestätigung nicht verbraucht"))?;
             if g.runtime.waitlist.len()>=1000 {return Err(err(409,"Warteliste voll"));}
-            g.runtime.waitlist.push(admission::Waiting{account:a.id,mode,volk,joined:now()});g.admit_waiting()?;
+            g.runtime.waitlist.push(admission::Waiting{account:a.id,mode,volk,joined:now(),anfaengerschutz:v["anfaengerschutz"].as_bool().unwrap_or(false)});g.admit_waiting()?;
             g.identity_event(Some(a.id),"registered",json!({"method":"email_otp"}))?;
             let a=g.account_by_name(&name).ok_or_else(||err(503,"Konto nicht lesbar"))?;g.session(&a)
         })
@@ -187,7 +187,11 @@ impl Game {
         let view=account["spieler"].as_u64().map(|sid|self.world.sicht(sid as u16,Rolle::Alle));
         let events=self.db.prepare("SELECT time,kind,details FROM account_events WHERE account=?1 ORDER BY id DESC LIMIT 100").and_then(|mut s|s.query_map([id],|r|Ok(json!({"time":r.get::<_,i64>(0)?,"kind":r.get::<_,String>(1)?,"details":serde_json::from_str::<Value>(&r.get::<_,String>(2)?).unwrap_or(Value::Null)})))?.collect::<Result<Vec<_>,_>>()).map_err(|_|err(503,"Kontoprotokoll nicht lesbar"))?;
         let commands=self.db.prepare("SELECT created,result FROM commands WHERE account=?1 ORDER BY created DESC LIMIT 50").and_then(|mut s|s.query_map([id],|r|Ok(json!({"time":r.get::<_,i64>(0)?,"result":serde_json::from_str::<Value>(&r.get::<_,String>(1)?).unwrap_or(Value::Null)})))?.collect::<Result<Vec<_>,_>>()).map_err(|_|err(503,"Befehle nicht lesbar"))?;
-        Ok(json!({"account":account,"state":view,"events":events,"commands":commands,"world_id":self.runtime.world_id,"simulation_seconds":self.world.zeit}))
+        // 20.10.2026: Spielerart des Platzes mit Zählern, dazu der Verlauf der Artwechsel und Agentenfreigaben (die
+        // 100 jüngsten Kontoereignisse sind meist Spielaktionen und würden ihn verdrängen).
+        let spielerart=account["spieler"].as_u64().map(|sid|self.spielerart_eintrag(sid as u16));
+        let spielerart_verlauf=self.spielerart_verlauf(id)?;
+        Ok(json!({"account":account,"state":view,"events":events,"commands":commands,"spielerart":spielerart,"spielerart_verlauf":spielerart_verlauf,"world_id":self.runtime.world_id,"simulation_seconds":self.world.zeit}))
     }
     pub(crate) fn snapshot_players(&self)->Result<(),(u16,String)> {
         for a in self.account_registry() {

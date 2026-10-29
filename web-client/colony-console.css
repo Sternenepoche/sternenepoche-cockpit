@@ -1,0 +1,103 @@
+:root{--colony-nav-height:50px}
+body.game-client #game #tabs.command-navigation{background:#08171ffb!important;backdrop-filter:none}
+body.game-client #tabs.command-navigation .section-picker-label{max-width:300px!important}
+.colony-context{display:flex;align-items:center;gap:8px;min-width:0;flex:0 1 440px;margin-left:auto;padding-left:12px;border-left:1px solid #739d9040}
+body.game-client #game #tabs #context-planet{display:grid;grid-template-columns:40px minmax(0,1fr) 18px;align-items:center;gap:10px;flex:1;min-width:0;width:auto;margin:0;padding:6px 10px!important;min-height:54px!important;text-align:left;color:#ede3c9;border:1px solid #91b6a454;border-radius:8px;--button-art:url('assets/backgrounds.command.webp');--button-wash:#0a2029d4}
+.planet-portrait{display:grid;place-items:center;width:40px;height:40px;flex:none;padding:3px;border:1px solid #b6bd887d;border-radius:8px;background:radial-gradient(ellipse at 50% 90%,#91c9b328,transparent 72%),#041119;box-shadow:inset 0 1px #f3dfa728,0 0 9px #92b69a0a;overflow:hidden;box-sizing:border-box}
+.planet-portrait img{display:block;width:100%;height:100%;object-fit:contain;border-radius:50%}
+.planet-trigger-copy{min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:3px;white-space:normal}
+.planet-trigger-meta{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font:500 calc(8px * var(--text-scale))/1.3 Oxanium,system-ui;text-transform:uppercase;letter-spacing:.09em;color:#adbfbb}
+.planet-trigger-meta b{white-space:nowrap;font-variant-numeric:tabular-nums;color:#d8c58d;font-weight:500;letter-spacing:0}
+.planet-trigger-name{display:flex;flex-wrap:wrap;gap:2px 7px;align-items:baseline;font:500 calc(11px * var(--text-scale))/1.3 Oxanium,system-ui;overflow-wrap:anywhere;color:#b0c4c3}
+.planet-trigger-name strong{font-size:calc(13px * var(--text-scale));color:#efe6ca;white-space:nowrap}
+.colony-stepper{display:flex;gap:5px;flex:none}
+body.game-client #game #tabs .colony-stepper button{width:34px!important;min-width:34px!important;flex-basis:34px;min-height:38px;height:38px;padding:0!important}
+body.game-client #context-planet[aria-expanded=true],body.game-client #planet-selector[aria-expanded=true]{border-color:#d4be85;box-shadow:inset 0 0 0 1px #ceb67322}
+/* A single top-layer picker serves both the cockpit and pinned-planet rail. */
+#planet-picker{position:fixed;inset:auto;margin:0;padding:12px;box-sizing:border-box;border:1px solid #92b2a77a;border-radius:13px;color:#d7e6df;background:linear-gradient(135deg,#102a30f5,#08151dfc),url('assets/backgrounds.command.webp') center/cover;box-shadow:0 18px 55px #000b,inset 0 1px #ecdbaf1c;z-index:100;overflow:hidden;font-family:Oxanium,system-ui}
+#planet-picker:not(.is-open){display:none}
+#planet-picker.is-open{display:flex;flex-direction:column;gap:10px}
+.picker-heading{display:flex;align-items:center;gap:12px;flex:none}.picker-heading>div{flex:1;min-width:0}
+#planet-picker-title{font:600 calc(17px * var(--text-scale))/1.3 Oxanium,system-ui;margin:3px 0 0;color:#f0e4c5;overflow-wrap:anywhere}
+#planet-picker-count{color:#a6c2bc;font-size:calc(11px * var(--text-scale));white-space:nowrap;font-variant-numeric:tabular-nums}
+body.game-client .picker-search{display:flex;flex-direction:row;align-items:center;gap:8px;margin:0;padding:0 10px;min-width:0;flex:none;background:#0411199c;border:1px solid #6b9c9460;border-radius:7px;color:#8fb3ad}
+.picker-search:focus-within{outline:2px solid #e4c67e;outline-offset:2px}
+body.game-client #planet-picker-search{background:transparent;border:0;box-shadow:none;outline:0;margin:0;min-width:0;width:100%;padding:10px 0;min-height:40px;font:400 calc(12px * var(--text-scale))/1.4 Oxanium,system-ui;color:#e2eadd}
+#planet-picker-search::placeholder{color:#94acae}
+#planet-picker-list{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#648f84 #0a1920;min-height:0;display:grid;gap:5px;padding:3px;margin:-3px}
+body.game-client #planet-picker .planet-option{display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;margin:0;padding:8px;min-height:58px;border:1px solid #70958b2e;border-radius:8px;text-align:left;--button-art:url('assets/backgrounds.stars.webp');--button-wash:#09202bd6}
+body.game-client #planet-picker .planet-option[aria-current=true]{border-color:#cdb77cba;--button-wash:#283b30cf;box-shadow:inset 2px 0 #d5b977,inset 0 1px #e8d9a42c}
+.planet-option-copy{min-width:0;display:grid;gap:4px}.planet-option-copy strong{color:#e8e4cc;font:600 calc(14px * var(--text-scale))/1.2 Oxanium,system-ui}.planet-option-copy small{color:#a5bfbd;font:400 calc(11px * var(--text-scale))/1.35 Oxanium,system-ui;overflow-wrap:anywhere}
+.planet-option-mark{display:flex;align-items:center;gap:6px;color:#d6bd79;font-size:calc(10px * var(--text-scale))}.planet-option-mark .ui-icon{width:16px;height:16px}
+body.game-client #planet-picker .picker-hint{font:400 calc(10px * var(--text-scale))/1.45 Oxanium,system-ui;color:#9eb5b5;margin:0;padding:4px 2px 0;border-top:1px solid #809e8e2a;flex:none}
+.picker-empty{padding:12px 8px;color:#b7c5bf;line-height:1.5}
+@media(hover:hover) and (pointer:fine){body.game-client #planet-picker .planet-option:hover{border-color:#aac6b28f;--button-wash:#213d3dbd}}
+body.game-client #game>#planet-sidebar{top:calc(var(--colony-nav-height) + 8px)}
+#supply-console{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;scroll-margin-top:calc(var(--colony-nav-height) + 12px)}
+#supply-identity{display:flex;align-items:center;gap:12px;min-width:0}
+#supply-identity>img{width:64px;height:64px;object-fit:contain;flex:none;filter:drop-shadow(0 0 13px #96b2ab22)}
+.scope-eyebrow{font-size:9px;letter-spacing:.14em;color:#bfaf81}
+body.game-client #supply-identity h2{margin:3px 0;font-size:calc(23px * var(--text-scale));line-height:1.25;color:#e8eddc}
+#supply-identity h2 small{font-size:calc(12px * var(--text-scale));color:#9db8bc;font-weight:500;margin-left:6px}
+#supply-identity p{font-size:calc(11px * var(--text-scale));margin:4px 0 0;color:#9fbdba}
+.supply-empire-symbol{display:grid;place-items:center;width:56px;height:56px;color:#dcbe7c;font-size:44px;background:radial-gradient(ellipse,#599f9433,transparent 75%)}
+.supply-scope{display:flex;gap:3px;border:1px solid #72998b4a;padding:3px;border-radius:8px;flex:none;background:#051219a8}
+body.game-client #kolonie .supply-scope button{margin:0;padding:8px 12px;min-height:36px;font-size:calc(11px * var(--text-scale));border:1px solid transparent;border-radius:5px;box-shadow:none;--button-art:url('assets/backgrounds.command.webp')}
+body.game-client #kolonie .supply-scope button[aria-pressed=true]{color:#f0deab;border-color:#cdb67c8c;background-color:#3a433347;box-shadow:inset 0 -2px #cdb67c;--button-wash:#3a433390}
+body.game-client #kolonie{padding:18px!important;min-width:0}
+body.game-client #kolonie .workforce-summary{margin:10px 0;padding:12px;background:linear-gradient(120deg,#0d232bbb,#09151ddd);border-color:#729b8c35}
+body.game-client #workforce-economy .management-heading h3{font-size:calc(13px * var(--text-scale));margin:0}
+body.game-client #workforce-economy .management-heading{margin:0 0 10px}
+body.game-client #workforce-economy .population-chain article{padding:10px;gap:6px}
+body.game-client #workforce-economy .population-chain article>strong{font-size:calc(20px * var(--text-scale))}
+body.game-client #workforce-economy .workforce-notes{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding:7px 10px;margin-top:8px}
+body.game-client #workforce-economy .workforce-notes p{font-size:calc(11px * var(--text-scale));line-height:1.4}
+body.game-client #workforce-economy .workforce-notes button{font-size:10px;min-height:30px;padding:5px 9px}
+.climate-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;font-size:calc(10px * var(--text-scale));color:#a7babe}
+.climate-strip span{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}.climate-strip b{font:600 calc(14px * var(--text-scale))/1.4 Oxanium,system-ui;color:#d6c799}
+#planet-climate details{margin-top:8px;font-size:calc(11px * var(--text-scale));color:#97b6bc}#planet-climate summary{cursor:pointer;padding:4px 0}#planet-climate details p{max-width:100ch}
+#kolonie-content>p:first-child{font-size:calc(12px * var(--text-scale));margin:16px 0 10px;color:#c6d6d0}
+#kolonie-content td,#kolonie-content th{padding:9px 10px!important;font-size:calc(11px * var(--text-scale))!important}#kolonie-content .planet-row-icon{width:24px;height:24px}
+#supply-imperium[hidden]{display:none!important}
+#supply-totals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;border:1px solid #7f9d8c40;border-radius:8px;overflow:hidden;background:#71988b25;margin-bottom:14px}
+#supply-totals>div{display:flex;flex-direction:column;gap:5px;padding:11px;background:#0b1b24ed}
+#supply-totals span{font-size:calc(10px * var(--text-scale));color:#a9c1c0}#supply-totals strong{font:600 calc(21px * var(--text-scale))/1.3 Oxanium,system-ui;color:#dfe7cd}#supply-totals small{font-size:calc(10px * var(--text-scale));color:#a1b8b4}
+.supply-filters{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-bottom:12px}
+.supply-filters>label:first-child{display:flex;flex-direction:row;min-width:0;align-items:center;gap:8px;margin:0;font-size:11px;color:#a8c3bd}
+.supply-filters input[type=search]{width:240px;max-width:100%;min-height:34px;padding:6px 10px;margin:0;font-size:12px;background:#0a1c26b8;border-color:#71978c60}
+.supply-check{display:flex;flex-direction:row;min-width:0;align-items:center;gap:8px;font-size:11px;margin:0;padding:8px 0;cursor:pointer}.supply-check input{width:16px;height:16px;min-height:16px;padding:0;margin:0;flex:none;accent-color:#bfa76c}
+#supply-result-count{margin-left:auto;font-size:10px;color:#9fb6b6}
+.colony-columns,.colony-row{display:grid;grid-template-columns:1.5fr 1fr 1.1fr 1.15fr .65fr .85fr 1.4fr;gap:10px;align-items:center}
+.colony-columns{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#b7aa80;padding:8px 10px;border-bottom:1px solid #889f7545}
+body.game-client #supply-rows .colony-row{width:100%;margin:0;padding:10px!important;min-height:66px;border:0;border-bottom:1px solid #77a0942b;border-radius:0;background:linear-gradient(100deg,#10262bee,#091722ed),url(assets/backgrounds.command.webp)!important;box-shadow:none;text-align:left;color:#d2dfdb;transition:background-color 120ms ease,border-color 120ms ease}
+body.game-client #supply-rows .colony-row[aria-current=true]{box-shadow:inset 3px 0 #d2b575;background:linear-gradient(100deg,#344237ec,#132126e8),url(assets/backgrounds.command.webp)!important}
+body.game-client #supply-rows .colony-row:hover{outline:1px solid #9cc5b466;outline-offset:-1px}
+.colony-row-identity{display:flex;gap:8px;align-items:center;min-width:0}.colony-row-identity>img{width:34px;height:34px;object-fit:contain;flex:none}.colony-row-identity strong{display:flex;align-items:center;gap:6px;font:600 calc(12px * var(--text-scale))/1.3 Oxanium,system-ui;color:#d7e2c9}
+.colony-row-identity small,.colony-value small{display:block;font-size:calc(9px * var(--text-scale));line-height:1.4;color:#94afb3}
+.colony-row-identity i{font:500 8px Oxanium,system-ui;border:1px solid #bba1666e;border-radius:3px;padding:1px 3px;color:#e4c37e}
+.colony-value{min-width:0}.colony-value strong{font:600 calc(12px * var(--text-scale))/1.3 Oxanium,system-ui}.colony-row-status{font-size:calc(10px * var(--text-scale));line-height:1.4;display:flex;justify-content:space-between;align-items:center;gap:7px;color:#9dccb4}.colony-row-status>b{font-size:16px;font-weight:400}
+.has-shortage,.has-shortage strong{color:#e2b37d!important}.colony-no-results{padding:24px 12px;color:#a6bdc3}
+#game .item-tile{scroll-margin-top:calc(var(--colony-nav-height) + 16px)}
+@media(max-width:1100px){.colony-columns,.colony-row{grid-template-columns:1.5fr 1fr 1fr 1.15fr .7fr .8fr}.colony-columns>span:last-child{display:none}.colony-row-status{grid-column:1/-1}.colony-row-identity i{display:none}#supply-console{flex-wrap:wrap}}
+@media(max-width:760px){
+ body.game-client #game #tabs.command-navigation{flex-wrap:wrap!important;gap:4px}
+ body.game-client #game #tabs.command-navigation .section-picker-label{max-width:none!important;flex:1 1 calc(100% - 120px)}
+ .colony-context{flex:1 1 100%;margin:0;padding:4px 0 0;border-left:0;gap:6px}
+ body.game-client #game #tabs #context-planet{grid-template-columns:36px minmax(0,1fr) 16px;gap:8px;padding:6px 8px!important}
+ #context-planet .planet-portrait{width:36px;height:36px}.planet-trigger-name{font-size:calc(10px * var(--text-scale))}
+ .planet-trigger-meta{font-size:calc(8px * var(--text-scale))}.colony-stepper{gap:4px}
+ body.game-client #game #tabs .colony-stepper button{width:32px!important;min-width:32px!important;flex-basis:32px;height:44px}
+ #supply-console{gap:10px;margin-bottom:10px}#supply-identity>img{width:46px;height:46px}#supply-identity h2 small{display:block;margin:3px 0 0}body.game-client #supply-identity h2{font-size:calc(21px * var(--text-scale))}
+ .supply-scope{width:100%}.supply-scope button{flex:1}.scope-eyebrow{font-size:8px}
+ body.game-client #kolonie{padding:10px!important}.climate-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #supply-totals{grid-template-columns:repeat(2,minmax(0,1fr))}#supply-totals>div{padding:10px}.supply-filters>label:first-child{width:100%;align-items:stretch;flex-direction:column;gap:4px}.supply-filters input[type=search]{width:100%;max-width:none}#supply-result-count{width:100%;margin:0}
+ .colony-columns{display:none}body.game-client #supply-rows .colony-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px 8px;border:1px solid #819f863b;border-radius:8px;margin-bottom:8px;padding:10px!important}
+ .colony-row-identity{grid-column:1/-1}.colony-row-identity i{display:inline}.colony-row-identity strong{font-size:calc(14px * var(--text-scale))}.colony-value::before{content:attr(data-label);display:block;color:#91abae;font-size:calc(9px * var(--text-scale));margin-bottom:3px}.colony-value strong{font-size:calc(12px * var(--text-scale))}.colony-row-status{grid-column:auto;align-self:center;font-size:calc(9px * var(--text-scale))}
+}
+@media(prefers-reduced-motion:reduce){body.game-client #supply-rows .colony-row{transition:none}}
+.colony-management{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 0;padding:10px 0 0;border-top:1px solid #839b7940}
+.colony-management>div{display:grid;gap:4px}.colony-management strong{font:600 calc(15px * var(--text-scale)) Oxanium,system-ui;color:#dac591}.colony-management span,.colony-management small{font-size:calc(11px * var(--text-scale));color:#a6bfbe}.colony-management .home-protected{color:#a4c0ae}
+body.game-client .abandon-colony{--button-art:url('assets/missions.invasion.webp');--button-wash:#3e2223df;color:#e6b19a!important;border-color:#b17e6066!important;font-size:calc(11px * var(--text-scale))}
+#planet-abandon-dialog{width:min(620px,94vw)}#planet-abandon-dialog h2{font-size:22px;margin:0}#planet-abandon-dialog p{font-size:13px;line-height:1.5}
+.abandon-losses{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px 0}.abandon-losses span{display:grid;font-size:11px;color:#b2c0c1}.abandon-losses strong{font:600 20px Oxanium,system-ui;color:#e0bb99}
+.abandon-advice{padding:10px;border-left:2px solid #c1a671;background:#bf997d0a}#abandon-form{display:grid;gap:14px}#abandon-form label{min-width:0}.abandon-actions{display:flex;flex-wrap:wrap;gap:8px}.abandon-actions button{flex:1;min-width:125px}

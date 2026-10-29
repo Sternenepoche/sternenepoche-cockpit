@@ -12,8 +12,8 @@
         plaetze_je_system: 12,
         nebel_abstand: 10,          // Nebelsysteme: 5, 15, 25, ... (sechs pro Sektor)
         nebel_versatz: 5,
-        guertel_abstand: 5,         // Asteroidengürtel: 3, 8, 13, ... (jedes fünfte System)
-        guertel_versatz: 3,
+        guertel_abstand: 1,         // Asteroidengürtel in jedem System (Karl 20.10.2026; vorher 3, 8, 13 … jedes fünfte)
+        guertel_versatz: 0,
         reichtum_min: 0.7,
         reichtum_max: 1.4,
         epoche_tage: 365,
@@ -21,13 +21,15 @@
         heimat_position: 6,
         heimat_felder: 180,
         start_abstand: 2,           // Startsysteme liegen mindestens so weit auseinander
-        start_bevoelkerung: 1000,
+        start_bevoelkerung: 1400,   // 1000 → 1400 (Karl 23.10.2026: Einwohner wachsen zu langsam); Farm 1 deckt 1400 noch
         start_credits: 2000,
         start_stabilitaet: 50.0,
         start_steuersatz: 10,
-        grundwohnraum: 1200,
-        start_bestand: { erz: 2000, kristall: 1200, deuterium: 400, nahrung: 800 },
-        start_gebaeude: { erzmine: 1, kristallmine: 1, farm: 1, solarkraftwerk: 1, wohnblock: 1, lager: 1 },
+        grundwohnraum: 2000,        // 19.10.2026 (Karl: Startwachstum zu gering): vorher 1200 – mit Wohnblock 1 lag der Wohnraum
+                                    // bei 1900, das Wachstum bremste schon vor der Aufstiegsschwelle fast auf null
+        start_bestand: { erz: 2000, kristall: 1200, deuterium: 400, nahrung: 800, habitatmodul: 2, antriebskern: 2 },  // Habitatmodule: Karl 24.10.2026 („2 auf Lager von Tag 1“); 0.4.7: dazu 2 Antriebskerne
+        start_gebaeude: { erzmine: 1, kristallmine: 1, farm: 1, solarkraftwerk: 2, wohnblock: 1, lager: 1 },
+                                    // Solar 2 (19.10.2026): mit Solar 1 (26,4) gegen 27 Verbrauch startete jede Heimatwelt im Strommangel
         max_gebaeudestufe: 40,
     ),
 
@@ -45,12 +47,15 @@
     },
 
     wirtschaft: (
-        wachstum_je_tag: 0.12,              // logistisch gebremst: bei halb vollem Wohnraum 6 Prozent
+        wachstum_je_tag: 0.7,               // Grundwert am Klimaoptimum (Faktor 1,0): 0,9 → 0,7 (Karl 24.10.2026);
+                                            // davor 0,336 → 0,9 (Karl 23.10.2026: „wachsen immer noch viel zu langsam“);
+                                            // davor 0,12 × Klima 2,0 = 0,24, +40 % (Karl 17.10.2026);
+                                            // Faktoren je Volk und Platz: docs/WACHSTUM-UND-HABITABILITAET.md, logistisch gebremst
         arbeitsquote: 0.6,
-        fachkraefte_basis: 30,
-        fachkraefte_je_akademie: 60.0,
+        fachkraefte_basis: 30,              // Start: 30 qualifizierte Bewohner je Heimatwelt (dazu Forscher für Labor 1)
+        fachkraefte_je_akademie: 100.0,     // Grundausbildung je Akademie und Spieltag: 100 × n × 1,1^n Personen, kostenlos, bis zum Bedarf (20 → 100, Karl 22.10.2026: Fachkräfte/Forscher dürfen kein Problem sein; Heimatwelt bildet ab Ablauf v3 auch ohne Akademie wie Akademie 1)
         nahrung_je_1000: 40.0,              // je Stunde
-        konsum_je_1000: 3.0,                // je Stunde
+        konsum_je_1000: 1.5,                // je Stunde; 3,0 → 1,5 (Karl 23.10.2026: „dass die Leute nur die Hälfte verbrauchen“)
         energie_je_1000_syntheten: 25.0,    // Balance 04.10.: mit 30 lagen die Syntheten 15 Prozent zurück
         hunger_min: -0.5,
         steuer_je_einwohner_stunde: 0.03,   // Credits bei 100 Prozent Steuersatz
@@ -80,10 +85,10 @@
         automatisierung_bonus: 0.04,
         agrar_bonus: 0.08,
         xeno_bonus: 0.1,
-        terraforming_felder: 6,
+        terraforming_felder: 0,           // 0.4.7 (Karl 24.10.2026): Felder nur noch über Terraformer-Schiffe (höchstens +40, kernwerte.ron terraform)
         siedler: 3000,
         habitat_wohnraum: 2000,
-        kolonien_max: 8,
+        kolonien_max: 14,
         bauteile: {
             antriebskern: { erz: 2000, kristall: 1000, legierung: 200, elektronik: 100 },
             habitatmodul: { erz: 1500, kristall: 500, legierung: 150, elektronik: 50, konsumgut: 100 },
@@ -105,8 +110,8 @@
         pluenderung_malus_max: 10.0,        // mehrere Plünderungen summieren sich höchstens so weit
         belagerung_je_tag: 10.0,
         belagerung_erholung_je_tag: 5.0,
-        wachstum_voll_ab: 60.0,
-        wachstum_null_unter: 40.0,
+        wachstum_voll_ab: 50.0,             // 19.10.2026: Grundstabilität 50 = volles Wachstum (vorher 60/40: der Start wuchs nur halb so schnell)
+        wachstum_null_unter: 30.0,
         unruhen_unter: 30.0,
         uebernahme_unter: 15.0,
         produktivitaet_basis: 0.6,
@@ -114,57 +119,57 @@
     ),
 
     gebaeude: {
-        erzmine: (kosten: {erz: 60, kristall: 15}, faktor: 1.5, arbeiter: 25.0, energie: 10.0, ab_stufe: 1, ertrag: 30.0,
+        erzmine: (kosten: {erz: 60, kristall: 15}, faktor: 1.427463, arbeiter: 25.0, energie: 10.0, ab_stufe: 1, ertrag: 30.0,
             wirkung: "fördert Erz"),
-        kristallmine: (kosten: {erz: 48, kristall: 24}, faktor: 1.5, arbeiter: 25.0, energie: 10.0, ab_stufe: 1, ertrag: 20.0,
+        kristallmine: (kosten: {erz: 48, kristall: 24}, faktor: 1.428958, arbeiter: 25.0, energie: 10.0, ab_stufe: 1, ertrag: 20.0,
             wirkung: "fördert Kristall"),
-        deuteriumsynthesizer: (kosten: {erz: 225, kristall: 75}, faktor: 1.5, arbeiter: 25.0, energie: 20.0, ab_stufe: 1, ertrag: 10.0,
+        deuteriumsynthesizer: (kosten: {erz: 225, kristall: 75}, faktor: 1.377614, arbeiter: 25.0, energie: 20.0, ab_stufe: 1, ertrag: 10.0,
             wirkung: "erzeugt Deuterium"),
-        farm: (kosten: {erz: 40, kristall: 10}, faktor: 1.5, arbeiter: 15.0, energie: 4.0, ab_stufe: 1, ertrag: 45.0,
+        farm: (kosten: {erz: 40, kristall: 10}, faktor: 1.442381, arbeiter: 15.0, energie: 4.0, ab_stufe: 1, ertrag: 45.0,
             wirkung: "erzeugt Nahrung"),
-        solarkraftwerk: (kosten: {erz: 75, kristall: 30}, faktor: 1.5, arbeiter: 4.0, ab_stufe: 1, ertrag: 22.0,
+        solarkraftwerk: (kosten: {erz: 75, kristall: 30}, faktor: 1.4152, arbeiter: 4.0, ab_stufe: 1, ertrag: 29.04,  // +20 % (Karl 17.10.2026), +10 % (Karl 20.10.2026), × Sonnenfaktor des Platzes
             wirkung: "erzeugt Strom"),
-        fusionskraftwerk: (kosten: {erz: 900, kristall: 360, deuterium: 180}, faktor: 1.8, arbeiter: 10.0, fachkraefte: 2.0, ab_stufe: 2, ertrag: 50.0,
+        fusionskraftwerk: (kosten: {erz: 900, kristall: 360, deuterium: 180}, faktor: 1.327307, arbeiter: 10.0, fachkraefte: 2.0, ab_stufe: 2, ertrag: 55.0,   // +10 % (Karl 20.10.2026)
             wirkung: "erzeugt viel Strom, verbraucht Deuterium"),
-        giesserei: (kosten: {erz: 600, kristall: 200}, faktor: 1.6, arbeiter: 40.0, energie: 20.0, ab_stufe: 2, ertrag: 4.0,
+        giesserei: (kosten: {erz: 600, kristall: 200}, faktor: 1.343399, arbeiter: 40.0, energie: 20.0, ab_stufe: 2, ertrag: 4.0,
             wirkung: "verarbeitet Erz zu Legierung"),
-        elektronikwerk: (kosten: {erz: 500, kristall: 400}, faktor: 1.6, arbeiter: 30.0, fachkraefte: 10.0, energie: 25.0, ab_stufe: 2, ertrag: 2.5,
+        elektronikwerk: (kosten: {erz: 500, kristall: 400}, faktor: 1.339348, arbeiter: 30.0, fachkraefte: 10.0, energie: 25.0, ab_stufe: 2, ertrag: 2.5,
             wirkung: "verarbeitet Kristall und Erz zu Elektronik, braucht Fachkräfte"),
-        konsumgueterwerk: (kosten: {erz: 400, kristall: 300}, faktor: 1.6, arbeiter: 30.0, energie: 15.0, ab_stufe: 2, ertrag: 8.0,
+        konsumgueterwerk: (kosten: {erz: 400, kristall: 300}, faktor: 1.348007, arbeiter: 30.0, energie: 15.0, ab_stufe: 2, ertrag: 8.0,
             wirkung: "stellt Konsumgüter her, die die Bevölkerung verbraucht"),
-        xenoextraktor: (kosten: {erz: 20000, kristall: 10000, legierung: 500, elektronik: 200}, faktor: 1.6, arbeiter: 30.0, fachkraefte: 10.0, energie: 60.0, ab_stufe: 4, ertrag: 4.0,
+        xenoextraktor: (kosten: {erz: 20000, kristall: 10000, legierung: 500, elektronik: 200}, faktor: 1.229839, arbeiter: 30.0, fachkraefte: 10.0, energie: 60.0, ab_stufe: 4, ertrag: 4.0,
             wirkung: "fördert Xenokristall, nur auf Planeten in Nebelsystemen"),
-        lager: (kosten: {erz: 500}, faktor: 2.0, arbeiter: 2.0, ab_stufe: 1,
+        lager: (kosten: {erz: 500}, faktor: 1.359687, arbeiter: 2.0, ab_stufe: 1,
             wirkung: "erhöht die Lagergrenze jedes Guts"),
-        bunker: (kosten: {erz: 800, kristall: 400}, faktor: 2.0, arbeiter: 2.0, ab_stufe: 2,
+        bunker: (kosten: {erz: 800, kristall: 400}, faktor: 1.333526, arbeiter: 2.0, ab_stufe: 2,
             wirkung: "schützt je Stufe eine feste Menge jedes Guts vor Plünderung"),
-        wohnblock: (kosten: {erz: 120, kristall: 40}, faktor: 1.4, arbeiter: 3.0, energie: 3.0, ab_stufe: 1, ertrag: 700.0,
+        wohnblock: (kosten: {erz: 120, kristall: 40}, faktor: 1.399998, arbeiter: 3.0, energie: 3.0, ab_stufe: 1, ertrag: 5600.0,  // 700 × 8 (Karl 23.10.2026: „Wohnungen sollen 8 mal mehr Einwohner aufnehmen“)
             wirkung: "schafft Wohnraum"),
-        akademie: (kosten: {erz: 800, kristall: 600}, faktor: 1.8, arbeiter: 10.0, energie: 10.0, ab_stufe: 2,
+        akademie: (kosten: {erz: 800, kristall: 600}, faktor: 1.328266, arbeiter: 10.0, energie: 10.0, ab_stufe: 1,
             wirkung: "bildet Fachkräfte aus"),
-        markt: (kosten: {erz: 2000, kristall: 1000, legierung: 50}, faktor: 1.8, arbeiter: 10.0, energie: 5.0, ab_stufe: 3,
+        markt: (kosten: {erz: 2000, kristall: 1000, legierung: 50}, faktor: 1.302009, arbeiter: 10.0, energie: 5.0, ab_stufe: 3,
             wirkung: "erlaubt Marktorders von diesem Planeten"),
-        verwaltungszentrum: (kosten: {erz: 4000, kristall: 2000, legierung: 200, elektronik: 100}, faktor: 2.0, arbeiter: 15.0, fachkraefte: 5.0, energie: 10.0, ab_stufe: 4,
+        verwaltungszentrum: (kosten: {erz: 4000, kristall: 2000, legierung: 200, elektronik: 100}, faktor: 1.278015, arbeiter: 15.0, fachkraefte: 5.0, energie: 10.0, ab_stufe: 4,
             wirkung: "trägt eine Kolonie je zwei Stufen ohne Stabilitätsverlust"),
-        labor: (kosten: {erz: 200, kristall: 400, deuterium: 100}, faktor: 2.0, arbeiter: 3.0, fachkraefte: 8.0, energie: 12.0, ab_stufe: 1, ertrag: 10.0,
+        labor: (kosten: {erz: 200, kristall: 400, deuterium: 100}, faktor: 1.348007, arbeiter: 3.0, fachkraefte: 8.0, energie: 12.0, ab_stufe: 1, ertrag: 10.0,
             wirkung: "erzeugt Forschungspunkte, braucht Fachkräfte"),
-        bauhof: (kosten: {erz: 400, kristall: 120}, faktor: 2.0, arbeiter: 15.0, energie: 5.0, ab_stufe: 1,
+        bauhof: (kosten: {erz: 400, kristall: 120}, faktor: 1.35832, arbeiter: 15.0, energie: 5.0, ab_stufe: 1,
             wirkung: "verkürzt Bauzeiten von Gebäuden"),
-        nanofabrik: (kosten: {erz: 100000, kristall: 50000, legierung: 5000, elektronik: 3000}, faktor: 2.0, arbeiter: 10.0, fachkraefte: 20.0, energie: 100.0, ab_stufe: 4,
+        nanofabrik: (kosten: {erz: 100000, kristall: 50000, legierung: 5000, elektronik: 3000}, faktor: 1.179246, arbeiter: 10.0, fachkraefte: 20.0, energie: 100.0, ab_stufe: 4,
             braucht: {bauhof: 6}, wirkung: "halbiert je Stufe alle Bau- und Werftzeiten"),
-        raumhafen: (kosten: {erz: 600, kristall: 300}, faktor: 2.0, arbeiter: 10.0, energie: 10.0, ab_stufe: 1,
+        raumhafen: (kosten: {erz: 600, kristall: 300}, faktor: 1.339348, arbeiter: 10.0, energie: 10.0, ab_stufe: 1,
             wirkung: "nötig für Flottenstarts, spart je Stufe Treibstoff"),
-        werft: (kosten: {erz: 400, kristall: 200}, faktor: 2.0, arbeiter: 20.0, energie: 15.0, ab_stufe: 1,
+        werft: (kosten: {erz: 400, kristall: 200}, faktor: 1.353346, arbeiter: 20.0, energie: 15.0, ab_stufe: 1,
             braucht: {raumhafen: 1}, wirkung: "baut Schiffe, höhere Stufen bauen schneller und schalten Schiffstypen frei"),
-        orbitalwerft: (kosten: {erz: 8000, kristall: 5000, legierung: 800, elektronik: 300}, faktor: 2.0, arbeiter: 20.0, fachkraefte: 15.0, energie: 40.0, ab_stufe: 4,
+        orbitalwerft: (kosten: {erz: 8000, kristall: 5000, legierung: 800, elektronik: 300}, faktor: 1.254622, arbeiter: 20.0, fachkraefte: 15.0, energie: 40.0, ab_stufe: 4,
             braucht: {werft: 4}, wirkung: "fertigt Antriebskerne und Habitatmodule, braucht Fachkräfte"),
-        sensorphalanx: (kosten: {erz: 2000, kristall: 2000, elektronik: 50}, faktor: 1.8, arbeiter: 3.0, fachkraefte: 3.0, energie: 20.0, ab_stufe: 3,
+        sensorphalanx: (kosten: {erz: 2000, kristall: 2000, elektronik: 50}, faktor: 1.292576, arbeiter: 3.0, fachkraefte: 3.0, energie: 20.0, ab_stufe: 3,
             wirkung: "verlängert zusammen mit Geheimdienst, Überwachungs- und Spionagetechnik die Vorwarnzeit"),
-        geheimdienst: (kosten: {erz: 1500, kristall: 2000, elektronik: 50}, faktor: 1.8, arbeiter: 3.0, fachkraefte: 2.0, energie: 15.0, ab_stufe: 2,
+        geheimdienst: (kosten: {erz: 1500, kristall: 2000, elektronik: 50}, faktor: 1.296951, arbeiter: 3.0, fachkraefte: 2.0, energie: 15.0, ab_stufe: 2,
             braucht: {labor: 1}, wirkung: "wertet Sensoren und Flottensonden aus; gemeinsam mit Überwachungs- und Spionagetechnik"),
-        kaserne: (kosten: {erz: 3000, kristall: 1000, legierung: 200}, faktor: 1.8, arbeiter: 20.0, energie: 10.0, ab_stufe: 4,
+        kaserne: (kosten: {erz: 3000, kristall: 1000, legierung: 200}, faktor: 1.291371, arbeiter: 20.0, energie: 10.0, ab_stufe: 4,
             wirkung: "stellt die Garnison gegen Invasionen, nötig für Truppentransporter"),
-        raketensilo: (kosten: {erz: 12000, kristall: 6000, legierung: 800, elektronik: 200}, faktor: 2.0, ab_stufe: 3,
+        raketensilo: (kosten: {erz: 12000, kristall: 6000, legierung: 800, elektronik: 200}, faktor: 1.245064, ab_stufe: 3,
             wirkung: "lagert Abfang- und Interplanetarraketen; Kapazität und Reichweite steigen je Stufe"),
         orbitalring: (kosten: {erz: 300000, kristall: 150000, legierung: 30000, elektronik: 15000, xenokristall: 5000}, faktor: 1.0, ab_stufe: 5,
             wirkung: "Großprojekt, einmal pro Planet: zusätzliche Felder und Wohnraum laut Zusatzregeln"),
@@ -192,7 +197,7 @@
         hyperraumantrieb: (kosten: {erz: 10000, kristall: 20000, deuterium: 6000, xenokristall: 1000}, faktor: 2.0, fp: 6000.0, ab_stufe: 4, labor: 6,
             wirkung: "+30 % Tempo je Stufe für Schiffe mit Hyperraumantrieb, braucht Xenokristall"),
         astrophysik: (kosten: {erz: 4000, kristall: 8000, deuterium: 4000}, faktor: 1.75, fp: 2000.0, ab_stufe: 3, labor: 3,
-            wirkung: "Stufe 1 erlaubt eine Kolonie, jede zweite weitere Stufe eine mehr"),
+            wirkung: "Voraussetzung für Kolonie- und Expeditionsschiffe (Kolonieschiff 1, Pathfinder und Bergungsschiff 2, großes Kolonieschiff 3) und für Stufe IV; Kolonieplätze gibt Terraforming"),
         logistik: (kosten: {erz: 1000, kristall: 1000}, faktor: 2.0, fp: 500.0, ab_stufe: 3, labor: 2,
             wirkung: "+5 % Ladekapazität je Stufe"),
         computertechnik: (kosten: {kristall: 400, deuterium: 600}, faktor: 2.0, fp: 400.0, ab_stufe: 2, labor: 1,
@@ -211,10 +216,16 @@
             wirkung: "genauere Spionageberichte, bessere Abwehr fremder Sonden"),
         xenomaterialkunde: (kosten: {kristall: 10000, xenokristall: 500}, faktor: 2.0, fp: 4000.0, ab_stufe: 4, labor: 5,
             wirkung: "+10 % Xenokristallförderung je Stufe"),
-        terraforming: (kosten: {kristall: 50000, deuterium: 100000, elektronik: 2000}, faktor: 2.0, fp: 8000.0, ab_stufe: 4, labor: 6,
-            wirkung: "+6 Felder je Stufe auf jedem eigenen Planeten"),
+        terraforming: (kosten: {erz: 4000, kristall: 8000, deuterium: 4000, elektronik: 200}, faktor: 1.75, fp: 2000.0, ab_stufe: 3, labor: 3,
+            wirkung: "+1 Kolonieplatz je Stufe ab der 3. Kolonie; verbessert das Klima aller Planeten; weniger Terraformer je Planet"),
     },
 
+    // Grundwerte für Welten OHNE Flottendoktrin (vor Generation 10). Jede neue Welt (Generation 12: Server und lokale
+    // Online-Partie) übernimmt beim Start alle Schiffs- und Verteidigungswerte aus regeln/flottenausbau.json – das ist
+    // die maßgebliche Quelle (dort z. B. Schlachtschiff Angriff 5.000, Zerstörer 8.000, Plasmawerfer 75.000/500/3.000,
+    // Recycler ab Stufe III). Danach folgen nur noch das Kolonieschiff-Rezept (industrie_aktivieren), die Mondinhalte
+    // (monde_aktivieren) und die Antriebswechsel (regeln/technik.ron). Wirksame Werte: `cargo run -p kern --example
+    // einheiten_quelle`, Doku docs/ANTRIEBE-UND-PLASMATECHNIK.md §1. Diese Zahlen nicht als Spielwerte zitieren.
     einheiten: {
         spionagesonde: (kosten: {kristall: 300}, struktur: 1000, schild: 0, angriff: 0, ladung: 0, tempo: 100000,
             antrieb: verbrennungsantrieb, verbrauch: 1, besatzung: 0, ab_stufe: 1, werft: 1,
@@ -232,7 +243,7 @@
             antrieb: verbrennungsantrieb, verbrauch: 40, besatzung: 20, ab_stufe: 3, werft: 2,
             wirkung: "baut in Asteroidengürteln Erz und Kristall ab"),
         kreuzer: (kosten: {erz: 20000, kristall: 7000, deuterium: 2000, legierung: 300, elektronik: 100}, struktur: 27000, schild: 50, angriff: 400, ladung: 800, tempo: 15000,
-            antrieb: impulsantrieb, verbrauch: 300, besatzung: 30, ab_stufe: 4, werft: 4,
+            antrieb: impulsantrieb, verbrauch: 300, besatzung: 30, ab_stufe: 3, werft: 3,   // Stufe III/Werft 3: Karl 24.10.2026 (Begleitschutz der ersten Kolonie)
             schnellfeuer: {leichter_jaeger: 6, raketenwerfer: 10, spionagesonde: 5},
             wirkung: "Schnellfeuer gegen leichte Jäger und Raketenwerfer"),
         recycler: (kosten: {erz: 10000, kristall: 6000, deuterium: 2000, legierung: 100}, struktur: 16000, schild: 10, angriff: 1, ladung: 20000, tempo: 2000,
@@ -271,25 +282,33 @@
             wirkung: "sehr starker Schild, nur einer je Planet"),
     },
 
-    // Aufstieg zur Stufe II, III, IV und V. Alle Bedingungen müssen 48 Spielstunden
-    // ohne Unterbrechung erfüllt sein, dann kostet der Aufstieg die angegebenen Güter.
-    // Balance 04.10.: IV mit 32.000 und V mit 700.000 Einwohnern, damit die Medianzeiten in den Zielfenstern
-    // Tag 60 bis 110 und 150 bis 250 liegen (gemessen mit `sternenepoche balance --abnahme`).
+    // Aufstieg zur Stufe II, III, IV und V. Sobald alle Bedingungen erfüllt sind, ist der Aufstieg sofort
+    // möglich (keine Haltezeit, Karl 17.10.2026) und kostet die angegebenen Güter.
+    // Stufentempo 18.10.2026 (Wachstum +40 %, Ablauf v1; Karl: „alle betreffenden Werte mit ändern“): Schwellen
+    // 3.000 / 20.000 / 150.000 / 1.450.000 Einwohner, damit Stufe V um Tag 120 (100 bis 140) und II/III/IV um Tag
+    // 7/20/45 liegen (ablauf_messung 200 Tage × 16 Welten, bot und naiv; docs/WACHSTUM-UND-HABITABILITAET.md §7).
+    // Vorher 2.000 / 8.000 / 32.000 / 700.000 (gemessen V an Tag 60 bis 71).
+    // Stufentempo 20.10.2026 (Karl: „die Stufen sind zu weit auseinander … am Anfang soll man bis Stufe 3 rushen können,
+    // dann langsamer, aber trotzdem in 30 Tagen möglich – auch für die Bots“): 1.500 / 4.000 / 40.000 / 200.000
+    // Einwohner. Gemessen mit bot_lage (30 Bots, App-Welt): Bots wuchsen bis Tag 10/15/20/25/30 im Median auf
+    // 10 / 30 / 75 / 155 / 256 Tausend, Gebäude und Forschung der Stufe III standen schon an Tag 5 – mit den alten
+    // Schwellen also III um Tag 12, IV um Tag 23, V erst um Tag 120.
     stufen: [
-        (name: "II Industrie", einwohner: 2000, gebaeude: {erzmine: 5, kristallmine: 5}, versorgung_plus: true,
+        // 19.10.2026 Karl: „der aufstieg ist bei 3000 vorher 2000 und sollte weniger als 2000 sein“ → II mit 1500 Einwohnern.
+        (name: "II Industrie", einwohner: 1500, gebaeude: {erzmine: 5, kristallmine: 5}, versorgung_plus: true,
             kosten: {erz: 2000, kristall: 1000},
-            schaltet_frei: "Geheimdienst, Überwachungstechnik, Abschirmtechnik, Gießerei, Elektronikwerk, Konsumgüterwerk, Fusionskraftwerk, Akademie, Bunker, leichte Jäger, kleine Transporter, Raketenwerfer, Lasergeschütz"),
-        (name: "III Orbit", einwohner: 8000, gebaeude: {giesserei: 3, elektronikwerk: 2}, forschung: {energietechnik: 3}, stabilitaet: 55.0,
+            schaltet_frei: "Geheimdienst, Überwachungstechnik, Abschirmtechnik, Gießerei, Elektronikwerk, Konsumgüterwerk, Fusionskraftwerk, Bunker, leichte Jäger, kleine Transporter, Bergbauschiffe, Raketenwerfer, Lasergeschütz"),
+        (name: "III Orbit", einwohner: 4000, gebaeude: {giesserei: 3, elektronikwerk: 2}, forschung: {energietechnik: 3}, stabilitaet: 55.0,
             kosten: {erz: 10000, kristall: 6000, legierung: 500, elektronik: 200},
-            schaltet_frei: "Markt, Sensorphalanx, Raketensilo, große Transporter, Bergbauschiffe, Ionengeschütz"),
-        (name: "IV Sternenflug", einwohner: 32000, gebaeude: {werft: 4}, forschung: {impulsantrieb: 3, astrophysik: 1}, stabilitaet: 60.0, konsum_deckung: 0.8,
+            schaltet_frei: "Markt, Sensorphalanx, Raketensilo, Kaserne und Bodentruppen (Generation 12), große Transporter, Kreuzer (Werft 3), Kolonieschiff (Werft 3, Impulsantrieb 2, Habitatmodul; 2 Kolonieplätze frei), Terraforming (je Stufe ein weiterer Kolonieplatz), Recycler, Ionengeschütz"),
+        (name: "IV Sternenflug", einwohner: 40000, gebaeude: {werft: 4}, forschung: {impulsantrieb: 3, astrophysik: 1}, stabilitaet: 60.0, konsum_deckung: 0.8,
             kosten: {erz: 40000, kristall: 25000, deuterium: 10000, legierung: 2000, elektronik: 1000},
-            schaltet_frei: "Orbitalwerft, Kolonieschiff, Kreuzer, Recycler, Truppentransporter, Kaserne, Verwaltungszentrum, Nanofabrik, Xenoextraktor, Gaußkanone"),
-        (name: "V Imperium", einwohner: 700000, forschung: {hyperraumantrieb: 1}, kolonien: 3,
+            schaltet_frei: "Orbitalwerft, großes Kolonieschiff, Truppentransporter, Terraformer (Terraforming 1, Impulsantrieb 3), Kaserne (ohne Generation 12), Verwaltungszentrum, Nanofabrik, Xenoextraktor, Gaußkanone"),
+        (name: "V Imperium", einwohner: 200000, forschung: {hyperraumantrieb: 1}, kolonien: 3,
             kosten: {erz: 200000, kristall: 150000, deuterium: 50000, legierung: 10000, elektronik: 5000, xenokristall: 5000},
             schaltet_frei: "Orbitalring, Forschungsarchiv, Versorgungsnetz, Schlachtschiff, Bomber, Zerstörer, Plasmawerfer, Planetenschild"),
     ],
-    stufen_haltezeit_stunden: 48,
+    stufen_haltezeit_stunden: 0,          // 0 = Aufstieg sofort, sobald alle Bedingungen erfüllt sind
 
     flug: (
         zeitfaktor: 4,
@@ -353,7 +372,7 @@
 
     zusatz: (
         silo_plaetze_je_stufe: 10,
-        raketen_kosten: ({erz: 2000, deuterium: 500}, {erz: 5000, kristall: 1000, deuterium: 2000}),
+        raketen_kosten: ({erz: 2000, deuterium: 5000}, {erz: 5000, kristall: 1000, deuterium: 15000}),
         raketen_bauzeit_sekunden: 300,
         raketen_flug_min_sekunden: 1200,
         raketen_flug_je_system_sekunden: 60,

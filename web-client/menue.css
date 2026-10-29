@@ -1,0 +1,99 @@
+/* Menü-Blatt hinter dem Themenknopf unten links (Handy < 768 px), Inhalt aus menue.js.
+   Karl 24.10.2026: „transparente Hintergrundbilder … geht cooler … wirkt etwas KI-sloppy“. Richtung: dunkel, ruhig,
+   Weltraum-Epos. Spielkunst je Volk als durchscheinendes Motiv (vollständig, contain, rechts), davor ein Verlauf;
+   starke Typografie (Oxanium), Live-Angaben statt Fülltext, keine Glas-Karten von der Stange, kein Dauerglühen,
+   Bewegung nur transform/opacity. Eigene Stile mit ID-Bereich (#themenblatt) gegen die globale Knopfgrafik. */
+@media (max-width:767px){
+ body.game-client[data-rahmen][data-playing="true"] #themenblatt:not([hidden]){display:flex;position:fixed;inset:0;z-index:59;align-items:flex-end;background:rgba(2,5,10,.74);animation:menue-dunkel .18s ease-out}
+ body.game-client #themenblatt .blatt-innen{box-sizing:border-box;width:100%;max-height:calc(100vh - 20px);overflow:auto;overscroll-behavior:contain;
+  padding:8px 12px calc(var(--themenleiste-h,74px) + 14px);border-radius:18px 18px 0 0;border-top:1px solid rgba(150,190,230,.22);
+  background:#060c16;box-shadow:0 -18px 44px rgba(0,0,0,.7);font-family:var(--r-schrift);color:var(--r-text,#dbe6f0);animation:menue-hoch .22s cubic-bezier(.2,.8,.2,1)}
+ body.game-client #themenblatt .blatt-griff{width:40px;height:4px;margin:0 auto 8px;border-radius:2px;background:rgba(255,255,255,.22)}
+
+ /* Kopf: „Menü“, aktiver Planet (auf ihn wirken Aufbau und Flotte), Schließen */
+ body.game-client #themenblatt .blatt-kopf{display:grid;grid-template-columns:auto minmax(0,1fr) 44px;align-items:center;gap:12px;margin:0 2px 10px}
+ body.game-client #themenblatt .blatt-kopf h2{margin:0;padding:0;border:0;font:700 calc(20px * var(--text-scale,1))/1.1 var(--r-schrift);letter-spacing:.02em;color:#f3ead2;outline:none}
+ body.game-client #themenblatt .blatt-ort{display:grid;gap:1px;min-width:0;justify-self:end;text-align:right}
+ body.game-client #themenblatt .blatt-ort small{font:600 calc(11px * var(--text-scale,1))/1.2 var(--r-schrift);letter-spacing:.12em;text-transform:uppercase;color:#7f97ad}
+ body.game-client #themenblatt .blatt-ort b{font:600 calc(13px * var(--text-scale,1))/1.25 var(--r-schrift);color:#d9e5ef;overflow-wrap:break-word}
+ body.game-client #themenblatt button.blatt-zu{display:grid;place-items:center;width:44px;height:44px;min-height:44px;margin:0;padding:0;border:1px solid rgba(150,190,230,.22)!important;border-radius:12px;
+  background:transparent!important;background-image:none!important;box-shadow:none!important;color:#b9cbdb!important}
+ body.game-client #themenblatt .blatt-zu .menue-symbol{width:20px;height:20px}
+
+ /* Themenkarten */
+ body.game-client #themenblatt .blatt-themen{display:grid;gap:8px}
+ body.game-client #themenblatt .blatt-karte{--k:#e8c26a;position:relative;isolation:isolate;overflow:hidden;display:grid;gap:4px;padding:5px 8px 8px;border-radius:14px;
+  border:1px solid rgba(150,190,230,.14);border-left:3px solid color-mix(in srgb,var(--k) 75%,transparent);background:#08111d}
+ body.game-client #themenblatt .blatt-karte[data-k="flotte"]{--k:#5fd0ff}
+ body.game-client #themenblatt .blatt-karte[data-k="galaxie"]{--k:#b691ff}
+ body.game-client #themenblatt .blatt-karte[data-k="funk"]{--k:#6fe0a8}
+ /* Motiv: vollständig (contain), rechts oben über Kopf und Live-Zeilen, durchscheinend; davor ein ruhiger Verlauf */
+ body.game-client #themenblatt .blatt-karte::before{content:"";position:absolute;z-index:-2;top:0;right:0;bottom:56px;width:78%;
+  background:var(--motiv,none) right center/contain no-repeat;opacity:.72}
+ body.game-client #themenblatt .blatt-karte::after{content:"";position:absolute;z-index:-1;inset:0;
+  background:linear-gradient(90deg,#08111d 0%,rgba(8,17,29,.9) 28%,rgba(8,17,29,.45) 60%,rgba(8,17,29,.12) 100%),linear-gradient(0deg,#08111d 0,#08111d 50px,rgba(8,17,29,0) 74px)}
+ body.game-client #themenblatt .blatt-karte[data-an]{border-color:color-mix(in srgb,var(--k) 38%,rgba(150,190,230,.14));border-left-color:var(--k)}
+
+ body.game-client #themenblatt button.blatt-thema{display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;min-height:48px;margin:0;padding:4px 2px!important;
+  border:0!important;border-radius:10px;background:transparent!important;background-image:none!important;box-shadow:none!important;text-align:left;color:#f2f6fa!important;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+ body.game-client #themenblatt .blatt-thema-symbol{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:color-mix(in srgb,var(--k) 14%,rgba(6,12,22,.8));border:1px solid color-mix(in srgb,var(--k) 40%,transparent)}
+ body.game-client #themenblatt .blatt-thema .menue-symbol{width:20px;height:20px;color:var(--k)}
+ body.game-client #themenblatt .blatt-thema-text{display:grid;gap:1px;min-width:0}
+ body.game-client #themenblatt .blatt-thema strong{font:700 calc(17px * var(--text-scale,1))/1.15 var(--r-schrift);letter-spacing:.01em;color:#f4f7fa;text-shadow:0 1px 2px rgba(0,0,0,.8)}
+ body.game-client #themenblatt .blatt-an-marke{padding:3px 8px;border-radius:8px;border:1px solid color-mix(in srgb,var(--k) 55%,transparent);background:rgba(6,12,22,.7);font:600 calc(11px * var(--text-scale,1))/1.2 var(--r-schrift);letter-spacing:.06em;color:color-mix(in srgb,var(--k) 80%,#dbe6f0);white-space:nowrap}
+ body.game-client #themenblatt .blatt-pfeil{font:400 22px/1 var(--r-schrift);color:color-mix(in srgb,var(--k) 60%,#8ea4b8)}
+ body.game-client #themenblatt .blatt-thema:active{transform:scale(.985)}
+
+ /* Live-Angaben: echte Werte, Restzeiten ticken über data-arrival-echt (game-ui.js tickJobs) */
+ body.game-client #themenblatt .blatt-live{display:grid;gap:1px;min-height:18px;margin-top:-4px;padding:0 4px 2px 48px}
+ body.game-client #themenblatt .blatt-live-zeile{font:500 calc(13px * var(--text-scale,1))/1.35 var(--r-schrift);color:#c6d5e2;font-variant-numeric:tabular-nums;text-shadow:0 1px 2px rgba(0,0,0,.85)}
+ body.game-client #themenblatt .blatt-live-zeile.hinweis{color:#d8bd7c}
+ body.game-client #themenblatt .blatt-live-zeile.neu{color:#9fd6ff}
+ body.game-client #themenblatt .blatt-live-zeile.gefahr{color:var(--r-rot,#ff6464);font-weight:700}
+ body.game-client #themenblatt .blatt-live-zeile.gefahr::before{content:"⚠ "}
+ body.game-client #themenblatt .blatt-uhr{font-weight:600;color:#f1f5f9}
+ body.game-client #themenblatt .blatt-live-zeile.gefahr .blatt-uhr{color:inherit}
+
+ /* Ziele des Themas: direkt antippbar, das aktuelle markiert */
+ body.game-client #themenblatt .blatt-ziele{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:2px}
+ body.game-client #themenblatt .blatt-ziele button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:48px;margin:0;padding:4px 2px!important;
+  border:1px solid rgba(150,190,230,.13)!important;border-radius:10px;background:rgba(4,10,18,.72)!important;background-image:none!important;box-shadow:none!important;color:#b7c8d7!important;
+  font:600 calc(12px * var(--text-scale,1))/1.1 var(--r-schrift)!important;letter-spacing:0;text-align:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:transform 120ms ease-out}
+ body.game-client #themenblatt .blatt-ziele button span{max-width:100%;overflow-wrap:break-word;hyphens:auto}
+ body.game-client #themenblatt .blatt-ziele .menue-symbol{width:20px;height:20px;color:color-mix(in srgb,var(--k) 55%,#9db3c6)}
+ body.game-client #themenblatt .blatt-ziele button[aria-current="page"]{border-color:color-mix(in srgb,var(--k) 70%,transparent)!important;color:#fff!important;background:color-mix(in srgb,var(--k) 14%,rgba(4,10,18,.8))!important}
+ body.game-client #themenblatt .blatt-ziele button[aria-current="page"]::before{content:"";position:absolute;top:-1px;left:28%;right:28%;height:2px;border-radius:0 0 2px 2px;background:var(--k)}
+ body.game-client #themenblatt .blatt-ziele button[aria-current="page"] .menue-symbol{color:var(--k)}
+ body.game-client #themenblatt .blatt-ziele button:disabled{opacity:.4}
+ body.game-client #themenblatt .blatt-ziele button:active,body.game-client #themenblatt .blatt-weitere button:active{transform:scale(.96)}
+
+ /* Weitere Bereiche als Kachelraster mit Symbolen */
+ body.game-client #themenblatt .blatt-weitere-titel{margin:16px 2px 8px;font:600 calc(12px * var(--text-scale,1))/1 var(--r-schrift);letter-spacing:.14em;text-transform:uppercase;color:#7f97ad}
+ body.game-client #themenblatt .blatt-weitere{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px}
+ body.game-client #themenblatt .blatt-weitere button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;min-width:0;min-height:66px;margin:0;padding:9px 3px 7px!important;
+  border:1px solid rgba(150,190,230,.14)!important;border-radius:12px;background:#0a1421!important;background-image:none!important;box-shadow:none!important;color:#c9d7e3!important;
+  font:600 calc(12px * var(--text-scale,1))/1.15 var(--r-schrift)!important;letter-spacing:0;text-align:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:transform 120ms ease-out}
+ body.game-client #themenblatt .blatt-weitere button span{max-width:100%;overflow-wrap:break-word;-webkit-hyphens:manual;hyphens:manual}
+ body.game-client #themenblatt .blatt-weitere .menue-symbol{width:22px;height:22px;color:#8fb9d8}
+ body.game-client #themenblatt .blatt-weitere button[aria-current="page"]{border-color:rgba(143,208,255,.6)!important;color:#fff!important}
+ body.game-client #themenblatt .blatt-weitere .blatt-gold{border-color:rgba(226,189,98,.45)!important;color:#f1dfae!important;background:#141108!important}
+ body.game-client #themenblatt .blatt-weitere .blatt-gold .menue-symbol{color:var(--r-gold,#e2bd62)}
+ body.game-client #themenblatt .blatt-zahl{position:absolute;top:4px;right:6px;min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:var(--r-rot,#ff6464);color:#fff;font:700 11px/18px var(--r-schrift);text-align:center}
+
+ /* Themenfarben der Leiste wirken wie seit 19.10. gedacht (rahmen.css setzte Gold mit höherer Spezifität und überdeckte
+    sie) – Leiste und Karte im Menü tragen dieselbe Farbe. */
+ body.game-client[data-rahmen][data-playing="true"] #themenleiste[data-thema="flotte"]{--t-farbe:#5fd0ff;--t-glut:rgba(95,208,255,.22)}
+ body.game-client[data-rahmen][data-playing="true"] #themenleiste[data-thema="galaxie"]{--t-farbe:#b691ff;--t-glut:rgba(182,145,255,.24)}
+ body.game-client[data-rahmen][data-playing="true"] #themenleiste[data-thema="funk"]{--t-farbe:#6fe0a8;--t-glut:rgba(111,224,168,.22)}
+ /* Themenknopf in der Leiste: ruhige Fläche in der Themenfarbe statt Dauerglühen */
+ body.game-client #themenleiste .thema-knopf{box-shadow:none!important;background-image:none!important;background-color:color-mix(in srgb,var(--t-farbe) 9%,rgba(8,18,31,.92))!important;border-color:color-mix(in srgb,var(--t-farbe) 70%,transparent)}
+ body.game-client #themenleiste .thema-knopf[aria-expanded="true"]{background-color:color-mix(in srgb,var(--t-farbe) 20%,rgba(8,18,31,.92))!important}
+ body.game-client #themenleiste .thema-punkte i.an{box-shadow:none}
+
+ @keyframes menue-hoch{from{transform:translateY(28px);opacity:.5}to{transform:none;opacity:1}}
+ @keyframes menue-dunkel{from{opacity:0}to{opacity:1}}
+}
+@media (max-width:767px) and (prefers-reduced-motion:reduce){
+ body.game-client #themenblatt .blatt-innen,body.game-client[data-rahmen][data-playing="true"] #themenblatt:not([hidden]){animation:none!important}
+ body.game-client #themenblatt button{transition:none!important}
+}

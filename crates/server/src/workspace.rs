@@ -59,7 +59,11 @@ impl Game {
         let mut stmt=self.db.prepare("SELECT entry FROM team_journal WHERE account=?1 AND world_id=?2 ORDER BY id DESC LIMIT 24").map_err(|_|err(503,"Teamprotokoll nicht lesbar"))?;
         let rows=stmt.query_map(params![a.id,self.runtime.world_id],|r|r.get::<_,String>(0)).map_err(|_|err(503,"Teamprotokoll nicht lesbar"))?;
         let journal=rows.map(|r|r.map_err(|_|err(503,"Teamprotokoll nicht lesbar")).and_then(|s|serde_json::from_str::<Value>(&s).map_err(|_|err(503,"Teamprotokoll beschädigt")))).collect::<Result<Vec<_>,_>>()?;
-        Ok(json!({"revision":revision,"state":state,"journal":journal,"world_id":self.runtime.world_id}))
+        // Rats-Pinwand der Harness-/MCP-Agenten (agenten.rs) – der Besitzer sieht und beantwortet sie hier mit.
+        let rat=self.rat_pinwand(a.id,None,"alle")?;
+        // Allianz-Pinwand (alle Mitglieder) nur für Reiche in einer Allianz.
+        let allianz=a.sid.and_then(|sid|self.allianz_pinwand(sid,"alle",true).ok()).unwrap_or(Value::Null);
+        Ok(json!({"revision":revision,"state":state,"journal":journal,"world_id":self.runtime.world_id,"rat_pinwand":rat,"allianz_pinwand":allianz}))
     }
     fn workspace_revision(&self,a:&Account,expected:&Value)->Result<(),(u16,String)> {
         let n:Option<u64>=self.db.query_row("SELECT revision FROM team_workspace WHERE account=?1",[a.id],|r|r.get(0)).optional().map_err(|_|err(503,"Pinwände nicht lesbar"))?;

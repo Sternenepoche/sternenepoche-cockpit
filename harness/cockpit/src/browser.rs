@@ -56,6 +56,13 @@ impl Einbettung {
         if let Some(w) = &self.webview { if self.sichtbar { let _ = w.set_visible(false); } }
         self.sichtbar = false;
     }
+    pub fn navigieren(&self, seite:&str)->Result<(),String> {
+        if !["codex","warsim","briefkasten","reich"].contains(&seite){return Err("Unbekannter Spielbereich".into());}
+        let view=self.webview.as_ref().ok_or("Spiel zuerst öffnen")?;
+        let key=serde_json::to_string(seite).map_err(|e|e.to_string())?;
+        view.evaluate_script(&format!("if(typeof navigateGame==='function'){{navigateGame({key});window.scrollTo(0,0);}}"))
+            .map_err(|e|e.to_string())
+    }
 }
 
 #[cfg(test)]

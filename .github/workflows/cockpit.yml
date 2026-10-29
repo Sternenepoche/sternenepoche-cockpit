@@ -39,9 +39,6 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Gemeinsame Grafikdateien wiederherstellen
-        run: python harness/paket/assets_wiederherstellen.py
-
       - name: Rust bereitstellen
         shell: bash
         run: |

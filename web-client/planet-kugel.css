@@ -1,0 +1,23 @@
+/* Drehende Planeten/Monde, Klappbilder, Drehtempo (planet-kugel.js) */
+.kugel-host{position:relative;display:inline-block;line-height:0;vertical-align:middle}
+.kugel-host>img{display:block;width:100%;height:auto}
+.kugel-host>canvas.planet-kugel{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.kugel-host.kugel-aktiv>img{visibility:hidden}
+.kugel-host.kugel-aktiv{box-shadow:none!important;background:none!important}
+.kugel-host>img.mond-bild,.kugel-host>.mond-kugel{width:100%!important;height:100%!important}
+.kugel-host.kugel-aktiv>.mond-kugel{visibility:hidden}
+/* Mondknopf (planet-kugel.js mondKnopf): unsichtbar über der Mondscheibe, Ring bei Zeiger/Fokus, Druck sichtbar.
+ Spezifität über #game, weil cockpit-look.css alle Spielknöpfe über .game-client button:not(×10) einfärbt. */
+#game .kugel-host>button.kugel-mond,.kugel-host>button.kugel-mond{position:absolute;z-index:3;transform:translate(-50%,-50%);margin:0;padding:0;min-width:0;min-height:0;
+ border:0;border-radius:50%;background:transparent;box-shadow:none;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:box-shadow .15s}
+#game .kugel-host>button.kugel-mond:hover,#game .kugel-host>button.kugel-mond:focus-visible{box-shadow:0 0 0 2px rgba(190,215,255,.8),0 0 14px rgba(150,190,255,.45);filter:none}
+#game .kugel-host>button.kugel-mond:active{box-shadow:0 0 0 3px rgba(226,191,125,.9)}
+#game .kugel-host>button.kugel-mond[hidden]{display:none}
+.klapp-offen{position:fixed;z-index:2147483000;pointer-events:none;object-fit:contain;animation:klappen .42s cubic-bezier(.2,1.4,.4,1) both}
+.klapp-offen.zu{animation:zuklappen .25s ease-in both}
+img.klapp-ziel{opacity:.15;transition:opacity .2s}
+@keyframes klappen{0%{transform:scale(.82) rotate(-8deg);opacity:0;filter:brightness(2.4) saturate(1.4)}55%{opacity:1;filter:brightness(1.6)}100%{transform:scale(1.08) rotate(0);opacity:1;filter:none}}
+@keyframes zuklappen{to{transform:scale(.85) rotate(6deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){.klapp-offen,.klapp-offen.zu{animation-duration:.01s}}
+.drehtempo-wahl{display:inline-flex;gap:6px;align-items:center;font-size:12px}
+.drehtempo-wahl select{font:inherit}

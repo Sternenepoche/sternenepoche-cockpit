@@ -27,11 +27,13 @@ impl Game {
                 "letzter_erfolg":trace.iter().rev().find(|v|v["ok"]==true),"kolonien":s.planeten.len(),"forschung":s.forschung.iter().map(|n|*n as u32).sum::<u32>()})
         }).collect::<Vec<_>>();
         let latest=std::fs::read_dir(self.data_root.join("backups")).ok().into_iter().flatten().filter_map(Result::ok).filter_map(|e|e.metadata().ok().and_then(|m|m.modified().ok().map(|t|(t,e.file_name().to_string_lossy().into_owned())))).max_by_key(|(t,_)|*t).map(|(_,name)|name);
-        json!({"bots":bots,"letztes_backup":latest,"audit_eintraege":self.db.query_row("SELECT count(*) FROM audit",[],|r|r.get::<_,i64>(0)).unwrap_or(0)})
+        // 20.10.2026: je Platz die interne Spielerart (Bot, Agent, Mensch, Mensch mit Agent) mit Beginn und Stundenzählern.
+        json!({"bots":bots,"spielerarten":self.spielerarten_status(),"letztes_backup":latest,"audit_eintraege":self.db.query_row("SELECT count(*) FROM audit",[],|r|r.get::<_,i64>(0)).unwrap_or(0)})
     }
     pub(super) fn validated_profile(&self,v:&Value)->Result<String,(u16,String)> {
         let text=v["rules"].as_str().unwrap_or(include_str!("../../../regeln/online-v1.ron"));
-        if text.len()>48_000 {return Err(err(400,"Regelprofil auf 48 KiB begrenzt"));}
+        // Leave room for JSON framing inside the HTTP request limit of 64 KiB.
+        if text.len()>60*1024 {return Err(err(400,"Regelprofil auf 60 KiB begrenzt"));}
         // Preflight before cache construction/world generation: malformed operator
         // values must return an error instead of poisoning the live world's mutex.
         let raw:Regelwerk=ron::from_str(text).map_err(|e|err(400,&format!("Regelprofil: {e}")))?;
@@ -70,11 +72,16 @@ impl Game {
         match v["action"].as_str().unwrap_or("") {
             "rules_profile"=>{
                 let mut r=(*self.world.regeln).clone();r.hash.clear();r.cache=Default::default();
+                // Mondinhalte kommen bei jeder neuen Welt aus monde_aktivieren, der Terraformer aus technik_aktivieren;
+                // das Profil bleibt die Basis.
+                r.einheiten.retain(|e,_|!e.ist_mondinhalt()&&*e!=kern::Einheit::Terraformer);
+                for rule in r.einheiten.values_mut(){rule.schnellfeuer.retain(|e,_|!e.ist_mondinhalt()&&*e!=kern::Einheit::Terraformer);}
                 let text=ron::ser::to_string_pretty(&r,ron::ser::PrettyConfig::default()).map_err(|_|err(503,"Regelprofil nicht lesbar"))?;
                 Ok(json!({"text":text,"version":self.world.regeln.version,"hash":self.world.regeln.hash}))
             },
             "rules_validate"|"reset_preview"=>{
-                let text=self.validated_profile(v)?;let r=Regelwerk::laden(&text).map_err(|e|err(400,&e))?;
+                let text=self.validated_profile(v)?;let mut r=Regelwerk::laden(&text).map_err(|e|err(400,&e))?;
+                let mut preview=Welt::neu(r,83,(BOT_COUNT+SEATS) as usize).map_err(|e|err(400,&e))?;preview.ausbau_aktivieren().map_err(|e|err(400,&e))?;preview.monde_aktivieren().map_err(|e|err(400,&e))?;preview.allianz_v2_aktivieren().map_err(|e|err(400,&e))?;preview.dyson_aktivieren().map_err(|e|err(400,&e))?;preview.technik_aktivieren().map_err(|e|err(400,&e))?;r=(*preview.regeln).clone();
                 Ok(json!({"valid":true,"profile_hash":r.hash,"version":r.version,"epoche_tage":r.welt.epoche_tage,"alte_welt":self.runtime.world_id,
                     "betroffene_konten":self.db.query_row("SELECT count(*) FROM accounts",[],|row|row.get::<_,i64>(0)).unwrap_or(0),
                     "wirkung":"Neue Welt, 20 freie Plätze. Alle Sitzungen und Agentfreigaben widerrufen; Konten bleiben als Zuschauer. Automatisches Backup vor Übernahme."}))

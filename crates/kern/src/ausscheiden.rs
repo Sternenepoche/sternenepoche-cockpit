@@ -95,9 +95,10 @@ impl Welt {
         }
         json!({"status":if fristen.is_empty(){"aktiv"}else{"kritisch"},"rettungsfristen":fristen})
     }
-    /// Public defeat announcements do not expose crisis times, stocks or coordinates.
+    /// Public defeat announcements do not expose crisis times, stocks or coordinates – and no internal player number
+    /// (bots hold 0–29 online; the number told players which empire was a bot).
     pub fn ausgeschiedene(&self) -> Vec<Value> {
-        self.ausscheiden.besiegt.iter().map(|(sid,n)|json!({"spieler":sid,"name":self.spieler[*sid as usize].name,"seit":n.zeit,"grund":n.grund})).collect()
+        self.ausscheiden.besiegt.iter().map(|(sid,n)|json!({"name":self.spieler[*sid as usize].name,"seit":n.zeit,"grund":n.grund})).collect()
     }
     fn hilfe_unterwegs(&self, sid: SpielerId) -> bool {
         self.flotten.values().any(|f| {
@@ -361,7 +362,7 @@ impl Welt {
             p.rate = [0; GUETER];
             p.fp_rate = 0;
             p.bauschleife.clear();
-            p.fertigung = [vec![], vec![]];
+            self.ausbau.parallel.remove(&format!("{}:0",p.id));self.ausbau.parallel.remove(&format!("{}:1",p.id));p.fertigung = [vec![], vec![]];
             p.einheiten[..SCHIFFE].fill(0);
             p.raketen = [0; 2];
         }

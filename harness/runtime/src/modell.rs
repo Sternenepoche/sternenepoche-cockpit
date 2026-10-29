@@ -20,6 +20,9 @@ pub struct Modelle {
     http: reqwest::blocking::Client,
     ollama_url: String,
     ollama_kontext: u32,
+    /// Tatsächlich genutztes Kontextfenster: wächst, wenn ein Prompt nicht hineinpasst, und bleibt dann (sonst lädt
+    /// Ollama das Modell bei jedem Wechsel neu).
+    ollama_kontext_aktiv: std::sync::atomic::AtomicU32,
     ollama_nur_cpu: bool,
     ollama_timeout: Duration,
     openrouter_schluessel: String,
@@ -37,7 +40,7 @@ impl Modelle {
     pub fn neu(k: &Konfig, g: &Geheimnisse) -> Result<Self, String> {
         let http = reqwest::blocking::Client::builder().connect_timeout(Duration::from_secs(10))
             .redirect(reqwest::redirect::Policy::none()).build().map_err(|e| e.to_string())?;
-        Ok(Self { http, ollama_url: k.ollama.url.trim_end_matches('/').into(), ollama_kontext: k.ollama.kontext, ollama_nur_cpu: k.ollama.nur_cpu,
+        Ok(Self { http, ollama_url: k.ollama.url.trim_end_matches('/').into(), ollama_kontext: k.ollama.kontext, ollama_kontext_aktiv: k.ollama.kontext.into(), ollama_nur_cpu: k.ollama.nur_cpu,
             ollama_timeout: Duration::from_secs(k.ollama.timeout_s), openrouter_schluessel: g.openrouter.clone(),
             openai_url: k.openai.url.trim_end_matches('/').into(), openai_schluessel: g.openai.clone(), openai_format: k.openai.antwortformat.clone(), openai_timeout: Duration::from_secs(k.openai.timeout_s),
             openrouter_daten_verbieten: k.openrouter.datenspeicherung_verbieten, openrouter_timeout: Duration::from_secs(k.openrouter.timeout_s),
@@ -64,16 +67,34 @@ impl Modelle {
 
     #[cfg(feature = "ollama")]
     fn ollama(&self, r: &RollenKonfig, system: &str, nutzer: &str, schema: &Value) -> Result<ModellAntwort, String> {
-        let mut optionen = json!({"temperature":r.temperatur,"num_predict":r.max_tokens,"num_ctx":self.ollama_kontext});
-        if self.ollama_nur_cpu { optionen["num_gpu"] = json!(0); }
-        let body = json!({"model":r.modell,"stream":false,"think":false,"format":schema,"options":optionen,
-            "messages":[{"role":"system","content":system},{"role":"user","content":nutzer}]});
-        let v: Value = self.http.post(format!("{}/api/chat", self.ollama_url)).timeout(self.ollama_timeout).json(&body).send()
-            .map_err(|e| format!("Ollama nicht erreichbar: {}", e.without_url()))?
-            .error_for_status().map_err(|e| format!("Ollama meldet {}", e.status().map(|s| s.as_u16()).unwrap_or(0)))?
-            .json().map_err(|e| format!("Ollama-Antwort unlesbar: {e}"))?;
-        Ok(ModellAntwort { text: v["message"]["content"].as_str().unwrap_or("").to_string(),
-            tokens: v["prompt_eval_count"].as_u64().unwrap_or(0) + v["eval_count"].as_u64().unwrap_or(0), ..Default::default() })
+        let zeichen = system.chars().count() + nutzer.chars().count();
+        let mut num_ctx = self.kontext_fuer(system, nutzer, r.max_tokens);
+        let mut vorher = 0u64;
+        loop {
+            let mut optionen = json!({"temperature":r.temperatur,"num_predict":r.max_tokens,"num_ctx":num_ctx});
+            if self.ollama_nur_cpu { optionen["num_gpu"] = json!(0); }
+            let body = json!({"model":r.modell,"stream":false,"think":false,"format":schema_verpacken(schema),"options":optionen,
+                "messages":[{"role":"system","content":system},{"role":"user","content":nutzer}]});
+            let v: Value = self.http.post(format!("{}/api/chat", self.ollama_url)).timeout(self.ollama_timeout).json(&body).send()
+                .map_err(|e| format!("Ollama nicht erreichbar: {}", e.without_url()))?
+                .error_for_status().map_err(|e| format!("Ollama meldet {}", e.status().map(|s| s.as_u16()).unwrap_or(0)))?
+                .json().map_err(|e| format!("Ollama-Antwort unlesbar: {e}"))?;
+            let prompt = v["prompt_eval_count"].as_u64().unwrap_or(0);
+            if prompt_gekuerzt(prompt, zeichen, num_ctx) {
+                // Prompt länger als das Fenster: Ollama behält still nur die Hälfte (das Ende). Größer neu fragen – bringt
+                // das nichts, ist das Fenster des Modells selbst erschöpft (qwen3:8b: 40 960).
+                let neu = num_ctx.saturating_mul(2).min(131_072);
+                if neu == num_ctx || prompt == vorher {
+                    return Err(format!("Prompt ({zeichen} Zeichen) passt nicht ins Kontextfenster des Modells {}: Ollama verarbeitete nur {prompt} Tokens (num_ctx {num_ctx}) – Kontext kürzen (kontext.max_zeichen, regel_zeichen, skills_zeichen) oder ein Modell mit größerem Fenster wählen", r.modell));
+                }
+                vorher = prompt;
+                self.ollama_kontext_aktiv.fetch_max(neu, std::sync::atomic::Ordering::Relaxed);
+                num_ctx = neu;
+                continue;
+            }
+            return Ok(ModellAntwort { text: v["message"]["content"].as_str().unwrap_or("").to_string(),
+                tokens: prompt + v["eval_count"].as_u64().unwrap_or(0), ..Default::default() });
+        }
     }
 
     #[cfg(feature = "openrouter")]
@@ -124,6 +145,20 @@ impl Modelle {
         Ok(ModellAntwort { text, tokens: v["usage"]["total_tokens"].as_u64().unwrap_or(0), ..Default::default() })
     }
 
+    /// Kontextfenster für Ollama: Ein zu langer Prompt wird von Ollama gekürzt (es behält die Hälfte des Fensters, das
+    /// Ende) – Seele, Regeln und Schema im Systemprompt gingen verloren (KI-Weg-Lauf 27.10.2026: Prompts mit 35 000
+    /// Tokens bei Werkseinstellung 16 384). Schätzung 2,8 Zeichen je Token (gemessen 2,98 bei deutschem Text mit JSON)
+    /// plus Antwort und Reserve; aufgerundet auf 8 192, höchstens 131 072; das Fenster schrumpft danach nicht wieder.
+    pub fn kontext_fuer(&self, system: &str, nutzer: &str, antwort: u32) -> u32 {
+        use std::sync::atomic::Ordering;
+        let noetig = ((system.chars().count() + nutzer.chars().count()) as f64 / 2.8) as u32 + antwort + 512;
+        let aktiv = self.ollama_kontext_aktiv.load(Ordering::Relaxed).max(self.ollama_kontext);
+        if noetig <= aktiv { return aktiv; }
+        let neu = noetig.div_ceil(8192).saturating_mul(8192).min(131_072);
+        self.ollama_kontext_aktiv.fetch_max(neu, Ordering::Relaxed);
+        neu
+    }
+
     /// Modelle des eigenen Servers (GET /models).
     pub fn openai_modelle(&self) -> Result<Vec<String>, String> {
         let mut q = self.http.get(format!("{}/models", self.openai_url)).timeout(Duration::from_secs(8));
@@ -150,15 +185,70 @@ impl Modelle {
     }
 }
 
+/// Hat Ollama den Prompt gekürzt? Gemessen 27.10.2026 (Ollama 0.40.11): Ist der Prompt länger als num_ctx N (oder als
+/// das Fenster des Modells), verarbeitet es genau N/2 + 2 Tokens und wirft den Anfang weg. Erkennbar daran oder an
+/// einer Tokenzahl unter ~5 Zeichen je Token.
+pub fn prompt_gekuerzt(prompt_tokens: u64, zeichen: usize, num_ctx: u32) -> bool {
+    if prompt_tokens == 0 || zeichen < 2_000 { return false; }
+    let am_rand = [num_ctx as u64 / 2, num_ctx as u64].iter().any(|g| prompt_tokens.abs_diff(*g) <= 8);
+    am_rand || (prompt_tokens as f64) < zeichen as f64 / 5.0
+}
+
+/// Antwortschema für Modellserver mit Grammatik (Ollama): Aktionen und Abfragen als `{aktion, felder}`.
+///
+/// KI-Weg-Lauf 28.10.2026: Ollama setzt das Schema mit alphabetisch sortierten Feldern als Grammatik um (die
+/// Reihenfolge aus dem Schema geht verloren). Modelle beginnen eine Aktion mit `"typ"`; erlaubt war das nur bei Aktionen,
+/// deren übrige Pflichtfelder hinter „typ“ sortieren – `allianz_gruenden` (Feld „name“) war so unerreichbar, der Diplomat
+/// schrieb Zug um Zug `allianz_verlassen`, obwohl er laut Begründung gründen wollte. „aktion“ steht vor „felder“: das
+/// Modell legt zuerst die Aktion fest. `json_aus_text` macht daraus wieder `{typ, …}`.
+pub fn schema_verpacken(s: &Value) -> Value {
+    let mut s = s.clone();
+    for feld in ["aktionen", "abfragen"] {
+        let Some(varianten) = s.pointer_mut(&format!("/properties/{feld}/items/anyOf")).and_then(Value::as_array_mut) else { continue };
+        for v in varianten.iter_mut() {
+            let Some(props) = v.get("properties").and_then(Value::as_object).filter(|p| p.contains_key("typ")) else { continue };
+            let mut felder = props.clone();
+            let typ = felder.remove("typ").unwrap_or(Value::Null);
+            let pflicht: Vec<Value> = v["required"].as_array().into_iter().flatten().filter(|r| r.as_str() != Some("typ")).cloned().collect();
+            let mut neu = json!({"type":"object","additionalProperties":false,"required":["aktion","felder"],
+                "properties":{"aktion":typ,"felder":{"type":"object","additionalProperties":v.get("additionalProperties").cloned().unwrap_or(json!(false)),"properties":felder,"required":pflicht}}});
+            if let Some(d) = v.get("description") { neu["description"] = d.clone(); }
+            *v = neu;
+        }
+    }
+    s
+}
+
+/// `{aktion, felder}` (siehe `schema_verpacken`) zurück in `{typ, …}`; alles andere bleibt unverändert.
+fn auspacken(v: &mut Value) {
+    for feld in ["aktionen", "abfragen"] {
+        for x in v.get_mut(feld).and_then(Value::as_array_mut).into_iter().flatten() {
+            let Some(o) = x.as_object().filter(|o| o.len() == 2) else { continue };
+            if let (Some(t), Some(f)) = (o.get("aktion").and_then(Value::as_str), o.get("felder").and_then(Value::as_object)) {
+                let mut neu = serde_json::Map::new();
+                neu.insert("typ".into(), json!(t));
+                neu.extend(f.clone());
+                *x = Value::Object(neu);
+            }
+        }
+    }
+}
+
 /// Liest das JSON-Objekt aus einer Modellantwort (auch mit Codezaun oder Vorrede).
 pub fn json_aus_text(text: &str) -> Result<Value, String> {
     let t = text.trim();
-    if let Ok(v) = serde_json::from_str::<Value>(t) { if v.is_object() { return Ok(v); } }
-    let start = t.find('{').ok_or("Modellantwort enthält kein JSON-Objekt")?;
-    let ende = t.rfind('}').ok_or("Modellantwort enthält kein vollständiges JSON-Objekt")?;
-    if ende <= start { return Err("Modellantwort enthält kein vollständiges JSON-Objekt".into()); }
-    let v: Value = serde_json::from_str(&t[start..=ende]).map_err(|e| format!("Modell-JSON fehlerhaft: {e}"))?;
-    if !v.is_object() { return Err("Modellantwort ist kein Objekt".into()); }
+    let mut v = match serde_json::from_str::<Value>(t) {
+        Ok(v) if v.is_object() => v,
+        _ => {
+            let start = t.find('{').ok_or("Modellantwort enthält kein JSON-Objekt")?;
+            let ende = t.rfind('}').ok_or("Modellantwort enthält kein vollständiges JSON-Objekt")?;
+            if ende <= start { return Err("Modellantwort enthält kein vollständiges JSON-Objekt".into()); }
+            let v: Value = serde_json::from_str(&t[start..=ende]).map_err(|e| format!("Modell-JSON fehlerhaft: {e}"))?;
+            if !v.is_object() { return Err("Modellantwort ist kein Objekt".into()); }
+            v
+        }
+    };
+    auspacken(&mut v);
     Ok(v)
 }
 
@@ -199,6 +289,42 @@ mod tests {
         // Unverschlüsseltes HTTP nur auf dem eigenen Rechner.
         let mut fremd = k.clone(); fremd.openai.url = "http://10.0.0.5:8000/v1".into();
         assert!(fremd.pruefen().is_err());
+    }
+
+    /// Ein Prompt über dem eingestellten Fenster vergrößert es (auf 8 192 gerundet) – und es bleibt groß.
+    #[test]
+    fn kontextfenster_waechst_mit_dem_prompt() {
+        let k: Konfig = serde_json::from_value(json!({"version":1,"name":"t","server":"https://spiel.example","rollen":{"verwalter":{"anbieter":"ollama","modell":"x"}},
+            "gedaechtnis":{"art":"sqlite","pfad":"g.sqlite3"}})).unwrap();
+        let m = Modelle::neu(&k, &Geheimnisse::default()).unwrap();
+        assert_eq!(m.kontext_fuer("kurz", "kurz", 1500), 16_384);
+        let lang = "ä".repeat(63_000);
+        let n = m.kontext_fuer(&lang, "", 2500);
+        assert!(n >= 63_000 * 10 / 28 + 2500 && n % 8192 == 0, "{n}");
+        assert_eq!(m.kontext_fuer("kurz", "kurz", 1500), n, "Fenster schrumpft nicht (kein Neuladen)");
+        assert_eq!(m.kontext_fuer(&"x".repeat(2_000_000), "", 0), 131_072);
+        // Gekürzt erkannt: genau das halbe Fenster (16 386 bei 32 768) oder viel zu wenige Tokens für den Text.
+        assert!(prompt_gekuerzt(16_386, 150_000, 32_768) && prompt_gekuerzt(9_000, 80_000, 65_536));
+        assert!(!prompt_gekuerzt(19_500, 76_000, 65_536) && !prompt_gekuerzt(0, 76_000, 65_536) && !prompt_gekuerzt(300, 1_000, 16_384));
+    }
+
+    /// Verpackt für die Grammatik, beim Lesen wieder `{typ, …}`; Antworten in alter Form bleiben gültig.
+    #[test]
+    fn aktionen_verpackt_und_ausgepackt() {
+        let s = json!({"properties":{"aktionen":{"type":"array","items":{"anyOf":[
+            {"type":"object","additionalProperties":false,"required":["name","typ"],"properties":{"name":{"type":"string"},"typ":{"enum":["allianz_gruenden"]}}},
+            {"type":"object","required":["typ"],"properties":{"typ":{"enum":["allianz_verlassen"]}},"description":"geht"}]}}}});
+        let v = schema_verpacken(&s);
+        let a = &v["properties"]["aktionen"]["items"]["anyOf"][0];
+        assert_eq!(a["required"], json!(["aktion","felder"]));
+        assert_eq!(a["properties"]["aktion"], json!({"enum":["allianz_gruenden"]}));
+        assert_eq!(a["properties"]["felder"]["required"], json!(["name"]));
+        assert!(a["properties"]["felder"]["properties"].get("typ").is_none());
+        assert_eq!(v["properties"]["aktionen"]["items"]["anyOf"][1]["description"], "geht");
+        let r = json_aus_text(r#"{"aktionen":[{"aktion":"allianz_gruenden","felder":{"name":"Bund"}},{"typ":"bauen","planet":"1:2:3"}],"abfragen":[{"aktion":"kosten","felder":{}}],"begruendung":"x"}"#).unwrap();
+        assert_eq!(r["aktionen"][0], json!({"typ":"allianz_gruenden","name":"Bund"}));
+        assert_eq!(r["aktionen"][1], json!({"typ":"bauen","planet":"1:2:3"}), "alte Form bleibt");
+        assert_eq!(r["abfragen"][0], json!({"typ":"kosten"}));
     }
 
     #[test]

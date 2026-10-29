@@ -1,0 +1,40 @@
+// Dysonsphäre (Allianz-Großprojekt). Konzept und Beschlüsse: docs/DYSONSPHAERE.md ("Beschlossen").
+// Wirkt nur in Welten, die Welt::dyson_aktivieren aufrufen (neue Welten); die Bytes gehen dabei einmalig in den
+// Regelhash ein. Laufende Welten, online-v1.ron, regelwerk.ron und alle vorhandenen Regel-Structs bleiben unverändert.
+// Mengen in ganzen Einheiten; Energie und Strahlsynthese je Spielstunde.
+(
+    version: 1,
+    // Voraussetzungen
+    mitglieder_min: 10,                 // verschiedene Projektmitglieder mit Planet im System
+    stufe_min: 5,                       // Zivilisationsstufe V
+    mitgliedschaft_min_tage: 7,         // Allianzmitgliedschaft je Projektmitglied beim Baubeginn (Karl 20.10.2026: schneller; vorher 14)
+    halten_min_plaetze: 6,              // Wirkung nach Fertigstellung, solange die Eigner-Allianz so viele Plätze hält
+    // Kosten: Anteil je Gut (Erz, Kristall, Deuterium) und Mitglied, aus der Epochenlänge E abgeleitet:
+    // s(E) = min(1, anteil_365/anteil_voll · (anteil_voll/anteil_365)^((E − 365)/365)); keine Sphäre unter min_epoche_tage.
+    anteil_voll: 1000000000,
+    anteil_365: 5000000,                // Karl 21.10.2026 nachmittags: 5 Mio. (frische Welt 712, Tag 145: mit 7 Mio. erst 2–3 von 11 Mitgliedern voll, Deuterium fehlt). Davor 7 Mio., damit eine entschlossene Allianz die Sphäre um Tag 150–200 schafft (bot_lage 712, Tag 80: 10 Mitglieder fördern zusammen 1,0 Mio. Deuterium je Tag – mit 28 Mio. frühestens Tag 340). Auf volle Millionen (anteil_fuer rundet). Vorher 28 Mio. (20.10.), 55 Mio. = Median einzahlbares Deuterium eines Stufe-V-Reichs bis Tag 335 (dyson_messung v2)
+    voll_ab_tage: 730,
+    min_epoche_tage: 190,               // Stufe V um Tag 125 + 30 Bautage + Einzahlzeit
+    mindestbuchung_voll: 1000000,       // × s
+    mindestbuchung_min: 10000,
+    rueckzahlung_austritt: 0.9,
+    rueckzahlung_abbruch_vor_bau: 1.0,
+    rueckzahlung_abbruch_im_bau: 0.75,  // × (1 − Fortschritt)
+    // Bau
+    bau_sekunden: 1296000,              // 15 Spieltage (Karl 20.10.2026: schneller; vorher 30)
+    ruhe_frist_tage: 14,
+    sperre_nach_abbruch_tage: 30,
+    uebernahme_tage: 7,
+    // Wirkung beim vollen Anteil; absolute Mengen × s, relative Boni unverändert
+    sonnenfaktor: 1.6,                  // Solarkraftwerke und Solarsatelliten der Eigner-Allianz im System
+    anschluesse: 4,
+    anschluesse_je_spieler: 1,
+    anschluss_vorlauf_stunden: 72,
+    anschluss_sperre_tage: 7,
+    einspeisung: 1000000.0,
+    strahlsynthese_deuterium: 1500000.0,
+    strahlsynthese_xenokristall: 3000.0,
+    strombad: 3.0,                      // Deuteriumsynthesizer und Xenoextraktor auf Anschlüssen
+    xenosynthese_ohne_malus: true,
+    xenosynthese_rezept_faktor: 0.5,
+)

@@ -1,5 +1,5 @@
 /* Shared loading surface for the public pages and the embedded Rust game client. */
-.sternen-loader{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;overflow:auto;background:#050b14;color:#e6edf5;opacity:1;transition:opacity .38s ease;isolation:isolate;font:14px/1.5 "Segoe UI",system-ui,sans-serif}
+.sternen-loader{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;overflow:auto;background:#050b14;color:#e6edf5;opacity:1;transition:opacity .18s cubic-bezier(.23,1,.32,1);isolation:isolate;font:14px/1.5 "Segoe UI",system-ui,sans-serif}
 .sternen-loader[hidden]{display:none!important}
 .sternen-loader.is-leaving{opacity:0;pointer-events:none}
 .sternen-loader-inner{width:min(100%,760px);padding:26px 20px 22px;text-align:center;display:flex;flex-direction:column;align-items:center}

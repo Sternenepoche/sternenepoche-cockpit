@@ -39,6 +39,8 @@ struct Config {
     proxy: Proxy,
     kaefig_mb: usize,
     timeout_s: u64,
+    /// Opferschutz der Räuberbots beim Start setzen (sonst bleibt der gespeicherte Stand, neu: an).
+    opferschutz: serde_json::Map<String, Value>,
 }
 fn args() -> Result<Config, String> {
     let mut c = Config {
@@ -53,6 +55,7 @@ fn args() -> Result<Config, String> {
         proxy: Proxy::Keiner,
         kaefig_mb: 4096,
         timeout_s: 20,
+        opferschutz: serde_json::Map::new(),
     };
     let mut args = std::env::args().skip(1);
     while let Some(a) = args.next() {
@@ -65,8 +68,14 @@ fn args() -> Result<Config, String> {
             "--proxy-tailscale" => c.proxy = Proxy::Tailscale,
             "--speicher-mb" => c.kaefig_mb = args.next().and_then(|n| n.parse().ok()).filter(|n| *n >= 256).ok_or("--speicher-mb: Zahl ab 256")?,
             "--ohne-kaefig" => c.kaefig_mb = 0,
+            "--opferschutz" => {
+                let an = match args.next().as_deref() { Some("an") => true, Some("aus") => false, _ => return Err("--opferschutz: an oder aus".into()) };
+                c.opferschutz.insert("aktiv".into(), Value::Bool(an));
+            }
+            "--raubpause-stunden" => { let n: u64 = args.next().and_then(|n| n.parse().ok()).ok_or("--raubpause-stunden: Zahl 1 bis 168")?; c.opferschutz.insert("pause_stunden".into(), n.into()); }
+            "--neulingsschutz-tage" => { let n: u64 = args.next().and_then(|n| n.parse().ok()).ok_or("--neulingsschutz-tage: Zahl 0 bis 30")?; c.opferschutz.insert("neulinge_tage".into(), n.into()); }
             "--help" => {
-                println!("sternenepoche-server [--data PFAD] [--bind 127.0.0.1:8890] [--admin-bind 127.0.0.1:8891] [--origin https://spiel.example] [--trusted-proxy | --proxy-tailscale] [--speicher-mb 4096 | --ohne-kaefig]\nBeide Listener bleiben lokal. Öffentlicher Zugriff erfolgt über HTTPS-Reverse-Proxy. Adminzugriff beim VPS über SSH-Tunnel.\n--trusted-proxy: Caddy setzt X-Real-IP. --proxy-tailscale: Tailscale Funnel setzt X-Forwarded-For.");
+                println!("sternenepoche-server [--data PFAD] [--bind 127.0.0.1:8890] [--admin-bind 127.0.0.1:8891] [--origin https://spiel.example] [--trusted-proxy | --proxy-tailscale] [--speicher-mb 4096 | --ohne-kaefig] [--opferschutz an|aus] [--raubpause-stunden 24] [--neulingsschutz-tage 5]\nOpferschutz der Räuberbots: Neulinge werden weder ausgespäht noch angegriffen, jedes Reich höchstens einmal je Raubpause; ohne Angabe bleibt der gespeicherte Stand (neue Welten: aus; mit --opferschutz an: 24 h, 5 Tage), im Betrieb änderbar über die Verwaltung (settings.opferschutz).\nBeide Listener bleiben lokal. Öffentlicher Zugriff erfolgt über HTTPS-Reverse-Proxy. Adminzugriff beim VPS über SSH-Tunnel.\n--trusted-proxy: Caddy setzt X-Real-IP. --proxy-tailscale: Tailscale Funnel setzt X-Forwarded-For.");
                 std::process::exit(0)
             }
             _ => return Err(format!("Unbekanntes Argument: {a}")),
@@ -151,6 +160,17 @@ fn request_allowed(limits: &Limits, ip: &str, authorization: &str) -> bool {
     allowed(limits, format!("ip:{ip}"), 6000)
         && allowed(limits, format!("requests:{ip}:{}", digest(authorization)), 300)
 }
+/// Statische Dateien (Bilder, Skripte, Stile, Modelle) laden ohne Anmeldung und in großer Zahl: Ein erster Seitenaufruf
+/// holt mehr als 300 Dateien. Sie zählen nur gegen das IP-Budget, nicht gegen das enge Budget je Sitzung – sonst fehlten
+/// beim ersten Besuch Symbole und Hintergründe (429).
+fn static_request_allowed(limits: &Limits, ip: &str) -> bool {
+    allowed(limits, format!("ip:{ip}"), 6000)
+}
+fn ist_statische_datei(method: &Method, admin: bool, path: &str) -> bool {
+    *method == Method::Get && !admin && !path.starts_with("/api/")
+        && (path.starts_with("/assets/")
+            || [".js", ".css", ".webp", ".png", ".jpg", ".svg", ".gif", ".glb", ".woff2", ".mp4", ".ico"].iter().any(|e| path.ends_with(e)))
+}
 fn bis_naechste_minute() -> String {
     (60 - now() % 60).to_string()
 }
@@ -226,15 +246,9 @@ fn harness_route(g: &mut Game, method: &Method, path: &str, query: &str, raw: &s
     let topf = if path == "/api/harness/v1/mcp" { mcp::topf(body) } else { harness::quote_fuer_pfad(path) };
     quote_pruefen(limits, a.id, topf, extra)?;
     if let Some(t) = g.fairplay_pruefen(body, query) { return Err(g.fairplay_verstoss(&a, &t, path)); }
-    match (method, path) {
-        (Method::Get, "/api/harness/v1/ich") => Ok(g.harness_ich(&a, &s)),
-        (Method::Get, "/api/harness/v1/schema") => g.harness_schema(&s, param(query, "rolle").as_deref()).map(|mut v| { v["katalog"] = public_catalog::catalog(&g.world.regeln); v }),
-        (Method::Get, "/api/harness/v1/lage") => g.harness_lage(&a, &s, param(query, "rolle").as_deref()),
-        (Method::Post, "/api/harness/v1/werkzeug") => g.harness_werkzeug(&a, body),
-        (Method::Post, "/api/harness/v1/freigabe") => g.harness_freigabe(&a, &s, body),
-        (Method::Post, "/api/harness/v1/handeln") => g.harness_handeln(&a, &s, body),
-        (Method::Post, "/api/harness/v1/bericht") => g.harness_bericht(&a, &s, body),
-        _ => Err((404, "Unbekannter Harness-Endpunkt; siehe GET /api/harness/v1/info".into())),
+    match method {
+        Method::Get | Method::Post => g.harness_route(*method == Method::Get, path, query, &a, &s, body),
+        _ => Err((405, "Nur GET und POST".into())),
     }
 }
 
@@ -276,7 +290,8 @@ fn serve(
         return;
     }
     let ip = client_ip(&req, cfg, admin);
-    if !request_allowed(limits, &ip, &header(&req, "Authorization")) {
+    let erlaubt = if ist_statische_datei(req.method(), admin, &path) { static_request_allowed(limits, &ip) } else { request_allowed(limits, &ip, &header(&req, "Authorization")) };
+    if !erlaubt {
         json_reply_mit(req, Err((429, "Zu viele Anfragen; in einer Minute erneut versuchen".into())), &origin, &[("Retry-After", bis_naechste_minute())]);
         return;
     }
@@ -289,6 +304,13 @@ fn serve(
             answer(req, 200, html.replacen("<!--sternenepoche:oberflaeche-->", &koeder, 1).into_bytes(), "text/html; charset=utf-8", &origin, &[]);
             return;
         }
+        if !admin && path == "/beschreibungen.json" {
+            answer(req, 200, sternenepoche_server::beschreibungen::json(), "application/json; charset=utf-8", &origin, &[]);
+            return;
+        }
+        // Nur Debug-Bauten: STERN_WEB_DEV liefert Web-Dateien von der Platte (Oberflächenarbeit ohne Neubau).
+        #[cfg(debug_assertions)]
+        if !admin { if let Some((bytes, mime)) = sternenepoche_server::local::dev_asset(&path) { answer(req, 200, bytes, mime, &origin, &[]); return; } }
         let asset = match (admin, path.as_str()) {
             (false, "/app.js") => Some((include_bytes!("../../../web-client/app.js").as_slice(), "text/javascript; charset=utf-8")),
             (false,"/presentation.js")=>Some((include_bytes!("../../../web-client/presentation.js").as_slice(),"text/javascript; charset=utf-8")),
@@ -318,6 +340,10 @@ fn serve(
             (false,"/local-galaxy.js")=>Some((include_bytes!("../../../web-client/local-galaxy.js").as_slice(),"text/javascript; charset=utf-8")),
             (false,"/communication.js")=>Some((include_bytes!("../../../web-client/communication.js").as_slice(),"text/javascript; charset=utf-8")),
             (false,"/game.css")=>Some((include_bytes!("../../../web-client/game.css").as_slice(),"text/css; charset=utf-8")),
+            (false,"/player-tools.js")=>Some((include_bytes!("../../../web-client/player-tools.js").as_slice(),"text/javascript; charset=utf-8")),
+            (false,"/player-tools.css")=>Some((include_bytes!("../../../web-client/player-tools.css").as_slice(),"text/css; charset=utf-8")),
+            (false,"/progression.js")=>Some((include_bytes!("../../../web-client/progression.js").as_slice(),"text/javascript; charset=utf-8")),
+            (false,"/progression.css")=>Some((include_bytes!("../../../web-client/progression.css").as_slice(),"text/css; charset=utf-8")),
             (false,"/galaxy.js")=>Some((include_bytes!("../../../web-client/galaxy.js").as_slice(),"text/javascript; charset=utf-8")),
             (false,"/three.min.js")=>Some((include_bytes!("../../../web-client/three.min.js").as_slice(),"text/javascript; charset=utf-8")),
             (false,"/galaxy.css")=>Some((include_bytes!("../../../web-client/galaxy.css").as_slice(),"text/css; charset=utf-8")),
@@ -536,7 +562,7 @@ fn serve(
             }
             (Method::Get, "/api/registration/status")=>Ok(json!({"enabled":sternenepoche_server::mail::MailConfig::load(&cfg.root).is_ok_and(|c|c.is_some()),"code_digits":6,"test_login":true})),
             (Method::Get, "/api/rules") => Ok(
-                json!({"api_version":API_VERSION,"schema":kern::aktion::antwortschema(Rolle::Alle),"volk":VolkNames::values(),"catalog":public_catalog::catalog(&g.world.regeln),"text":format!("{}\n{}\n{}",kern::regeltext::regeltext(&g.world.regeln,Rolle::Alle),kern::kolonisation::REGELTEXT_V2,kern::ausscheiden::REGELTEXT),"fairplay":sternenepoche_server::fairplay::REGEL,"harness_regeln":sternenepoche_server::harness::REGELN_VERSION}),
+                json!({"api_version":API_VERSION,"schema":g.world.antwortschema(Rolle::Alle),"volk":VolkNames::values(),"catalog":public_catalog::catalog(&g.world.regeln),"text":format!("{}\n{}\n{}",kern::regeltext::regeltext(&g.world.regeln,Rolle::Alle),kern::kolonisation::REGELTEXT_V2,kern::ausscheiden::REGELTEXT),"fairplay":sternenepoche_server::fairplay::REGEL,"harness_regeln":sternenepoche_server::harness::REGELN_VERSION}),
             ),
             (method, path) => match g.authenticate(&raw) {
                 Err(e) => Err(e),
@@ -554,14 +580,17 @@ fn serve(
                             (Method::Get, "/api/me") => Ok(g.me(&a)),
                             (Method::Get, "/api/workspace") => g.workspace(&a),
                             (Method::Post, "/api/workspace") => g.save_workspace(&a,&body),
+                            (Method::Post, "/api/workspace/rat") => g.rat_pinwand_besitzer(&a,&body),
                             (Method::Get, "/api/view") => g.view(&a, Rolle::Alle),
                             (Method::Post, "/api/context") => {
                                 let role = body["rolle"].as_str().and_then(Rolle::aus_name).filter(|r| *r != Rolle::Alle);
-                                match role {Some(r)=>g.view(&a,r).map(|view|json!({"view":view,"schema":kern::aktion::antwortschema(r),"text":kern::regeltext::regeltext(&g.world.regeln,r)})),None=>Err((400,"Regierungsrolle auswählen".into()))}
+                                match role {Some(r)=>g.view(&a,r).map(|view|json!({"view":view,"schema":g.world.antwortschema(r),"text":g.regeltext_fuer(r)})),None=>Err((400,"Regierungsrolle auswählen".into()))}
                             }
                             (Method::Post, "/api/claim") => g.claim(&a, &body),
                             (Method::Post, "/api/waitlist/leave") => g.leave_waitlist(&a, &body),
                             (Method::Post, "/api/tool") => g.tool(&a, &body),
+                            (Method::Post, "/api/inbox/read") => g.inbox_read(&a,&body),
+                            (Method::Post, "/api/akte/notiz") => g.gegner_notiz(&a,&body),
                             (Method::Post, "/api/command") => g.command(&a, &body),
                             (Method::Post, "/api/lease") => g.lease(&a, &body),
                             (Method::Post, "/api/agent-report") => g.agent_report(&a, &body),
@@ -624,6 +653,15 @@ fn run() -> Result<(), String> {
     lock.try_lock_exclusive()
         .map_err(|_| "Diese Datenbank wird bereits von einem Server benutzt")?;
     let game = Arc::new(Mutex::new(Game::open(&cfg.root, rand::random())?));
+    if !cfg.opferschutz.is_empty() {
+        let mut g = game.lock().map_err(|_| "Spielzustand gesperrt")?;
+        g.runtime.opferschutz = sternenepoche_server::opferschutz_lesen(&Value::Object(cfg.opferschutz.clone()), g.runtime.opferschutz)?;
+    }
+    {
+        let g = game.lock().map_err(|_| "Spielzustand gesperrt")?;
+        let o = g.runtime.opferschutz;
+        println!("Opferschutz der Räuberbots: {} (Raubpause {} h, Neulingsschutz {} Tage)", if o.aktiv { "an" } else { "aus" }, o.pause_stunden, o.neulinge_tage);
+    }
     let keyfile = cfg.root.join("admin-token.txt");
     let key = if keyfile.exists() {
         std::fs::read_to_string(&keyfile)
@@ -711,6 +749,19 @@ mod tests {
         }
         assert!(!request_allowed(&limits, "test-ip", "another-invalid-token"));
         assert!(request_allowed(&limits, "other-ip", "legitimate-session"));
+    }
+    #[test]
+    fn first_page_load_assets_are_not_capped_by_the_session_budget() {
+        let limits: Limits = Arc::new(Mutex::new(HashMap::new()));
+        assert!(ist_statische_datei(&Method::Get, false, "/assets/resources.erz.webp"));
+        assert!(ist_statische_datei(&Method::Get, false, "/lage.js"));
+        assert!(!ist_statische_datei(&Method::Get, false, "/api/view"));
+        assert!(!ist_statische_datei(&Method::Post, false, "/assets/x.webp"));
+        assert!(!ist_statische_datei(&Method::Get, true, "/assets/x.webp"));
+        // 700 Bilder ohne Anmeldung (mehr als ein erster Seitenaufruf) gehen durch; das IP-Budget bleibt die Grenze.
+        for _ in 0..700 { assert!(static_request_allowed(&limits, "nat-ip")); }
+        for _ in 700..6000 { assert!(static_request_allowed(&limits, "nat-ip")); }
+        assert!(!static_request_allowed(&limits, "nat-ip"));
     }
     #[test]
     fn konto_quote_gilt_fuer_browser_und_harness_gemeinsam() {

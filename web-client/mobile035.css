@@ -1,0 +1,711 @@
+/* Seven stable navigation groups, with the existing visual language. */
+#tabs.grouped-navigation .nav-group,#tabs.grouped-navigation .section-picker-label,#tabs.grouped-navigation .command-nav-tools{display:none}
+#main-navigation{display:flex;flex-direction:column;gap:5px;width:100%}
+.navigation-group>button{display:flex!important;justify-content:space-between;width:100%;text-align:left;min-height:44px;white-space:normal}
+.navigation-group>button.active{color:#a8efff;border-color:#63c6dd;background:#12323f}
+.navigation-children{padding:4px 0 6px 12px;border-left:1px solid #3e7383;margin-left:8px}
+#tabs.grouped-navigation .navigation-children button{display:block;width:100%;text-align:left;min-height:40px;white-space:normal}
+#tabs.grouped-navigation [hidden]{display:none!important}
+body.game-client #game #tabs.grouped-navigation .section-picker-label,body.game-client #game #tabs.grouped-navigation .command-nav-tools{display:none!important}
+body.game-client #game>#tabs.command-navigation.grouped-navigation{position:relative!important;top:auto!important;z-index:2}
+body.game-client #back-to-top{width:auto!important;max-width:135px;right:12px;bottom:12px;min-height:44px;padding:8px 12px;font-size:12px}
+.local-production,.production-series{margin:12px 0;padding:12px;border:1px solid #5991a340;border-radius:10px;background:#76b4cc08}
+.local-production label{display:block;margin:8px 0}.local-production input[type=range]{width:100%;min-height:44px}
+@media(min-width:1001px){#main-navigation{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:start}.navigation-group>button{font-size:.85rem!important}.navigation-children{padding-left:0;margin-left:0}}
+.production-units{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:14px}
+.production-unit{border:1px solid #315465;background:linear-gradient(130deg,#11212dec,#09141deb);border-radius:14px;padding:16px;min-width:0}
+.production-unit header{display:flex;align-items:center;justify-content:space-between;gap:10px}.production-unit h4{margin:0 0 10px}.production-unit h4 small{color:#b4c4d2}
+.production-unit label{display:block}.production-unit input[type=range]{width:100%;min-height:44px;accent-color:#70daee}.production-unit output{float:right;color:#8deaff}
+.production-unit dl{display:grid;grid-template-columns:minmax(90px,1fr) minmax(100px,1.2fr);gap:9px;font-size:.9rem}.production-unit dt{color:#b2c5d1}.production-unit dd{margin:0;text-align:right;overflow-wrap:anywhere}.production-unit p{font-size:.9rem;line-height:1.5}
+.production-unit details{overflow:auto}.production-unit table{font-size:.8rem}.production-unit :is(td,th){overflow-wrap:anywhere;hyphens:auto}.production-demand{color:#8deaff}
+.inline-facts{margin:14px 0}.inline-facts .technical-sheet{border:1px solid #345663;border-radius:10px;padding:10px}.inline-facts li{margin:8px 0}
+.flight-template{display:flex;gap:8px;margin:8px 0}.flight-template button:first-child{flex:1;min-width:0;text-align:left}.flight-template small{display:block;white-space:normal}.flight-readiness{padding:12px;border-left:3px solid currentColor}
+#flight-quote[aria-busy=true]{opacity:1}#flight-quote{min-height:70px;animation:none!important}
+@media(max-width:900px){
+ #tabs.grouped-navigation{display:block!important;position:relative!important;height:auto!important;max-height:none!important;overflow:visible!important;padding:10px}
+ #tabs.grouped-navigation .nav-brand{display:none}#main-navigation{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ .navigation-group{min-width:0}.navigation-group>button{font-size:.85rem!important;padding:10px!important;height:100%;align-items:center}.navigation-group:has(>button.active){grid-column:1/-1}.navigation-group:has(>button.active)>button{height:auto}
+ .navigation-children{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0;padding:4px;border:0}#tabs.grouped-navigation .navigation-children button{width:auto!important;flex:1 1 130px;font-size:.85rem!important}
+ #tabs.grouped-navigation .colony-context{position:relative!important;width:100%;margin-bottom:10px}#industry-controls{scroll-margin-top:20px}.production-unit{padding:12px}
+}
+
+#galaxy-canvas{touch-action:none;cursor:grab}#galaxy-canvas:active{cursor:grabbing}
+.space-label.system,.space-label.planet{background:transparent!important;border:0!important;box-shadow:none!important;padding:4px!important;min-width:24px;color:var(--relation-color,#fff);text-shadow:0 1px 4px #000,0 0 6px #000}
+.space-label .space-resident{display:none!important}.space-label:is(:hover,:focus,.is-highlighted) .space-resident{display:block!important;max-width:160px;overflow:hidden;text-overflow:ellipsis;background:#091724ed;padding:5px;border-radius:6px}
+.space-camera-controls{position:absolute;right:10px;top:60px;display:flex;gap:4px;z-index:5;flex-wrap:wrap;max-width:260px}.space-camera-controls button{min-height:38px;padding:8px;font-size:.8rem;background:#0c2230e8}
+.space-gesture-hint{position:absolute;bottom:4px;left:10px;right:10px;pointer-events:none;font-size:.72rem;color:#d0e3ed;text-shadow:0 1px 4px #000;margin:0;z-index:4}.space-label[hidden]{display:none!important}
+
+.report-facts{margin:8px 0}.report-facts>div{display:grid;grid-template-columns:minmax(95px,.8fr) minmax(100px,1.4fr);gap:12px;padding:7px 0;border-bottom:1px solid #28404e}.report-facts dt{color:#b4cad6}.report-facts dd{margin:0;overflow-wrap:anywhere;min-width:0}.report-facts .report-facts>div{display:block}.report-facts .report-facts dd{text-align:right}.report-section,.combat-round{padding:12px;margin:12px 0;border:1px solid #355366;border-radius:12px;background:#0c1b28}.combat-round summary,.report-section summary{min-height:36px;cursor:pointer;color:#91dced}.combat-round h5{margin:18px 0 8px;font-size:1rem}.combat-round table{min-width:640px}.combat-dossier{overflow-wrap:anywhere}.report-dossier{padding:16px;border-bottom:1px solid #33505c}.combat-dossier>table{display:block;overflow:auto}.report-array{display:grid;gap:8px}
+
+/* Shared ordering and filters, with text labels as well as subtle era colors. */
+.catalog-filters{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:18px 0;padding:14px;border:1px solid #8cb9db30;border-radius:12px;background:#83b9dc08}
+.catalog-filters label{flex:1 1 150px;min-width:0}.catalog-filters input,.catalog-filters select{width:100%;min-height:44px}.catalog-filters output{flex-basis:100%;font-size:.85rem;color:var(--muted,#a6bbc9)}
+.catalog-era{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:12px;align-items:baseline;margin:16px 0 4px;padding:12px 14px;border-left:3px solid #65becb85;background:#65becb0c;border-radius:4px}
+.catalog-era small{font-size:.8rem;font-weight:400;color:var(--muted,#a6bbc9)}
+.catalog-era[data-era="2"]{border-color:#70c99a85;background:#70c99a0c}.catalog-era[data-era="3"]{border-color:#a6b9ea85;background:#a6b9ea0c}.catalog-era[data-era="4"]{border-color:#bc9ce385;background:#bc9ce30c}.catalog-era[data-era="5"]{border-color:#d8bd7c85;background:#d8bd7c0c}
+[data-catalog-item][hidden],[data-era-heading][hidden]{display:none!important}
+.catalog-era~.item-tile.locked{opacity:.85}
+@media(max-width:600px){.catalog-filters{gap:8px;padding:10px}.catalog-filters label:first-child{flex-basis:100%}.catalog-era{font-size:1rem}.production-units>article{min-width:0}}
+
+.fleet-live-summary{position:sticky;top:6px;z-index:4;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 10px;padding:12px;background:#0b202bf5;border:1px solid #5d9db5;border-radius:10px;box-shadow:0 4px 12px #0005;font-size:.78rem}.fleet-live-summary span b{display:block;color:#c5f1fc;font-variant-numeric:tabular-nums;font-size:1rem}.fleet-live-summary small{grid-column:1/-1}.fleet-selection{margin:12px 0}.fleet-selection>summary{padding:12px;border:1px solid #365666;border-radius:8px}.fleet-selection fieldset{margin-top:8px}.tile-effect{line-height:1.4;color:#b1cedd}
+
+/* Shared selection is the primary fleet workflow; inventory remains available on demand. */
+body.game-client #game #fleet-planner{order:-1;margin:0 0 20px;min-width:0}
+#fleet-planner>summary,#fleet-inventory>summary,.fleet-secondary>summary{padding:14px 10px;min-height:48px;font-weight:600;cursor:pointer}
+#fleet-inventory,.fleet-secondary{margin:18px 0;border:1px solid #466879;border-radius:12px;min-width:0}
+#fleet fieldset,#fleet .fleet-selection{min-width:0;max-width:100%;box-sizing:border-box}
+#fleet .fleet-selection fieldset{border:0;padding:8px;margin:0}
+.fleet-selection-tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center}
+.fleet-selection-tools>button{flex:1 1 135px;min-height:44px!important}.fleet-selection-tools output{flex-basis:100%;color:#b9e8ed;font-variant-numeric:tabular-nums}
+.fleet-selection-tools>label{display:flex!important;gap:8px;align-items:center;font-size:.85rem}.fleet-selection-tools input[type=checkbox]{width:20px;min-height:20px;flex:0 0 20px}
+body.game-client #game #ship-inputs{display:grid;grid-template-columns:1fr;gap:10px}
+.fleet-pick-row{display:grid;grid-template-columns:56px minmax(0,1fr) 44px;gap:8px 12px;padding:12px;border:1px solid #436474;border-radius:12px;background:#0b1c29;min-width:0;align-items:center}
+.fleet-pick-row[hidden]{display:none!important}.fleet-pick-row>img{width:56px;height:56px;object-fit:contain;border-radius:6px}.fleet-pick-name{min-width:0}.fleet-pick-name label{font-weight:600;font-size:.95rem;overflow-wrap:anywhere}.fleet-pick-name small{display:block;margin-top:5px;color:#abc6d1}
+body.game-client #game .ship-info{width:44px!important;min-width:44px;min-height:44px!important;height:44px;padding:0!important;border-radius:50%;font-size:18px}
+.fleet-pick-quantity{grid-column:2/-1;display:grid;grid-template-columns:auto minmax(70px,1fr) auto;align-items:center;gap:8px;min-width:0}.fleet-pick-quantity input{width:100%;min-width:0;min-height:44px;box-sizing:border-box;font-size:16px;text-align:center}.fleet-pick-quantity>span{font-size:.85rem;color:#abc6d1}.fleet-pick-quantity button{min-height:44px!important}
+body.game-client #game .catalog-card-heading{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:10px 12px;min-width:0;min-height:64px;box-sizing:border-box;grid-column:1/-1}
+body.game-client #game .item-tile>.catalog-card-heading{position:static!important;display:flex!important;flex-direction:row!important;justify-content:space-between!important;width:100%!important;max-width:none!important;height:auto!important;margin:0!important;background:transparent!important;border:0!important;text-align:left!important;transform:none!important}
+body.game-client #game .item-tile>.catalog-card-heading>strong{font-size:calc(16px * var(--text-scale,1))!important;text-align:left!important}
+body.game-client #game .item-tile .tile-copy small,body.game-client #game .item-tile .tile-costs{font-size:calc(13px * var(--text-scale,1))!important}
+body.game-client #game .fleet-selection-tools>label{flex-direction:row!important;justify-content:flex-start!important;text-align:left!important;gap:10px!important;line-height:1.5}
+body.game-client #game .fleet-selection-tools input[type=checkbox]{width:20px!important;height:20px!important;min-height:20px!important;max-width:20px!important;margin:0!important}
+.catalog-card-heading>strong{min-width:0;overflow-wrap:anywhere;font-size:1rem;line-height:1.35}
+body.game-client #game .item-tile .catalog-card-heading .tile-info{position:relative!important;inset:auto!important;flex:0 0 44px!important;width:44px!important;min-width:44px!important;max-width:44px!important;height:44px!important;min-height:44px!important;aspect-ratio:1;align-self:center!important;font-size:18px!important}
+body.game-client #game .item-tile .catalog-card-heading .tile-info::before{inset:4px!important;border-radius:50%!important}
+body.game-client #game .gallery{grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));align-items:stretch}
+body.game-client #game .gallery .item-tile[hidden]{display:none!important}
+body.game-client #game .item-tile .tile-copy{overflow-wrap:anywhere}.item-detail>div{min-width:0}.item-info-dialog{box-sizing:border-box}
+@media(max-width:540px){
+ body.game-client #game .gallery{grid-template-columns:minmax(0,1fr)!important}
+ body.game-client #game .gallery .item-tile{display:grid!important;grid-template-columns:96px minmax(0,1fr);gap:0 6px;align-items:start}
+ body.game-client #game .gallery .item-tile .tile-image{grid-column:1;padding:0 0 8px 10px;min-width:0}
+ body.game-client #game .gallery .item-tile .tile-image .art-shell{height:96px!important;min-height:0!important;width:100%;margin:0!important}
+ body.game-client #game .gallery .item-tile .tile-copy{grid-column:2;padding:0 12px 12px 6px!important}
+ body.game-client #game .gallery .item-tile>.tile-build,body.game-client #game .gallery .item-tile>.tile-actions{grid-column:1/-1;min-height:44px;margin:0 12px 12px!important;white-space:normal}
+ body.game-client #game .hangar-grid{grid-template-columns:minmax(0,1fr)}
+ .hangar-heading,.management-heading{flex-wrap:wrap}.hangar-heading>*{min-width:0}
+ body.game-client #game #fleet{display:flex;flex-direction:column;gap:10px}
+ #fleet>label,#fleet>.row,#fleet>.flight-timing{width:100%;min-width:0;box-sizing:border-box}
+ #fleet .row{flex-wrap:wrap}#fleet .row>label{flex:1 1 130px;min-width:0}#fleet .row>button{flex:1 1 150px;min-height:44px}
+ #fleet input,#fleet select{max-width:100%;box-sizing:border-box;font-size:16px}
+}
+
+body.game-client #game .gallery .item-tile > button,body.game-client #game .gallery .item-tile .tile-action{min-height:44px}
+
+body.game-client .space-instructions{left:12px;right:12px;bottom:10px;max-width:none;font-size:12px;line-height:1.45;padding:6px 8px;border-radius:6px;background:#071420d9;color:#c5dce8}
+.ground-card{min-width:0}.ground-card>header,#ground-info>header{position:static;display:flex;align-items:center;justify-content:space-between;gap:12px;width:auto;max-width:none;margin:0 0 12px;padding:0;background:none;border:0;box-shadow:none;text-align:left}.ground-card>header h4{margin:0;overflow-wrap:anywhere}
+.ground-info-button,#ground-info [data-close-ground]{width:44px;height:44px;min-width:44px;flex:0 0 44px;padding:0;border-radius:50%}
+.ground-portrait{display:grid;grid-template-columns:100px minmax(0,1fr);gap:14px;align-items:start}.ground-portrait img{width:100px;height:100px;object-fit:contain;border-radius:10px;background:#081420}.ground-portrait p{font-size:13px;line-height:1.5;margin:6px 0}.ground-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}.ground-stats div{min-width:0}.ground-stats dt{font-size:11px;color:#aac0cc}.ground-stats dd{margin:4px 0;font-size:15px;font-weight:600;overflow-wrap:anywhere}.ground-card form{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.ground-card form label{flex:1 1 100px}.ground-card input{width:100%;box-sizing:border-box;font-size:16px;min-height:44px}.ground-card form button{flex:1 1 160px;min-height:44px}.ground-requirement{color:#d9c58d;font-size:13px}
+.militia-card{display:grid;grid-template-columns:150px minmax(0,1fr);gap:20px;padding:18px;margin:16px 0 24px;border:1px solid #526575;border-radius:14px;background:#11212a}.militia-card img{width:100%;border-radius:10px}.militia-card h3{margin:8px 0}.militia-card p{line-height:1.6;font-size:14px}.militia-card form{display:grid;gap:10px}.militia-card button{min-height:44px}.militia-card.under-siege{border-color:#e6ab66;background:#2b211d}.militia-card output{color:#e1c893;font-size:13px}
+#ground-info{box-sizing:border-box;width:min(720px,calc(100vw - 24px));max-height:90dvh;overflow:auto;border:1px solid #a6a577;border-radius:16px;background:#0b1b27;color:#e2eef1;padding:22px}#ground-info::backdrop{background:#01070cbb}.dossier-hero{display:block;width:min(240px,100%);border-radius:12px;margin:0 auto 16px}.ground-strength{color:#8dd8bc}.ground-weakness{color:#e8b29b}.ground-report{padding:16px;margin:14px 0;border:1px solid #3c5969;border-radius:12px;background:#0a1a26}.ground-report small{display:block;color:#a8bdc9}.ground-report th,.ground-report td,#ground-info th,#ground-info td{padding:8px;font-size:12px;white-space:normal;overflow-wrap:anywhere}.ground-report table,#ground-info table{width:100%}.ground-report .table-scroll,#ground-info .table-scroll{max-width:100%;overflow:auto}
+@media(max-width:540px){.militia-card{grid-template-columns:1fr}.militia-card>img{width:120px}.ground-portrait{grid-template-columns:86px minmax(0,1fr);gap:10px}.ground-portrait img{width:86px;height:86px}#ground-info{padding:16px}#ground-info h2{font-size:20px}.ground-card .production-series form{flex-direction:column;align-items:stretch}.ground-card .production-series form>*{flex:auto}}
+
+#ground-info table th{font-size:12px;text-transform:none;letter-spacing:0;line-height:1.5;hyphens:auto}#ground-info table th:first-child{width:42%}#ground-info table td{white-space:nowrap}.ground-strength,.ground-weakness{line-height:1.6}
+
+.ground-report table th{font-size:12px;text-transform:none;letter-spacing:0;line-height:1.5;hyphens:auto}.ground-report table th:first-child{width:40%}.ground-report table small{line-height:1.5}
+
+/* Translucent dossiers: retain legibility without inheriting the site banner or art buttons. */
+body.game-client #ground-info,body.game-client .item-info-dialog{
+ background:rgba(7,22,32,.70)!important;background-image:none!important;
+ border:1px solid rgba(170,202,203,.24);border-radius:18px;
+ box-shadow:0 24px 80px #0007,inset 0 1px 0 #e3f4ee0a;
+ backdrop-filter:blur(18px) saturate(115%);-webkit-backdrop-filter:blur(18px) saturate(115%);
+}
+body.game-client #ground-info::backdrop,body.game-client .item-info-dialog::backdrop{background:rgba(1,7,12,.30);backdrop-filter:blur(2px)}
+body.game-client #ground-info>.info-sheet-heading,body.game-client .item-info-dialog>.detail-heading{
+ display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:start;gap:16px;
+ position:static;min-height:0;margin:0 0 20px;padding:0 0 16px!important;
+ background:transparent!important;border:0!important;border-bottom:1px solid #bdd8d51c!important;
+ box-shadow:none;backdrop-filter:none;text-align:left;
+}
+body.game-client #ground-info>.info-sheet-heading::after,body.game-client .item-info-dialog>.detail-heading::after{display:none}
+.info-sheet-titles{min-width:0;padding-top:2px}
+body.game-client #ground-info .info-sheet-eyebrow,body.game-client .item-info-dialog>.detail-heading small{
+ display:block;color:#b9c6bc;font:500 10px/1.4 system-ui,sans-serif;letter-spacing:.11em;text-transform:uppercase;
+}
+body.game-client #ground-info .info-sheet-heading h2,body.game-client .item-info-dialog>.detail-heading h2{
+ margin:7px 0 0;font:500 clamp(19px,5vw,24px)/1.23 Oxanium,system-ui,sans-serif;
+ letter-spacing:.005em;color:#eff4ef;text-wrap:balance;overflow-wrap:anywhere;hyphens:auto;
+}
+body.game-client #ground-info .info-sheet-close,body.game-client .item-info-dialog>.detail-heading>[data-close-info]{
+ position:static;display:grid;place-items:center;align-self:start;flex:0 0 44px;
+ width:44px;min-width:44px;height:44px;min-height:44px;padding:0;
+ border-radius:11px;border:1px solid #b9d7d523;background:rgba(172,205,203,.045)!important;
+ background-image:none!important;box-shadow:none;color:#b6cece;filter:none;text-shadow:none;
+}
+body.game-client #ground-info .info-sheet-close::before,body.game-client #ground-info .info-sheet-close::after,
+body.game-client .item-info-dialog>.detail-heading>[data-close-info]::before,body.game-client .item-info-dialog>.detail-heading>[data-close-info]::after{display:none!important}
+body.game-client #ground-info .info-sheet-close svg,body.game-client .item-info-dialog>.detail-heading>[data-close-info] svg{width:20px;height:20px}
+body.game-client #ground-info .info-sheet-close:focus-visible,body.game-client .item-info-dialog>.detail-heading>[data-close-info]:focus-visible{outline:2px solid #dfc991;outline-offset:3px}
+body.game-client #ground-info .info-sheet-close:active,body.game-client .item-info-dialog>.detail-heading>[data-close-info]:active{transform:scale(.96)}
+@media(hover:hover){body.game-client #ground-info .info-sheet-close:hover,body.game-client .item-info-dialog>.detail-heading>[data-close-info]:hover{background:rgba(172,205,203,.12)!important;border-color:#b9d7d54d;color:#eff7f3;filter:none}}
+
+/* The faction barracks forms the dossier's setting; a glass scrim protects the figures. */
+body.game-client #ground-info{
+ background-image:linear-gradient(180deg,rgba(4,15,24,.64),rgba(5,18,28,.82) 42%,rgba(5,18,28,.94) 100%),var(--sheet-scene)!important;
+ background-size:100% 100%,cover!important;background-position:center,center 28%!important;background-repeat:no-repeat!important;
+}
+
+body.game-client #ground-info .ground-stats{padding:12px;border:1px solid #d5e7e510;border-radius:12px;background:rgba(4,16,25,.65)}
+.ground-stats dt{overflow-wrap:anywhere;hyphens:auto}
+
+/* Matchups keep portraits, direction and the core's factor together. */
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .ground-matchups{margin:24px 0}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-group{margin:22px 0;--counter-color:#9be1c4;--counter-tint:rgba(31,104,78,.38)}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-malus{--counter-color:#efcf92;--counter-tint:rgba(115,78,25,.42)}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-danger{--counter-color:#f0b3a3;--counter-tint:rgba(116,47,37,.42)}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-group h3{margin:0;font:600 16px/1.4 Oxanium,system-ui,sans-serif;color:var(--counter-color);letter-spacing:0;text-transform:none}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-hint{margin:5px 0 12px;color:#c0cdd2;font-size:12px;line-height:1.5}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0;margin:0;list-style:none}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-unit{min-width:0;overflow:hidden;border:1px solid #bdd8d52b;border-radius:12px;background:rgba(5,17,25,.66)}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-art{position:relative;isolation:isolate;min-height:142px;background:rgba(10,24,34,.4)}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-art img{display:block;width:100%;height:142px;object-fit:contain;object-position:center top}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-art::after{content:"";position:absolute;inset:40% 0 0;background:linear-gradient(transparent,rgba(3,12,20,.94));z-index:0;pointer-events:none}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-art strong{position:absolute;z-index:1;inset:auto 10px 10px;font-size:13px;line-height:1.3;color:#eff5f4;overflow-wrap:anywhere;hyphens:auto;text-shadow:0 1px 4px #000}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-badge{position:absolute;z-index:1;right:7px;top:7px;border:1px solid currentColor;border-radius:7px;padding:4px 7px;color:var(--counter-color);background:linear-gradient(var(--counter-tint),var(--counter-tint)),rgba(3,13,21,.78);backdrop-filter:blur(8px);font-size:14px;line-height:1.2;font-weight:700;font-variant-numeric:tabular-nums}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-effect{display:block;padding:8px 9px;color:var(--counter-color);background:var(--counter-tint);font-size:11px;line-height:1.45;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-neutral{margin:16px 0;color:#b7c6cd;font-size:12px;line-height:1.5}
+@media(min-width:600px){:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+body.game-client #item-info{background-image:linear-gradient(180deg,rgba(4,15,24,.83),rgba(5,18,28,.94)),var(--detail-art)!important;background-size:100% 100%,cover!important;background-position:center!important;background-repeat:no-repeat!important}
+body.game-client #item-info::before{display:none}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-neutral{--counter-color:#c1d8e3;--counter-tint:rgba(41,73,91,.4)}
+#item-info .counter-badge,.inline-facts .counter-badge{max-width:calc(100% - 14px);box-sizing:border-box;overflow-wrap:anywhere;font-size:12px}
+.dossier-role,.dossier-targets>p{font-size:13px;line-height:1.6;color:#c8d9df}
+.dossier-targets{margin:20px 0}.dossier-targets>summary{padding:12px 0;min-height:44px;box-sizing:border-box;color:#d9c58d;cursor:pointer;line-height:1.5}
+.dossier-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.dossier-metrics .fact-row{display:block;padding:12px;background:#05111bb3;border-radius:10px;min-width:0}.dossier-metrics dd{margin:6px 0 0;overflow-wrap:anywhere}
+.missile-info-button{min-width:44px;min-height:44px}
+
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-resources .counter-art,:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-resources .counter-art img{height:112px;min-height:112px}
+#item-info .dossier-metrics dt{color:#b8cbd3;font-size:12px;line-height:1.45}
+#item-info .dossier-metrics dd{font-size:17px;font-weight:600;color:#eff5f4}
+
+/* Compact portraits leave room for readable names and effects on phones. */
+:is(#ground-info,#item-info) .dossier-hero{width:min(160px,100%);max-height:160px;object-fit:contain}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-art{min-height:0;height:auto}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-art img{height:84px;min-height:0;object-fit:contain}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-art strong{position:relative;inset:auto;display:block;padding:6px 8px;min-height:34px;box-sizing:border-box;font-size:12px;background:rgba(3,12,20,.7)}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-art::after{inset:55% 0 0}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-badge{font-size:11px;padding:3px 5px;top:5px;right:5px}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-resources .counter-art{height:auto;min-height:0}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-resources .counter-art img{height:64px;min-height:0}
+
+.dossier-resource-flow{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.dossier-resource-flow:has(>section:nth-child(2)){grid-template-columns:repeat(2,minmax(0,1fr))}
+:is(#item-info,.inline-facts) .dossier-resource-flow .counter-grid{grid-template-columns:minmax(0,1fr)}
+:is(#item-info,.inline-facts) .dossier-resource-flow .counter-group{margin:16px 0 4px}
+
+/* Small illustrated cards: preserve the entire artwork, with subordinate typography. */
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-art img{width:100%;height:auto;min-height:0;aspect-ratio:1;object-fit:contain;object-position:center}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-art::after{display:none}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-art strong{padding:5px 6px;min-height:32px;font-size:10.5px;line-height:1.3;font-weight:500;background:rgba(3,12,20,.76);text-shadow:none}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-effect{padding:5px 6px;font-size:10px;line-height:1.4}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-badge{font-size:10px;line-height:1.2;padding:2px 4px;border-color:#bdd8d550;top:4px;right:4px}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-group h3{font-size:14px}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-hint{font-size:11px;line-height:1.4;margin:4px 0 9px}
+:is(#ground-info,#item-info) p{font-size:12px;line-height:1.5}
+#item-info .dossier-metrics{gap:7px}
+#item-info .dossier-metrics .fact-row{padding:8px}
+#item-info .dossier-metrics dt{font-size:10.5px}
+#item-info .dossier-metrics dd{font-size:14px;margin-top:4px}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-resources .counter-art img{width:100%;height:auto;aspect-ratio:1;max-height:100px;object-fit:contain}
+@media(max-width:360px){:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* No reserved text blocks: the artwork determines the card's proportions. */
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-grid{align-items:start}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-unit{border-radius:9px}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-art img{aspect-ratio:auto;width:100%;height:auto;object-fit:contain}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-art strong{min-height:0;margin:0;padding:3px 5px;font-size:10px;line-height:1.2;font-weight:500}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-effect{margin:0;padding:3px 5px;font-size:9px;line-height:1.2}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-resources .counter-art img{aspect-ratio:auto;max-height:100px}
+
+/* The factor belongs to the caption; artwork stays unobstructed. */
+:is(#ground-info,#item-info) .dossier-hero{width:100%;height:auto;max-height:none;object-fit:contain}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-caption{display:flex;align-items:center;gap:5px;padding:3px 5px;background:rgba(3,12,20,.76)}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-caption strong{flex:1;min-width:0;padding:0;background:none;font-size:10px;line-height:1.2}
+:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-caption .counter-badge{position:static;flex:0 1 auto;max-width:48%;margin:0;padding:0;border:0;border-radius:0;background:none;backdrop-filter:none;color:var(--counter-color);font-size:10px;line-height:1.2;font-weight:600;overflow-wrap:anywhere}
+@media(min-width:600px){:is(#ground-info,#item-info,.inline-facts,.codex-reference) .counter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+.combat-side{padding:12px;margin:12px 0;border:1px solid #8cafa72b;border-radius:12px;background:#06151eb3}.combat-side h4{margin:0 0 10px;font-size:14px}.combat-side ul{margin:0;padding:0;list-style:none}.combat-side li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid #b7cec41a;font-size:12px}.combat-side strong{min-width:0;overflow-wrap:anywhere;font-weight:500}.combat-side li>span{flex-shrink:0;text-align:right;font-variant-numeric:tabular-nums}.combat-side small{display:block;color:#e9b2a0;margin-top:3px;font-size:11px}
+#report-reader .table-wrap{max-width:100%;overflow-x:auto}#report-reader .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}#report-reader .stats>*{min-width:0;overflow-wrap:anywhere}#report-reader .report-facts>div{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+
+/* Reports: imagery supplies context; compact glass panels carry the evidence. */
+body.game-client #report-reader{background-image:linear-gradient(110deg,#06121aee,#07151bd9),var(--report-art);background-size:cover;background-position:center;background-attachment:local}
+body.game-client #report-reader .report-header{padding:18px 20px;gap:10px 12px;background-image:linear-gradient(90deg,#081821e8,#0717228c),var(--report-art)!important}
+body.game-client #report-reader-title{font-size:clamp(19px,4.8vw,26px);line-height:1.2;margin:0}
+#report-reader .report-emblem{width:32px;height:32px}#report-reader .report-context{font-size:11px}#report-reader-body{padding:16px 20px}
+#report-reader :is(h3,h4,h5,p){line-height:1.45}#report-reader h4{font-size:14px;margin:12px 0 8px}#report-reader small{font-size:11px;line-height:1.4}#report-reader .eyebrow{font-size:10px;letter-spacing:.1em;color:#abc4c4}
+.report-outcome,.report-scan-overview{padding:0 0 15px;border-bottom:1px solid #9fc9c42b;margin-bottom:14px}.report-outcome h3,.report-scan-overview h3{font-size:24px;margin:3px 0;color:#b4e5d4}.report-outcome>span:last-child{font-size:12px;color:#b5c8d1}
+.report-forces{display:grid;grid-template-columns:1fr 1fr;gap:10px}.report-force{min-width:0;background:#0817209e;border:1px solid #9abdc735;border-radius:12px;overflow:hidden}.report-force header{padding:10px 12px;border-bottom:1px solid #acc8c01c}.report-force header h4{margin:3px 0!important;font-size:12px!important;overflow-wrap:anywhere}.report-force[data-side=angreifer] header{border-top:2px solid #80cfc1}.report-force[data-side=verteidiger] header{border-top:2px solid #d9a886}
+.report-force-units{display:grid;gap:6px;padding:8px}.report-balance{display:grid;grid-template-columns:74px minmax(0,1fr);align-items:center;gap:9px;border-bottom:1px solid #a3c4c21c;padding:6px 0}.report-balance:last-child{border:0}.report-balance>img{width:74px;aspect-ratio:1.2;object-fit:contain;border-radius:7px;background:#02091066}.report-balance>div{display:grid;gap:3px}.report-balance strong{font-size:11px;font-weight:500;line-height:1.25}.report-balance span{font-size:15px;font-weight:650;font-variant-numeric:tabular-nums}.report-balance i{font-style:normal;color:#a5c3c1;margin:0 2px}.report-loss{color:#efb29c}.report-kept{color:#92d2bf}
+.report-resources{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.report-resource{display:flex;align-items:center;gap:7px;background:#06131c90;border:1px solid #9cbdb22b;border-radius:8px;padding:8px 6px;min-width:0}.report-resource img{width:36px;height:36px;object-fit:contain;flex-shrink:0}.report-resource span{display:grid;min-width:0}.report-resource strong{font-size:15px;font-variant-numeric:tabular-nums;color:#ecdfbf}.report-resource small{color:#b0c2cd;overflow-wrap:anywhere}.report-material{margin:14px 0}.report-note{font-size:11px!important;color:#b4c5ca!important;line-height:1.55!important;margin:10px 0}
+.report-round-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:24px}.report-round-heading>span{font-size:11px;color:#aec0c7}.report-method{font-size:11px;color:#b4c5ca}.report-method summary{min-height:36px;display:flex;align-items:center;cursor:pointer}.report-method summary::before{content:'＋';margin-right:6px}.report-method[open] summary::before{content:'−'}
+#report-reader .combat-round{padding:0;background:#071720a8;border-color:#9ab7b842;overflow:hidden}#report-reader .combat-round>summary{padding:13px 12px;display:flex;gap:5px;flex-direction:column;background:#27434c40;min-height:44px}#report-reader .combat-round>summary strong{font-size:14px;color:#dfd5b5}#report-reader .combat-round>summary span{font-size:11px;color:#aec1ca}#report-reader .report-fire-title{font-size:12px;letter-spacing:.02em;margin:14px 12px 8px;color:#b9d6d2}
+.report-fire-list{display:grid;gap:8px;padding:0 10px}.report-fire{border:1px solid #92b0b433;border-radius:10px;overflow:hidden;background:#06131b8c}.report-duel{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);gap:4px;align-items:center;padding:8px}.report-combatant{min-width:0;display:grid;gap:2px;text-align:center}.report-combatant img{display:block;width:100%;height:100px;object-fit:contain}.report-combatant strong{font-size:11px;line-height:1.25;font-weight:500}.report-combatant small{color:#97b5c2;font-size:10px!important;overflow-wrap:anywhere}.report-direction{font-size:24px;color:#b4d7d1;text-align:center}.report-hit-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:9px;background:#1c353e63}.report-hit-metrics>span{display:grid;text-align:center;min-width:0}.report-hit-metrics strong{font-size:16px;font-variant-numeric:tabular-nums}.report-hit-metrics small{font-size:10px!important;color:#adc4cf}
+.report-sf{margin:0;padding:6px 10px;font-size:11px;line-height:1.4;color:#e2bf7d;background:#1c353e40;border-top:1px solid #8ab5b321}.report-shot-detail{padding:0 10px;font-size:11px}.report-shot-detail summary{min-height:38px;align-content:center;cursor:pointer;color:#c5d5d6}.report-shot-detail dl{margin:0 0 8px}.report-shot-detail dl>div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid #8ab5b321}.report-shot-detail dd{margin:0;color:#ecdfbf}.round-roster{margin:10px 12px;font-size:11px;color:#bbcccf}.round-roster>summary{min-height:36px;align-content:center}.round-stock h5{font-size:11px!important;margin:8px 0!important}.round-counts{display:flex;gap:6px;flex-wrap:wrap}.round-counts>span{padding:3px 6px;border-radius:5px;background:#8cc3c013}
+.report-scan-meta{display:flex;gap:6px;flex-wrap:wrap}.report-scan-meta span{font-size:11px;padding:3px 7px;border:1px solid #adc7c32b;border-radius:5px;background:#10273077}
+#report-reader .report-section{padding:12px;border-color:#9dbbbb42;background-image:linear-gradient(100deg,#06141ae8,#081822dc),var(--section-art);background-size:cover;background-position:center;overflow:hidden}#report-reader .report-section>summary{display:flex;justify-content:space-between;gap:8px;align-items:center;min-height:44px;color:#d1e3dc;font-size:14px;margin-bottom:5px}#report-reader .report-section>summary small{color:#99b4be;font-size:10px;white-space:nowrap}
+.report-inventory{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.report-stock{min-width:0;border-radius:9px;overflow:hidden;background:#03121a7a;border:1px solid #a2babc24}.report-stock img{display:block;width:100%;aspect-ratio:1.25;object-fit:contain}.report-stock>span{display:grid;gap:3px;padding:6px 8px}.report-stock strong{font-size:15px;color:#e0d3ae}.report-stock small{font-size:10px!important;overflow-wrap:anywhere;color:#bdcdd0}.report-empty,.report-unknown{padding:14px 8px;font-size:12px;color:#b6cbd1}.report-art-unknown{display:grid;place-items:center;color:#7c929e;min-height:50px}.intelligence-dossier .report-facts{font-size:12px}.intelligence-dossier .report-facts dt{font-size:11px}.intelligence-dossier .report-facts dd{text-align:left}.intelligence-dossier .report-facts .report-facts{padding:8px;background:#03101866;border-radius:8px}
+@media(max-width:520px){#report-reader-body{padding:12px}body.game-client #report-reader .report-header{padding:14px}.report-forces{grid-template-columns:1fr}.report-force-units{grid-template-columns:repeat(2,minmax(0,1fr))}.report-balance{grid-template-columns:1fr;gap:4px;align-content:start;padding:0;border:0}.report-balance>img{width:100%;height:78px;aspect-ratio:auto}.report-balance>div{padding:3px 6px 6px}.report-balance span{font-size:15px}.report-resources{grid-template-columns:repeat(2,minmax(0,1fr))}.report-resource img{width:32px;height:32px}.report-inventory{grid-template-columns:repeat(2,minmax(0,1fr))}.report-stock img{aspect-ratio:1.3}.report-combatant img{height:90px}}
+
+.space-camera-controls{pointer-events:none}.space-camera-controls button{pointer-events:auto}
+@media(max-width:520px){.report-force-units:has(.report-balance:only-child){grid-template-columns:1fr}.report-balance:only-child{grid-template-columns:110px minmax(0,1fr);align-items:center}.report-balance:only-child>img{height:82px}}
+
+.report-balance-art img{display:block;width:100%;height:78px;object-fit:contain}.report-balance-art>span{font-size:11px;font-weight:500;text-align:left;line-height:1.3}.report-loss-breakdown{margin:4px 0 0;display:grid;gap:5px}.report-loss-breakdown>div{display:flex;justify-content:space-between;gap:6px;font-size:10px;line-height:1.25}.report-loss-breakdown dd{margin:0;font-size:12px;font-weight:650;font-variant-numeric:tabular-nums}.report-loss-breakdown dt{color:inherit}.report-restored{color:#a7d6d0}.report-loss-breakdown .report-loss{border-top:1px solid #e9aa8640;padding-top:5px}
+.round-losses{padding:0 12px}.round-loss-side h5{font-size:12px!important;color:#d8c6a6;margin:12px 0 6px!important}.round-loss-side p{font-size:11px;margin:6px 0}.round-loss{display:grid;grid-template-columns:62px minmax(0,1fr);align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #aac1ba20}.round-loss img{width:62px;height:58px;object-fit:contain}.round-loss>div{display:grid;gap:3px}.round-loss strong{font-size:12px;font-weight:500;color:#f3b39a}.round-loss small{font-size:10px!important;color:#a7bdc5}.round-loss span{font-size:11px;color:#d5e1e3}
+@media(min-width:521px){.report-balance{grid-template-columns:90px minmax(0,1fr)}}
+
+#report-reader .report-player-link{display:inline;padding:0;min-height:0;border:0;background:none;box-shadow:none;color:inherit;font:inherit;text-align:left;white-space:normal;overflow-wrap:anywhere;text-decoration:underline;text-decoration-color:#84b7ad66;text-underline-offset:4px}#report-reader .report-player-link:hover{color:#dcf5e9}.report-target-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.report-target-actions button{min-height:40px;font-size:11px;padding:7px 10px}.report-force header .report-player-link{min-height:30px!important}
+
+.scan-key-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 16px}.scan-key-facts>div{padding:9px;border:1px solid #98b4b72b;border-radius:8px;background:#04131b88}.scan-key-facts dt{font-size:11px;color:#b0c9ce}.scan-key-facts dd{margin:4px 0 0;font-size:17px;color:#e6d7b4;font-variant-numeric:tabular-nums}.report-population-row{background:#07182299;border-bottom:1px solid #adc3bd2d;padding:9px}.report-population-row>strong{font-size:12px}.report-population-row dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:7px 0}.report-population-row dt{font-size:10px;color:#a5c1cb}.report-population-row dd{font-size:14px;margin:3px 0 0}
+
+/* Fleet art follows server phase timing; it does not loop independently of the trip. */
+.fleet-route>.route-detail{border-top:1px solid #a5c8bb28;padding:14px;background:linear-gradient(#07151ddb,#07151de8),url('assets/backgrounds.hangar.webp') center/cover}
+.fleet-route .route-track{height:76px;display:grid;grid-template-columns:32px minmax(0,1fr) 32px;gap:4px;border-radius:10px;background:linear-gradient(0deg,#06131b88,#102c3b55),url('assets/backgrounds.stars.webp') center/cover;border:1px solid #91b5bf25;overflow:hidden;padding:0 5px}
+.route-endpoint img{display:block;width:30px;height:30px;border-radius:50%;object-fit:cover;box-shadow:0 0 13px #78bdd238}.route-unknown-planet{display:block;text-align:center;font-size:24px;color:#93bacb}.route-space-lane{position:relative;display:block;height:72px;background:linear-gradient(transparent 48%,#9cceb64a 49%,#9cceb64a 51%,transparent 52%)}
+.fleet-route .route-ship{position:absolute;display:block;width:60px;height:52px;object-fit:contain;top:10px;left:calc(var(--flight,0) * (100% - 60px));font-size:inherit;filter:drop-shadow(0 0 7px #a8ced633);transform:rotate(0deg);transition:left 250ms linear,transform 300ms ease-out}
+.fleet-route[data-returning=true] .route-ship{transform:scaleX(-1)}.fleet-route[data-holding=true] .route-ship{opacity:.8}.route-space-lane .ai-image-label{display:none}
+.fleet-flight-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}.fleet-flight-facts>div{padding:9px;background:#091e2877;border:1px solid #94b6b329;border-radius:8px;min-width:0}.fleet-flight-facts dt{font-size:10px;color:#a7bfc9}.fleet-flight-facts dd{font-size:13px;margin:4px 0 0;color:#e1d9b8;overflow-wrap:anywhere}.fleet-strength{grid-template-columns:repeat(3,minmax(0,1fr))}.fleet-strength dd{font-size:17px;font-variant-numeric:tabular-nums}.fleet-detail-note{font-size:11px!important;color:#abc1c7}.fleet-mission-heading h4{margin:6px 0;font-size:16px}.fleet-detail-ships{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.fleet-detail-ships button{padding:0;border:1px solid #8eb9bc36;border-radius:9px;background:#06121ca8;overflow:hidden;text-align:left}.fleet-detail-ships img{width:100%;height:90px;object-fit:contain;display:block}.fleet-detail-ships span{display:grid;padding:8px;gap:4px}.fleet-detail-ships strong{font-size:11px}.fleet-detail-ships small{font-size:10px;color:#9cb6be}.fleet-detail-cargo{margin-top:14px}.fleet-detail-cargo summary{min-height:40px;display:flex;align-items:center;font-size:12px}
+@media(max-width:600px){.fleet-route .route-track{height:82px}.fleet-route>summary{padding:11px}.fleet-route .route-clock small{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.fleet-route .route-ship{transition:none}}
+
+details.fleet-route[data-fleet-route]{display:block;min-width:0;max-width:100%;overflow:hidden}details.fleet-route[data-fleet-route]>summary,details.fleet-route[data-fleet-route]>.route-detail{min-width:0;width:auto}.fleet-mission-heading .eyebrow{font-size:10px;letter-spacing:.08em;overflow-wrap:anywhere}
+/* Navigable flight miniature: observed worlds, astronomical backdrop and a keyed ship silhouette. */
+.route-filter-defs{position:absolute;pointer-events:none;overflow:hidden}
+.fleet-route .route-track{position:relative;isolation:isolate;height:184px;grid-template-columns:72px minmax(0,1fr) 72px;grid-template-rows:30px 112px 26px;gap:0;padding:7px 10px;border-color:#8cc3c637;background:linear-gradient(115deg,#05121c88,#0b202333 48%,#04111cb3),url('assets/backgrounds.nebula.webp') center 42%/cover;box-shadow:inset 0 0 36px #020c15b3}
+.route-track::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 25% 50%,#78bcce14,transparent 55%)}
+.route-distance{grid-column:1/-1;display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;letter-spacing:.14em;color:#bad1d7;z-index:1}.route-distance strong{font-size:13px;letter-spacing:.02em;color:#ecddad;font-variant-numeric:tabular-nums}
+.route-endpoint{grid-row:2;align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;gap:5px;z-index:2}.route-origin{grid-column:1}.route-destination{grid-column:3}.route-world{display:block;width:54px;height:54px;border-radius:50%;position:relative;box-shadow:0 0 0 1px #b5d6e12e,0 0 22px #70bdd23d;background:#020914;overflow:hidden}.route-world::after{content:'';position:absolute;inset:0;border-radius:inherit;box-shadow:inset -9px -4px 13px #010710b3,inset 2px 1px 4px #b6def254;pointer-events:none}.route-endpoint .route-world img{width:100%;height:100%;object-fit:cover;border-radius:50%;box-shadow:none}.route-unknown-globe{display:block;width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 29% 27%,#7c94a9,#283d53 40%,#0c1a29 70%);opacity:.75}.route-world-unknown::before{content:'?';position:absolute;inset:0;display:grid;place-content:center;font-size:22px;color:#dce7ed9c;z-index:1}.route-world-copy{text-align:center;display:grid;gap:2px;max-width:100%}.route-world-copy strong{font-size:10px;color:#e0e8e9;white-space:nowrap}.route-world-copy small{font-size:9px;color:#acc7d0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:72px}
+.fleet-route .route-space-lane{grid-row:2;grid-column:2;height:84px;align-self:start;position:relative;background:none;margin:0 -2px}.route-orbit{position:absolute;inset:0;width:100%;height:100%;overflow:visible;fill:none;pointer-events:none}.route-orbit-glow{stroke:#85d5cb25;stroke-width:9;filter:blur(4px)}.route-orbit-line{stroke:#a7d5ca80;stroke-width:1;stroke-dasharray:3 6;vector-effect:non-scaling-stroke}
+.route-vessel{position:absolute;left:calc(24px + var(--flight,0) * (100% - 48px));top:calc(var(--flight-arc,70) * .84px);width:72px;height:46px;transform:translate(-50%,-50%);transition:left 250ms linear,top 250ms linear;z-index:3}
+.fleet-route .route-ship{position:absolute;inset:0;width:100%;height:100%;left:0;top:0;object-fit:contain;filter:url(#route-ship-cutout);transform:scaleX(-1);transition:transform 300ms ease-out}.fleet-route[data-returning=true] .route-ship{transform:none}
+.route-engine{position:absolute;width:23px;height:7px;left:0;top:24px;border-radius:50%;background:linear-gradient(90deg,transparent,#8edbe570);filter:blur(3px);opacity:.65}.fleet-route[data-returning=true] .route-engine{left:auto;right:0;transform:rotate(180deg)}.fleet-route[data-holding=true] .route-engine{display:none}
+.route-progress{grid-row:3;grid-column:1/-1;display:flex;justify-content:space-between;gap:8px;border-top:1px solid #aacdc624;padding-top:7px;font-size:10px;color:#c8dcd9;z-index:1;font-variant-numeric:tabular-nums}.route-progress span:last-child{color:#e7d3a5}
+@media(min-width:601px){.fleet-route>summary{grid-template-columns:1fr 1fr}.fleet-route .route-track{grid-column:1/-1;grid-row:2}.fleet-route .route-clock{grid-column:2;grid-row:1}}
+@media(prefers-reduced-motion:reduce){.route-vessel,.fleet-route .route-ship{transition:none}}
+/* One fleet command: local hangars, active missions and the shared planner. */
+.fleet-hub-links{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}.fleet-hub-links button{min-height:44px;font-size:11px;flex:1 1 115px;padding:8px}.fleet-overview-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:14px 0}.fleet-overview-stats span{font-size:11px;padding:9px;border-bottom:1px solid #91c5c439;color:#b6ccd1}.fleet-overview-stats b{font-size:18px;color:#e7d4a8;margin-right:4px}.fleet-locations{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px}.fleet-location{padding:12px;border:1px solid #9fc9c332;border-radius:13px;background:linear-gradient(120deg,#04151bd9,#071823ed),url('assets/backgrounds.hangar.webp') center/cover;min-width:0}.fleet-location-heading{display:flex;gap:12px;align-items:center}.fleet-location-heading>img{width:54px;height:54px;border-radius:50%}.fleet-location-heading>span{display:grid;gap:3px;font-size:12px}.fleet-location-heading strong{font-size:19px;color:#e0e9e9}.fleet-location-heading small{font-size:9px;letter-spacing:.13em;color:#c9b779}.fleet-location-preview{display:flex;gap:7px;margin:12px 0;align-items:center}.fleet-location-preview>span{position:relative;width:62px;min-width:0;display:block}.fleet-location-preview img{width:100%;height:40px;object-fit:contain;display:block}.fleet-location-preview b{position:absolute;right:0;bottom:-1px;border-radius:3px;padding:1px 3px;background:#061522da;font-size:10px;color:#f2ddad}.fleet-location-preview>small{font-size:10px}.fleet-location-status{font-size:10px!important;color:#a7c7cd}.fleet-location summary{font-size:11px;min-height:40px;align-content:center}.fleet-location-units{display:grid;gap:6px}.fleet-location-units button{display:flex;gap:8px;align-items:center;text-align:left;padding:4px;min-height:44px}.fleet-location-units img{width:64px;height:40px;object-fit:contain}.fleet-location-units span{display:flex;flex:1;justify-content:space-between;gap:8px;font-size:11px}.fleet-location-launch{width:100%;font-size:11px;margin-top:8px;min-height:44px}#fleet-planner{margin-top:16px;border:1px solid #9bcbb238;border-radius:12px;padding:12px}#fleet-planner>summary{min-height:44px;align-content:center;font-size:13px}#fleet-support>details{border-top:1px solid #9bbcbc29;padding:10px 0}#fleet-support>details>summary{min-height:44px;align-content:center;font-size:13px}#fleet-support #expeditions-panel>h2{font-size:17px}#fleet-support #kampf-content{margin-top:12px}
+.fleet-route .route-vessel{left:calc(var(--flight,0) * 100%)}
+.route-cargo-preview{grid-column:1/-1;grid-row:3;display:block;padding:9px 0 0;border-top:1px solid #8fbbb52d}.route-cargo-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}.route-cargo-heading b{font-size:11px;color:#d8e4df}.route-cargo-heading small{font-size:10px;color:#a8c5ca}.route-cargo-items{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}.route-cargo-items>span{display:flex;align-items:center;gap:5px;background:#05151f88;border:1px solid #91c5bb24;border-radius:6px;padding:4px 7px}.route-cargo-items img{width:28px;height:28px;object-fit:contain}.route-cargo-items>span>span{display:grid}.route-cargo-items small{font-size:9px;color:#aac4c8}.route-cargo-items strong{font-size:12px;color:#ebddb5;font-variant-numeric:tabular-nums}
+.fleet-location-heading{cursor:pointer;list-style:none}.fleet-location-heading::-webkit-details-marker{display:none}.fleet-location-heading>.location-expand{display:block;margin-left:auto;color:#cbb784;font-size:18px}.fleet-location[open]>.fleet-location-heading>.location-expand{transform:rotate(180deg)}.fleet-expand-controls{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.fleet-expand-controls button{font-size:11px;min-height:44px;flex:1;padding:8px}.fleet-location-heading>img{flex-shrink:0}
+.fleet-route .fleet-flight-facts{gap:4px 14px}.fleet-route .fleet-flight-facts>div{background:none;border:0;border-bottom:1px solid #9bbdbb24;border-radius:0;padding:7px 0}.fleet-route .fleet-flight-facts dd{font-size:12px;line-height:1.4;margin-top:3px}.fleet-route .fleet-strength dd{font-size:17px}.fleet-route .route-detail{padding:12px}.fleet-route .fleet-mission-heading h4{font-size:15px}.fleet-inline-feedback{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border-left:2px solid #77cdb4;background:#13342de0;color:#d9eee6;font-size:12px;line-height:1.5;overflow-wrap:anywhere}.fleet-inline-feedback.error{border-color:#e89c7c;background:#3d201ee0}.fleet-inline-feedback>span{min-width:0}.fleet-inline-feedback>button{flex:0 0 44px;width:44px;height:44px;padding:0;font-size:20px}.fleet-inline-feedback+ .route-detail{border-top:0}body:has(#flotten:not([hidden])) #back-to-top{display:none!important}body:has(#message:not([hidden])) #back-to-top{visibility:hidden}.fleet-location>summary{min-height:60px}
+details.fleet-route:not([open]) .route-track{display:none}details.fleet-route[open] .route-compact-distance{display:none}details.fleet-route:not([open]) .route-cargo-preview{grid-row:2}.fleet-route .route-compact-distance{font-size:10px;color:#d1bc89;overflow-wrap:anywhere}.fleet-route .route-title b{font-size:13px}.fleet-route summary:focus-visible,.fleet-location summary:focus-visible{outline:2px solid #d7bd79;outline-offset:-3px;border-radius:8px}.fleet-delivery{border:1px solid #95b7b32e;border-radius:10px;margin:8px 0;padding:10px;background:#071a23ab}.fleet-delivery>summary{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer}.fleet-delivery>summary>img{width:34px;height:34px;object-fit:contain}.fleet-delivery>summary>span:nth-child(2){flex:1;display:grid;gap:4px}.fleet-delivery b{font-size:12px}.fleet-delivery small,.fleet-delivery [data-arrival]{font-size:10px;color:#b7cbd0}.fleet-delivery p{font-size:12px}.fleet-delivery button{min-height:44px}
+/* Reference navigation stays usable at phone width; artwork retains its aspect ratio. */
+#codex .reference-controls nav{display:flex;flex-wrap:wrap;gap:6px}
+#codex .reference-controls nav button{min-height:44px;white-space:normal}
+.codex-reference-layout{display:grid;grid-template-columns:minmax(180px,240px) minmax(0,1fr);gap:16px;align-items:start}
+.codex-reference-list{display:grid;gap:6px;max-height:70vh;overflow:auto;overscroll-behavior:contain}
+.codex-reference-list button{display:flex;align-items:center;gap:8px;min-width:0;min-height:48px;text-align:left;padding:6px 10px;background:#071820a6;border:1px solid #34545b88;border-radius:10px}
+.codex-reference-list button[aria-pressed=true]{border-color:#d4bc7b;background:#183839b8}
+.codex-reference-list img{width:60px;height:48px;object-fit:contain;flex-shrink:0}
+.codex-reference-list span{overflow-wrap:anywhere;font-size:.85rem}
+.codex-reference-list small{display:block;font-size:.72rem;color:var(--muted,#a3b8bd)}
+#codex .codex-reference{display:block;min-width:0;padding:16px;border:1px solid #34545b88;border-radius:16px;background:linear-gradient(#041119eb,#041119f5),var(--codex-scene,none) center/cover}
+#codex .codex-reference>.dossier-hero{width:100%;height:auto;max-height:320px;object-fit:contain;margin:12px auto;display:block}
+.codex-rule-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65}
+#codex .dossier-metrics{grid-template-columns:repeat(auto-fit,minmax(125px,1fr))}
+#codex .codex-reference .cost{flex-wrap:wrap}
+@media(max-width:650px){.codex-reference-layout{grid-template-columns:minmax(0,1fr)}.codex-reference-list{grid-template-columns:repeat(2,minmax(0,1fr));max-height:210px}.codex-reference-list img{width:44px;height:44px}.codex-reference-list button{padding:5px;gap:5px}#codex .codex-reference{padding:12px}.codex-reference-list span{font-size:.78rem}}
+
+/* Construction: visible task filters, compact cards and an unobstructed info target. */
+#gebaeude .building-filters{display:block;margin:10px 0 12px;padding:12px;background:#071a23c9;border-color:#4d76866b}
+.building-filter-heading,.building-filter-result{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.building-filter-heading>strong{font-size:.95rem}.building-filter-heading button{min-height:44px;padding:6px 10px;font-size:.78rem;background:transparent}
+#gebaeude .building-search{display:block;margin:6px 0 10px}
+.building-status-pills{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+#gebaeude .building-status-pills button{min-height:44px;padding:6px;font-size:.78rem;line-height:1.25;border:1px solid #50707d88;border-radius:9px;background:#0a1920b3;white-space:normal}
+#gebaeude .building-status-pills button[aria-pressed=true]{background:#204642bd;border-color:#81c1ad;color:#e5fff3}
+.building-status-pills span{font-variant-numeric:tabular-nums;opacity:.75}
+.building-filter-selects{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:8px;margin:10px 0}
+#gebaeude .building-filter-selects label{font-size:.78rem;margin:0;min-width:0}
+#gebaeude .building-filter-selects select{font-size:14px;min-width:0;max-width:100%;padding:6px}
+#gebaeude .building-filter-result{font-size:.75rem;color:#acc2c8;flex-wrap:wrap}
+#gebaeude .building-filter-result output{flex-basis:auto;font-size:inherit}
+#gebaeude .catalog-era{margin:10px 0 2px;padding:8px 10px;font-size:.88rem}
+#gebaeude .queue-controls{margin:8px 0}
+body:has(#gebaeude:not([hidden]),#versorgung:not([hidden]),#truppen:not([hidden]),#codex:not([hidden]),#forschen:not([hidden]),#werft:not([hidden]),#verteidigung:not([hidden])) #back-to-top{display:none!important}
+#gebaeude .building-search>.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+#gebaeude .building-filter-selects select{font-size:12px}
+
+#codex .codex-reference .dossier-metrics .fact-row{padding:8px}
+#codex .codex-reference .dossier-metrics dt{font-size:11px;color:#b8cbd3}
+#codex .codex-reference .dossier-metrics dd{font-size:15px;color:#eff5f4;font-weight:600}
+#codex .codex-reference>p{font-size:13px;line-height:1.55}
+
+body.game-client #game [data-era-heading][hidden]{display:none!important}
+
+/* Buildings have their own card structure: artwork, title, status, costs, action. */
+body.game-client #game #gebaeude .gallery{align-items:stretch;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+body.game-client #game #gebaeude .construction-card{display:flex;flex-direction:column;align-self:stretch;min-width:0;padding:8px;border:1px solid #40606c99;border-radius:16px;background:linear-gradient(155deg,#102832c4,#07141de8);box-shadow:inset 0 1px #b0d9dd12;overflow:hidden}
+body.game-client #game #gebaeude .construction-card[hidden]{display:none!important}
+body.game-client #game #gebaeude .construction-card[data-running=true]{border-color:#bca66c}
+body.game-client #game #gebaeude .construction-art{display:block;width:100%;padding:0;min-height:0;margin:0;border:0;border-radius:10px;overflow:hidden;background:#04121a80;box-shadow:none}
+body.game-client #game #gebaeude .construction-art .art-shell{width:100%;height:auto!important;aspect-ratio:4/3;min-height:0;margin:0;border-radius:10px}
+body.game-client #game #gebaeude .construction-art .art-shell img{width:100%;height:100%;object-fit:cover!important;object-position:center;padding:0!important}
+body.game-client #game #gebaeude .construction-name{display:block;min-height:2.6em;margin:10px 2px 0;padding:0;font-size:15px;line-height:1.3;letter-spacing:0;word-break:normal;overflow-wrap:normal;hyphens:auto;color:#e7f0f3;border:0;background:none}
+body.game-client #game #gebaeude .construction-meta{display:flex;align-items:center;justify-content:space-between;gap:4px;min-height:44px;margin:0 0 4px;border-bottom:1px solid #5c89932b;color:#a9bec9;font-size:12px}
+body.game-client #game #gebaeude .construction-meta b{font-weight:600;color:#e6eef0}
+body.game-client #game #gebaeude .construction-meta .tile-info{position:static!important;display:grid!important;place-items:center;flex:0 0 44px!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;padding:0!important;margin:0!important;border:0!important;border-radius:10px!important;background:#75b6c50a!important;box-shadow:none!important;color:#c9b87e;font-size:18px!important;font-weight:600;line-height:1;transform:none!important}
+body.game-client #game #gebaeude .construction-effect{min-height:2.7em;margin:3px 2px 6px;font-size:12px;line-height:1.35;color:#a5cfbc}
+body.game-client #game #gebaeude .construction-costs{display:flex;flex-wrap:wrap;align-items:center;gap:5px 8px;min-height:26px;margin:0 2px 9px;font-size:12px;line-height:1.4;color:#c6d6dc;font-variant-numeric:tabular-nums}
+body.game-client #game #gebaeude .construction-costs img{width:16px;height:16px;object-fit:contain;vertical-align:middle}
+body.game-client #game #gebaeude .construction-needs{font-size:11px;line-height:1.4;color:#c8b69a;margin:0 2px 10px}
+body.game-client #game #gebaeude .construction-action{margin-top:auto;padding-top:3px}
+body.game-client #game #gebaeude .construction-action .tile-build{width:100%;min-width:0;min-height:48px;margin:0!important;padding:8px 4px!important;border-radius:9px;font-size:12px!important;line-height:1.3;white-space:normal}
+body.game-client #game #gebaeude .construction-action .tile-actions{display:flex;gap:4px;margin:0;padding:0}
+body.game-client #game #gebaeude .construction-action .tile-cancel{flex:0 0 44px;width:44px;min-height:48px;padding:0;margin:0;border-radius:9px}
+@media(max-width:540px){
+ body.game-client #game #gebaeude .gallery{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
+ body.game-client #game #gebaeude .construction-card{padding:7px;border-radius:13px}
+ body.game-client #game #gebaeude .construction-name{font-size:12px;min-height:2.6em}
+ body.game-client #game #gebaeude .construction-effect,body.game-client #game #gebaeude .construction-costs{font-size:11px}
+}
+
+#gebaeude .building-filter-selects select{white-space:nowrap;text-overflow:ellipsis;height:44px;line-height:1.2}
+
+/* Compact image-backed building cards; the dark veil keeps figures legible. */
+body.game-client #game #gebaeude .construction-card{background:linear-gradient(180deg,#06131ae8 25%,#06131ad1 65%,#06131af2),var(--construction-art) center/cover}
+body.game-client #game #gebaeude .construction-name{margin:7px 2px 0;min-height:0}
+body.game-client #game #gebaeude .construction-meta{margin:0;border:0;min-height:44px}
+body.game-client #game #gebaeude .construction-effect{min-height:0;margin:0 2px 5px}
+body.game-client #game #gebaeude .construction-effect:empty{display:none}
+body.game-client #game #gebaeude .construction-costs{min-height:22px;margin:0 2px 6px}
+body.game-client #game #gebaeude .construction-action{padding-top:2px}
+body.game-client #game #gebaeude .construction-meta .tile-info{background:transparent!important}
+body.game-client #game #gebaeude .construction-meta .tile-info::before{content:'';position:absolute;inset:10px;border:1px solid #a39665aa;border-radius:50%;pointer-events:none}
+body.game-client #game #gebaeude .construction-meta .tile-info{position:relative!important}
+.ship-class-group{display:contents}
+.ship-class-group[hidden]{display:none!important}
+.ship-class-heading{grid-column:1/-1;margin:14px 0 2px;padding:8px 10px;font-size:15px;color:#d2e5e8;border-left:3px solid #78b9bd;background:linear-gradient(90deg,#1e414d70,transparent);border-radius:5px}
+.shipyard-locked,.shipyard-empty{grid-column:1/-1}
+.shipyard-locked{padding:10px;border:1px solid #52667470;border-radius:12px;background:#07151eb0}
+.shipyard-locked>summary{min-height:44px;cursor:pointer;color:#bbccd3;font-size:14px;padding:5px}
+.shipyard-locked>summary>span{margin-left:8px;font-variant-numeric:tabular-nums;color:#ddc78e}
+.shipyard-locked>summary>small{display:block;font-size:11px;color:#8fa8b5;margin:4px 0 0 17px}
+.shipyard-locked>.gallery{margin:6px 0 0}
+.shipyard-locked[hidden]{display:none!important}
+
+/* A closed technology branch occupies one touch row; only opened branches load images. */
+.construction-tech{margin:5px 0 0;border-top:1px solid #82b6c32b;min-width:0}
+.construction-tech>summary{display:flex;align-items:center;justify-content:space-between;min-height:44px;cursor:pointer;padding:0 4px;font-size:11px;color:#c5d8d5;list-style:none}
+.construction-tech>summary::-webkit-details-marker{display:none}
+.construction-tech>summary>span{color:#cdbc88;font-size:15px}
+body.game-client #game #gebaeude .construction-card:has(>.construction-tech[open]){grid-column:1/-1;display:grid;grid-template-columns:minmax(90px,.8fr) minmax(0,1.5fr);gap:0 12px}
+body.game-client #game #gebaeude .construction-card:has(>.construction-tech[open])>.construction-art{grid-column:1;grid-row:1/7;align-self:start}
+body.game-client #game #gebaeude .construction-card:has(>.construction-tech[open])>:is(.construction-name,.construction-meta,.construction-effect,.construction-costs,.construction-needs,.construction-action){grid-column:2}
+body.game-client #game #gebaeude .construction-card:has(>.construction-tech[open])>.construction-tech{grid-column:1/-1}
+.construction-tech-body{font-size:12px;padding:2px 4px 8px;min-width:0}
+.mini-tech-origin{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid #7eb9bc40}
+body.game-client #game .mini-tech-origin>button{min-height:44px;font-size:11px;padding:5px 8px;background:#12303c80}
+.mini-tech-gates{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:8px 0}
+body.game-client #game .mini-tech-gates>button{font-size:11px;min-height:44px;padding:6px;background:#0b2635b0}
+.mini-tech-gates>span,.mini-tech-note{font-size:11px;line-height:1.5;color:#b3c6ce}
+.construction-tech-body h4{font-size:12px;margin:14px 0 8px}
+.mini-tech-branches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;border-left:1px solid #76b5bc70;margin:6px 0 6px 3px;padding-left:8px}
+body.game-client #game .mini-tech-node{position:relative;display:grid;grid-template-columns:40px minmax(0,1fr);gap:6px;align-items:center;min-width:0;min-height:60px;padding:7px 6px;text-align:left;background:#071922b8;border:1px solid #6b9b9d44;border-radius:9px;font-size:11px}
+.mini-tech-node::before{content:'';position:absolute;width:8px;height:1px;left:-9px;top:50%;background:#76b5bc70}
+.mini-tech-node img{width:40px;height:40px;object-fit:contain;border-radius:4px}
+.mini-tech-node span{min-width:0}.mini-tech-node strong{display:block;font-size:11px;line-height:1.3;overflow-wrap:anywhere}
+.mini-tech-node small{display:block;margin-top:4px;font-size:10px;line-height:1.4;color:#b3c6ce}
+.mini-tech-node>b{position:absolute;top:2px;right:3px;font-size:10px;color:#c7ae7d}
+.mini-tech-node.ready>b{color:#9ed7bb}
+.mini-tech-more>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-size:11px;color:#d3c18f}
+.mini-tech-more>summary::before{content:'▸';margin-right:6px}.mini-tech-more[open]>summary::before{content:'▾'}
+.mini-tech-ascension{margin-top:10px;padding:10px;border:1px solid #baa67544;border-radius:10px;background:linear-gradient(120deg,#272a214d,#07172099)}
+.mini-tech-ascension p{font-size:11px;line-height:1.4;margin:6px 0}
+.mini-tech-progress{height:4px;border-radius:4px;background:#29414a;overflow:hidden;margin:9px 0 1px}
+.mini-tech-progress>span{display:block;height:100%;background:#9ccfb5}
+.mini-tech-ascension ul{list-style:none;padding:0;margin:0}.mini-tech-ascension li{display:flex;gap:8px;padding:5px 0;line-height:1.4;font-size:11px}.mini-tech-ascension li.ready>span{color:#96d5b7}.mini-tech-ascension li.pending>span{color:#d3bd89}
+@media(max-width:360px){.mini-tech-branches{grid-template-columns:minmax(0,1fr)}}
+
+.tech-map-controls{display:flex;justify-content:space-between;align-items:end;gap:8px;margin-top:10px}
+.tech-map-controls>label{min-width:0;flex:1;font-size:11px}
+body.game-client #game .tech-map-controls select{font-size:11px;min-height:44px;max-width:100%;width:100%;padding:5px;white-space:nowrap;text-overflow:ellipsis}
+.tech-map-controls>div{display:flex;align-items:center;gap:3px;flex-shrink:0}
+body.game-client #game .tech-map-controls button{min-width:44px;min-height:44px;padding:4px;background:#0c2938c9;font-size:18px}
+.tech-map-controls output{font-size:10px;min-width:28px;text-align:center}
+.tech-map-legend{font-size:10px;line-height:1.5;color:#a8bdc8;margin:8px 0}.tech-map-legend>span:first-child{color:#a2ddbc}.tech-map-legend>span:nth-child(2){color:#d2b377}
+.tech-map-viewport{overflow:auto;max-height:350px;min-height:180px;width:100%;border:1px solid #4c7a8b77;border-radius:11px;background:radial-gradient(circle,#58889825 1px,transparent 1px) 0 0/16px 16px,#03111aef;overscroll-behavior:contain;touch-action:pan-x pan-y;cursor:grab;scrollbar-width:thin;scrollbar-color:#547987 #071721;user-select:none}
+.tech-map-viewport:active{cursor:grabbing}.tech-map-space{position:relative}.tech-map-canvas{position:absolute;inset:0;transform-origin:0 0}
+.tech-map-edges{position:absolute;inset:0;overflow:visible;pointer-events:none}.tech-map-edges>path{fill:none;stroke-width:1.7}.tech-map-edges>path.met{stroke:#8fd6b4}.tech-map-edges>path.missing{stroke:#bfa46d;stroke-dasharray:5 4}
+body.game-client #game .tech-map-node{position:absolute;width:144px;height:74px;display:flex;align-items:center;gap:7px;margin:0;padding:7px;text-align:left;border:1px solid #69848e;border-radius:10px;background:linear-gradient(135deg,#16303ceb,#07151afc);box-shadow:0 3px 9px #0007;white-space:normal;color:#d5e5e9;overflow:hidden}
+body.game-client #game .tech-map-node.focus{border:2px solid #d4b976;background:linear-gradient(130deg,#263c3b,#142126)}
+body.game-client #game .tech-map-node.met{border-color:#78b69d}.tech-map-node>img{width:40px;height:45px;object-fit:contain;flex-shrink:0;pointer-events:none}.tech-map-node>span{min-width:0}.tech-map-node strong{font-size:10px;line-height:1.25;display:block;overflow-wrap:anywhere}.tech-map-node small{display:block;font-size:9px;line-height:1.3;color:#b8c8d0;margin-top:4px}.tech-map-node>b{position:absolute;top:3px;right:4px;font-size:10px;color:#c7b480}.tech-map-node.met>b{color:#a4e3be}
+
+#construction-tree-dialog{width:calc(100vw - 20px);max-width:1200px;height:calc(100dvh - 24px);max-height:100dvh;box-sizing:border-box;padding:14px;border:1px solid #6c9aa8;border-radius:16px;background:#06151df5;color:#dce9eb;overflow:hidden}
+#construction-tree-dialog[open]{display:flex;flex-direction:column;gap:8px}#construction-tree-dialog::backdrop{background:#000b;backdrop-filter:blur(3px)}
+.tech-large-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;width:100%;max-width:none;box-sizing:border-box;background:none;padding:0 0 8px;border-bottom:1px solid #91bbc239}.tech-large-heading h2{font-size:20px;margin:4px 0}.tech-large-heading small{font-size:10px;color:#b6c8cf}
+#construction-tree-dialog button[data-tech-close]{width:48px;height:48px;min-width:48px;padding:0;font-size:28px;background:#102c38;border:1px solid #5c8794;border-radius:10px}
+#construction-tree-dialog .tech-map-controls{margin:0}#construction-tree-dialog .tech-map-controls select{width:100%;min-height:44px;font-size:12px;white-space:nowrap}#construction-tree-dialog .tech-map-controls button{width:44px;min-width:44px;min-height:44px;padding:0;font-size:20px;background:#143340}
+#construction-tree-dialog .tech-map-legend{margin:0;font-size:11px}#construction-tree-dialog .tech-map-viewport{flex:1;min-height:180px;max-height:none}.tech-large-note{font-size:11px;line-height:1.4;color:#aec4cb;margin:0}
+#construction-tree-dialog .tech-map-node{position:absolute;display:flex;align-items:center;gap:10px;margin:0;padding:10px;text-align:left;border:1px solid #6b8b97;border-radius:12px;background:linear-gradient(135deg,#173b48,#07151c);box-shadow:0 4px 12px #0009;white-space:normal;color:#e6eff0;overflow:hidden}
+#construction-tree-dialog .tech-map-node.focus{border:2px solid #e1c17c;background:#253d3e}#construction-tree-dialog .tech-map-node.met{border-color:#8dd4b5}
+#construction-tree-dialog .tech-map-node img{width:62px;height:70px}#construction-tree-dialog .tech-map-node strong{font-size:14px;line-height:1.3}#construction-tree-dialog .tech-map-node small{font-size:12px;line-height:1.35}#construction-tree-dialog .tech-map-node>b{font-size:14px;right:7px;top:5px}
+
+/* The large view gives its space to the tree, with one header and one toolbar. */
+body.game-client #construction-tree-dialog{width:calc(100vw - 8px);height:calc(100dvh - 8px);max-width:1400px;max-height:none;padding:8px;border-radius:12px;gap:6px}
+body.game-client #construction-tree-dialog .tech-large-heading{flex:0 0 44px;min-height:44px;width:100%;height:auto;margin:0;padding:0;gap:6px;border:0;background:transparent;box-shadow:none;text-align:left}
+body.game-client #construction-tree-dialog .tech-large-heading>div{flex:1;min-width:0}
+body.game-client #construction-tree-dialog .tech-large-heading h2{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:0;padding:0;font-size:17px;line-height:1.2}
+body.game-client #construction-tree-dialog .tech-large-heading small{font-size:10px;font-weight:400;color:#9eb5bf}
+body.game-client #construction-tree-dialog .tech-large-heading>button{flex:0 0 44px;width:44px;min-width:44px;height:44px;min-height:44px;margin:0;padding:0;border-radius:8px;border:1px solid #365763;background:#0d2530;color:#d1e1e7;font-size:19px}
+body.game-client #construction-tree-dialog .tech-large-heading>[data-tech-close]{font-size:26px}
+body.game-client #construction-tree-dialog .tech-map-controls{flex:0 0 44px;min-height:44px;margin:0;padding:0;gap:6px;align-items:center}
+body.game-client #construction-tree-dialog .tech-step-label{display:none}
+body.game-client #construction-tree-dialog .tech-map-controls>label{margin:0;padding:0}
+body.game-client #construction-tree-dialog .tech-map-controls select{height:44px;min-height:44px;margin:0;padding:4px 24px 4px 8px;border-radius:8px;font-size:12px;text-overflow:ellipsis}
+body.game-client #construction-tree-dialog .tech-map-controls>div{gap:4px}
+body.game-client #construction-tree-dialog .tech-map-controls button{width:40px;min-width:40px;height:44px;min-height:44px;border-radius:8px;font-size:18px}
+body.game-client #construction-tree-dialog .tech-map-controls output{display:none}
+body.game-client #construction-tree-dialog .tech-map-legend{display:none}
+body.game-client #construction-tree-dialog .tech-map-viewport{flex:1;min-height:0;max-height:none;border-radius:8px;border-color:#35596980}
+body.game-client #construction-tree-dialog .tech-large-note{flex:0 0 auto;margin:0;padding:8px;font-size:11px;background:#102631;border-radius:8px}
+body.game-client #construction-tree-dialog .tech-large-note[hidden]{display:none}
+
+/* Scoped navigation sizing overrides the legacy sidebar button rules. */
+body.game-client #game #tabs.grouped-navigation #main-navigation .navigation-group>button{
+ display:flex!important;width:100%!important;min-width:0;min-height:44px;height:auto;
+ align-items:center;justify-content:space-between;gap:8px;margin:0;padding:8px 10px!important;
+ text-align:left;font-size:calc(12px * var(--text-scale))!important;line-height:1.3;
+ border:1px solid #6b999133;border-radius:8px;background:#0a1b24a6!important;box-shadow:none;
+}
+.navigation-label{flex:1;min-width:0}
+#main-navigation .navigation-group>button>.ui-icon{width:14px;height:14px;flex:0 0 14px;color:#8da8aa}
+#main-navigation .navigation-group>button[aria-expanded=true]>.ui-icon{transform:rotate(180deg)}
+body.game-client #game #tabs.grouped-navigation #main-navigation .navigation-group>button.active{border-color:#86bdb875;color:#daeee6;background:#17323cb0!important}
+body.game-client #game #tabs.grouped-navigation .navigation-children button{min-height:44px;margin:0;padding:8px!important;line-height:1.3;font-size:calc(12px * var(--text-scale))!important}
+@media(max-width:1000px){
+ body.game-client #game #tabs.grouped-navigation #main-navigation{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;align-items:stretch}
+ #main-navigation .navigation-group{display:contents}
+ #main-navigation .navigation-group:last-child>button{grid-column:1/-1}
+ body.game-client #game #tabs.grouped-navigation .navigation-children{order:1;grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin:2px 0 0;padding:6px 0 0;border:0;border-top:1px solid #83aca72b}
+ body.game-client #game #tabs.grouped-navigation .navigation-children[hidden]{display:none!important}
+ body.game-client #game #tabs.grouped-navigation .navigation-children button{width:100%!important;min-width:0}
+ body.game-client #reich .section-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ body.game-client #reich .section-actions button{width:100%;min-height:44px;margin:0;padding:8px;font-size:12px}
+ body.game-client #reich .section-actions button:last-child:nth-child(odd){grid-column:1/-1}
+ body.game-client #reich .hero-info dl{grid-template-columns:minmax(0,1fr) auto;gap:6px 12px}
+ body.game-client #reich .orders-empty{display:grid;grid-template-columns:1fr;gap:8px}
+ body.game-client #reich .orders-empty button{width:100%;min-height:44px;justify-content:space-between}
+}
+/* Edge-mounted controls: one narrow row, with no wrapped second row over stars. */
+body.game-client #galaxy-space .space-camera-controls{top:4px;right:4px;left:auto;display:flex;flex-wrap:nowrap;gap:3px;max-width:none;width:auto;padding:0;background:none}
+body.game-client #galaxy-space .space-camera-controls button{width:38px;min-width:38px;max-width:38px;height:44px;min-height:44px;margin:0;padding:0!important;font:500 10px/1.2 system-ui;border:1px solid #8ab5bf30;border-radius:6px;background:#0818209c!important;box-shadow:none;color:#bed0d3;overflow-wrap:normal}
+body.game-client #galaxy-space .space-camera-controls button:nth-child(-n+2){width:32px;min-width:32px;max-width:32px;font-size:18px}
+body.game-client #galaxy-space .space-camera-controls button:hover,body.game-client #galaxy-space .space-camera-controls button:focus-visible{background:#173442e8!important;color:#fff;border-color:#a6d1d5}
+body.game-client #galaxy-space .space-instructions{left:8px;right:8px;bottom:6px;max-width:none;padding:0;font:10px/1.4 system-ui;background:transparent;pointer-events:none}
+body.game-client #galaxy-labels button.space-label{background:transparent!important;box-shadow:none!important}
+@media(max-width:1000px){
+ body.game-client #game{display:block}
+ body.game-client #game #tabs.command-navigation.grouped-navigation{display:block!important;width:100%;box-sizing:border-box;margin:8px 0}
+ body.game-client #game #tabs.grouped-navigation .colony-context{width:100%;box-sizing:border-box;margin:0 0 8px}
+}
+
+/* Map annotations are text, never the application-wide illustrated buttons. */
+body.game-client #galaxy-labels button.space-label,
+body.game-client #local-galaxy button.local-star{background:none!important;background-image:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;color:#d9e4ec;font:500 11px/1.25 system-ui!important;text-shadow:0 1px 3px #020813,0 0 3px #020813;padding:1px 2px!important;min-height:0!important;min-width:0!important;max-width:none;overflow-wrap:normal;white-space:nowrap}
+body.game-client #galaxy-labels .space-label .space-resident{display:none!important}
+body.game-client #galaxy-labels .space-label:is(:focus-visible,.is-highlighted){color:#fff!important;text-decoration:underline;text-underline-offset:3px;outline:none}
+body.game-client #galaxy-labels .system:not([data-relation=unbekannt]) .space-number::before{content:'';display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--relation-color);margin-right:3px;vertical-align:middle}
+#galaxy-occupancy{padding:10px 12px;background:#08151d;border-top:1px solid #64839335;max-height:260px;overflow:auto;scrollbar-width:thin}
+#galaxy-occupancy>header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;padding:0 0 8px!important;background:none!important;border:0}
+#galaxy-occupancy strong{font-size:12px}#galaxy-occupancy small,#galaxy-occupancy p{font-size:11px;color:#99afb7;margin:0}
+.space-owner-row{display:grid;grid-template-columns:minmax(100px,1fr) minmax(0,1fr);align-items:center;gap:8px;padding:6px 0;border-top:1px solid #779eaa20;border-left:2px solid var(--owner-color);padding-left:8px}
+.space-owner-row small{display:block}.space-owner-planets{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+body.game-client #galaxy-occupancy button.space-owner-name{display:block;min-height:32px;text-align:left;font-size:12px;padding:0!important;background:none!important;border:0;border-radius:0;box-shadow:none;color:#d1e5e6;overflow-wrap:anywhere}
+body.game-client #galaxy-occupancy .space-owner-planets button{min-width:34px;min-height:36px;padding:3px!important;font:500 12px system-ui;background:#10253080!important;border:1px solid #728d993a;border-radius:6px;box-shadow:none}
+
+/* Compact illustrated navigation; typography has a separate disclosure icon. */
+body.game-client #game #tabs.grouped-navigation #main-navigation .navigation-group>button,
+body.game-client #game #tabs.grouped-navigation .navigation-children button{min-height:36px;height:auto;padding:6px 9px!important;background-image:linear-gradient(#061b24bf,#061b24dc),var(--button-art)!important;background-size:cover!important;background-position:center!important}
+body.game-client #game #tabs.grouped-navigation #main-navigation .navigation-group>button.active{background-image:linear-gradient(#15333bb0,#0c2833c9),var(--button-art)!important}
+body.game-client #galaxy-space .space-camera-controls button{height:34px;min-height:34px}
+#galaxy-labels{contain:layout style paint}
+body.game-client #galaxy-space .space-camera-controls button{background-image:linear-gradient(#071721d9,#071721e8),var(--button-art)!important;background-size:cover!important;background-position:center!important}
+/* Culling changes visibility only: no relayout when labels enter or leave a crowded view. */
+body.game-client #galaxy-labels .space-label[hidden]{display:block!important;visibility:hidden!important;pointer-events:none!important}
+
+body:has(#karte:not([hidden])) #back-to-top{display:none!important}
+body.game-client #galaxy-labels .planet:not([data-relation=unbekannt]) .space-number::before{width:4px;height:4px;margin-right:3px}
+
+#galaxy-occupancy{max-height:none;background:linear-gradient(#07151de8,#07151df0),url('assets/backgrounds.stars.webp') center/cover}
+#galaxy-occupancy>header{min-height:0!important;align-items:baseline;margin:0}
+#galaxy-occupancy .space-owner-row{display:block;padding:8px 0 8px 8px}
+.space-owner-row>div:first-child{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 10px}
+body.game-client #galaxy-occupancy button.space-owner-name{min-height:26px;padding:2px 0!important;flex:1 1 150px;line-height:1.35}
+#galaxy-occupancy .space-owner-planets{justify-content:flex-start;gap:5px;margin-top:4px}
+body.game-client #galaxy-occupancy .space-owner-planets button{display:flex;align-items:center;gap:5px;min-height:34px;min-width:49px;padding:3px 7px!important;background:linear-gradient(#09212ac4,#09212ad9),url('assets/backgrounds.command.webp') center/cover!important}
+.space-owner-planets img,.space-unknown-orb{width:23px;height:23px;object-fit:cover;border-radius:50%;flex-shrink:0}.space-unknown-orb{display:grid;place-items:center;background:radial-gradient(circle at 30% 30%,#45606e,#091824);font-size:10px}
+/* Screen-space labels must follow the projection in the same frame, without button easing. */
+body.game-client #galaxy-labels button.space-label{transition:none!important;animation:none!important}
+
+body.game-client #galaxy-labels .planet .space-number::before{display:none!important}
+body.game-client #galaxy-labels .planet::after{content:'';position:absolute;left:-7px;top:50%;width:6px;height:1px;background:var(--relation-color,#bccdd8);opacity:.65;pointer-events:none}
+
+/* Owner identity is shared by orbit paths, on-map codes and the owner legend. */
+body.game-client #galaxy-labels .space-owner-codes{display:inline-flex;gap:2px;margin-left:4px;font:700 10px/1.25 system-ui;vertical-align:baseline}
+body.game-client #galaxy-labels .planet{color:var(--owner-color,#d9e4ec)!important}
+body.game-client #galaxy-labels .planet::after{background:var(--owner-color,#bccdd8)}
+body.game-client #galaxy-labels .space-label.owner-muted{opacity:.22!important}
+body.game-client #galaxy-labels .space-label.owner-selected{opacity:1!important;text-shadow:0 0 5px #07131b,0 1px 2px #000}
+#galaxy-occupancy .space-owner-hint{margin:0 0 8px;font-size:11px;line-height:1.5}
+#galaxy-occupancy .owner-key{display:inline-grid;place-items:center;width:22px;height:22px;flex-shrink:0;color:var(--owner-color);border:1px solid currentColor;border-radius:50%;font:700 12px system-ui;margin-right:7px}
+body.game-client #galaxy-occupancy .space-owner-name{display:flex!important;align-items:center}
+body.game-client #galaxy-occupancy [data-space-owner][aria-pressed=true]{background:#29414d80!important;outline:1px solid var(--owner-color,#acced9);outline-offset:2px;border-radius:5px}
+body.game-client #galaxy-occupancy .space-owner-reset,body.game-client #galaxy-occupancy .space-owner-mail{min-height:30px;padding:4px 7px!important;font-size:11px;background:#11263070!important;box-shadow:none;border:1px solid #688f9c35;margin:2px 0 5px}
+body.game-client #galaxy-occupancy .space-owner-planets button{border-color:var(--owner-color)}
+#galaxy-occupancy .sector-owner-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;max-height:210px;overflow:auto}
+body.game-client #galaxy-occupancy .sector-owner-choice{display:flex;align-items:center;gap:4px;text-align:left;min-height:36px;padding:5px!important;background:#0e263180!important;border:1px solid #648a9830;box-shadow:none;font-size:12px;flex:1 1 145px}
+.sector-owner-choice small{display:block}
+
+/* Far-sector overview exposes only spatial anchors; identities appear on approach. */
+body.game-client #galaxy-space[data-stage=sector][data-owner-detail=false] .space-owner-codes{display:none!important}
+body.game-client #galaxy-space[data-stage=sector] .system .space-number::before{display:none!important}
+
+body.game-client #galaxy-labels .system.owner-selected{color:var(--owner-color,#fff)!important}
+
+body.game-client #galaxy-labels .space-shared-count{font-size:9px;font-weight:400;color:#c8d5dd}
+
+/* Bounded directories keep large worlds navigable without covering the map. */
+#galaxy-friendly{margin:8px 0;border:1px solid #719da538;border-radius:8px;background:#071820c9;padding:6px}
+.space-friendly-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+body.game-client #galaxy-friendly button{min-height:36px;padding:6px 8px!important;margin:0;background:#10263280!important;box-shadow:none;border:1px solid #648a9830;font:12px/1.3 system-ui}
+#galaxy-friendly [data-friendly-tab=eigen] b{color:#64f5a0}
+#galaxy-friendly [data-friendly-tab=verbuendet] b{color:#65d9ff}
+#galaxy-friendly [aria-expanded=true]{border-color:#b5d9dc!important}
+#space-friendly-body{padding-top:6px}
+#space-friendly-body[hidden]{display:none}
+#space-friendly-results{display:grid;gap:3px;margin-top:5px}
+body.game-client #space-friendly-results button{display:grid;grid-template-columns:65px minmax(0,1fr) 16px;gap:8px;text-align:left;align-items:center}
+#space-friendly-results span{overflow-wrap:anywhere}
+#galaxy-friendly input,#galaxy-occupancy input{width:100%;min-width:0;min-height:36px;padding:6px 9px;font:12px system-ui;box-sizing:border-box;margin:0}
+.space-directory-tools{display:flex;gap:6px;align-items:center}
+.space-directory-tools input{flex:1}
+body.game-client #galaxy-occupancy .space-owner-reset{flex-shrink:0;margin:0;min-height:36px}
+.space-directory-pages{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;font:11px system-ui;color:#b5cbd0}
+body.game-client .space-directory-pages button{min-height:36px;min-width:44px;padding:4px 8px!important;background:#132a3380!important;box-shadow:none;margin:0}
+#galaxy-occupancy .sector-owner-list{max-height:none;overflow:visible}
+#galaxy-occupancy .owner-key{width:auto;min-width:22px;padding:0 3px;box-sizing:border-box;font-size:10px}
+#galaxy-occupancy .sector-owner-choice span{min-width:0;overflow-wrap:anywhere}
+body.game-client #galaxy-labels .space-friendly-code{font:700 11px system-ui;color:#65d9ff;margin-left:3px}
+body.game-client #galaxy-labels [data-friendly~=eigen] .space-friendly-code{color:#64f5a0}
+body.game-client #galaxy-labels [data-friendly]:not([data-friendly='']).owner-muted{opacity:1!important}
+#galaxy-map-legend{padding:10px 12px;border-top:1px solid #719da530;background:#07151dc9;font:11px/1.5 system-ui;color:#b9cdd4}
+#galaxy-map-legend>strong{font-size:12px;color:#e2eff3}
+.space-legend-key{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;margin-top:7px}
+.space-legend-key span{display:flex;align-items:center;gap:6px;min-width:0}
+.space-legend-key i{font-style:normal;font-size:17px;width:19px;text-align:center;flex-shrink:0}
+.map-key-unknown{color:#9badc1}.map-key-partial{color:#d2b179}.map-key-empty{color:#b0c7d5}.map-key-neutral{color:#edf3fa}.map-key-own{color:#64f5a0}.map-key-ally{color:#65d9ff}.map-key-enemy{color:#ff7e88}.map-key-nap{color:#f3d365}
+#galaxy-map-legend details{margin-top:8px}#galaxy-map-legend summary{font-size:11px;cursor:pointer;padding:4px 0}
+#galaxy-map-legend p{font:11px/1.55 system-ui;margin:8px 0;color:#b9cdd4}
+@media(min-width:700px){.space-legend-key{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.space-friendly-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+body.game-client #galaxy-friendly [data-friendly-tab]{padding:6px 3px!important;font-size:11px}
+.map-key-debris,#galaxy-friendly [data-friendly-tab=debris] b{color:#f6cd88}
+body.game-client #galaxy-labels .debris{color:#f6cd88!important;font-size:13px!important}
+body.game-client #galaxy-space[data-stage=galaxy] .space-label.system[data-friendly]:not([data-friendly='']){opacity:1;pointer-events:auto}
+.map-salvage-ships{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+#map-salvage-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;min-width:0}
+#map-salvage-form input,#map-salvage-form select{width:100%;min-width:0;box-sizing:border-box;min-height:36px;font-size:12px}
+.map-salvage-ships img{width:100%;height:70px;object-fit:contain;background:#020b1390;border-radius:6px}
+.map-salvage-ships small{font-size:10px;color:#9fb6bf}
+.map-salvage-facts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.map-salvage-facts span{padding:8px;border:1px solid #7599a32b;border-radius:6px;background:#07141bc4}
+.map-salvage-facts small,.map-salvage-facts b{display:block}.map-salvage-facts small{font-size:10px;color:#a7bec5}.map-salvage-facts b{font-size:13px;margin-top:4px}
+#map-salvage-form button[type=submit]{width:100%;margin-top:8px}
+.space-map-density{display:grid;grid-template-columns:auto auto minmax(40px,1fr) 36px;gap:4px;margin-top:6px}
+body.game-client #galaxy-friendly .space-map-density button{font-size:11px;padding:4px 7px!important}
+#galaxy-friendly .space-map-density input{width:100%;padding:4px}
+#galaxy-friendly .space-map-density [aria-pressed=true]{border-color:#afccd7}
+body.game-client #galaxy-space[data-number-focus=true] .space-owner-codes{display:none!important}
+#galaxy-infocard #map-salvage-form{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-items:stretch}
+#map-salvage-form>label{width:100%;min-width:0;max-width:none}
+#map-salvage-form .map-salvage-ships{margin:0}
+#galaxy-infocard:has(#map-salvage-form){background:linear-gradient(#07151deb,#07151df7),url('assets/backgrounds.command.webp') center/cover}
+.space-debris-halo{position:absolute;left:0;top:0;box-sizing:border-box;border:1.5px dashed #e8bb7190;border-left-color:transparent;border-radius:50%;pointer-events:none;z-index:0;will-change:transform}
+.space-debris-halo[hidden]{display:none}
+.space-debris-halo::before,.space-debris-halo::after{content:'';position:absolute;width:3px;height:3px;background:#d9ad6e;transform:rotate(35deg);border-radius:1px;right:0;top:22%}
+.space-debris-halo::after{left:20%;right:auto;top:100%}
+body.game-client #galaxy-labels button.space-label.debris{font:600 10px/1.3 system-ui!important;min-height:24px!important;padding:4px 6px!important;border:1px solid #e1b47440!important;border-radius:5px!important;background:#0b161db8!important;z-index:1}
+body.game-client #galaxy-labels .debris::before{content:'';position:absolute;left:-9px;top:50%;width:8px;height:1px;background:#dfb67591}
+/* Visible, sequential map navigation stays outside the 3D viewport. */
+#galaxy-levels{padding:10px 14px;background:rgba(5,18,28,.8);border-block:1px solid #8bc6d224}
+.space-level-path{display:flex;align-items:center;gap:5px;margin:0 0 8px;padding:0;list-style:none}
+.space-level-path li{display:flex;align-items:center;gap:5px;min-width:0}
+.space-level-path li+li:before{content:'›';color:#73939c;font-size:16px}
+.game-client .space-level-path button{min-height:34px;padding:5px 8px;font-size:12px;line-height:1.2;background:transparent;border:1px solid transparent;border-radius:8px;white-space:nowrap}
+.game-client .space-level-path button[aria-current]{color:#e6d3a4;border-color:#b69a5755;background:#d8b66d12}
+.game-client .space-level-path button:disabled{opacity:1;color:#7f969e;cursor:default}
+.space-level-selectors{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:10px}
+.space-level-selectors label{display:grid;gap:3px;min-width:0;font-size:11px;color:#9fb7c3}
+.game-client .space-level-selectors select{width:100%;min-width:0;min-height:36px;padding:6px 24px 6px 8px;font-size:12px;line-height:1.3;margin:0}
+@media(max-width:400px){#galaxy-levels{padding:8px}.game-client .space-level-path button{font-size:11px;padding:5px}.space-level-path,.space-level-path li{gap:3px}}
+/* Keep map navigation independent of global large action-button rules. */
+body.game-client #game #galaxy-levels .space-level-path button{width:auto;min-width:0;min-height:34px;padding:5px 6px!important;font-size:11px!important;white-space:nowrap!important;word-break:normal;overflow-wrap:normal;background:transparent!important;box-shadow:none}
+#galaxy-levels .space-level-path li{flex-shrink:0}
+#galaxy-levels .space-level-selectors{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+#galaxy-levels .space-level-selectors label:only-child{grid-column:1/-1}
+body.game-client #game #galaxy-levels select{min-width:0;width:100%;max-width:100%;min-height:36px;font-size:12px;padding:6px 22px 6px 7px}
+body.game-client #game #galaxy-levels [aria-current=step]{background:#d8b66d12!important}
+
+body.game-client #game #karte .space-toolbar button{min-height:34px;padding:5px 8px!important;font-size:11px!important;line-height:1.25;white-space:nowrap}
+body.game-client #game #karte .space-header{padding:10px 12px;background:linear-gradient(110deg,#10232de0,#08141bb3)}
+body.game-client #game #karte .space-header .eyebrow{font-size:9px;letter-spacing:.12em;margin:0}
+body.game-client #game #karte .space-header h2{font-size:22px;line-height:1.2;margin:3px 0 5px;padding:0;border:0}
+body.game-client #game #karte .space-header p{font:11px/1.4 system-ui;margin:0}
+body.game-client #game #karte .space-toolbar{padding:6px 8px;gap:4px;background:#07151bb3}
+body.game-client #game #karte .space-toolbar button[hidden]{display:none!important}
+body.game-client #game #karte .space-toolbar button{background:transparent!important;box-shadow:none;border-color:#63879040}
+body.game-client #game #karte .space-toolbar [aria-pressed=true]{background:#77a8bc18!important;border-color:#8bbfc170}
+body.game-client #game #galaxy-friendly [data-friendly-tab]{white-space:nowrap!important;font-size:10px!important;min-height:34px;padding:5px 3px!important}
+
+/* Keep resource deficits in the existing cost row; no extra cards or alerts. */
+.tile-materials .tile-material{display:inline-flex;align-items:center;flex-wrap:wrap;column-gap:3px;row-gap:0;max-width:100%}
+.tile-materials .material-shortfall{font-size:10px;line-height:1.2;color:#d9ac8f;font-weight:400;white-space:nowrap}
+.construction-costs .tile-materials{gap:4px 8px;flex-wrap:wrap}
+.construction-card .academy-open{min-height:32px;padding:5px 7px;margin-top:4px;font-size:11px;width:100%;white-space:normal}
+.academy-training{padding:12px 0;border-bottom:1px solid #49677966}
+.academy-training h3{font-size:17px;margin:0 0 6px}
+.academy-training p{font-size:12px;line-height:1.5;margin:6px 0 10px}
+.academy-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.academy-fields label{min-width:0;font-size:12px}
+.academy-fields label:first-child{grid-column:1/-1}
+.academy-fields input,.academy-fields select{width:100%;min-width:0;min-height:40px;padding:7px;font-size:14px}
+.academy-training [data-school-quote]{display:flex;flex-direction:column;gap:6px;margin:10px 0;font-size:12px}
+.academy-training [type=submit]{width:100%;min-height:40px;padding:8px;font-size:13px}
+.academy-jobs{list-style:none;padding:0;font-size:12px}
+.academy-jobs li{padding:8px 0;border-top:1px solid #49677944}
+.academy-jobs small{display:block;color:#a1b9c4;margin-top:3px}
+
+#item-info .academy-training form{display:block}
+.resource-flow{font-size:12px;line-height:1.5;padding:8px 0;border-bottom:1px solid #49677966}
+.resource-flow p{font-size:12px;margin:4px 0 9px}
+.resource-flow ul{padding:0;margin:0;list-style:none}
+.resource-flow li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px solid #49677944}
+.resource-flow li span{min-width:0}.resource-flow li small{display:block;color:#a1b9c4;font-size:11px}
+.resource-flow li b{white-space:nowrap;font-size:12px;font-variant-numeric:tabular-nums}
+.resource-flow button{min-height:34px;padding:6px 10px;font-size:12px;margin-top:8px}
+/* Bodentruppen mitführen: Feld und „Max“ nebeneinander, „Laderaum füllen“/„Leeren“ als Zeile (Konsolidierung 19.10.2026, M3) */
+#ground-load .ground-fill{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+#ground-load label{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;align-items:center}
+#ground-load label>small{grid-column:1/-1}
+#ground-load label>input{width:100%!important;min-width:0}
+#ground-load [data-ground-max]{width:auto!important;min-width:64px;margin:0!important}
+/* Flugkarte lebendig (Karl 22.10.2026: „die Bilder waren auf dem Kopf … NICHT die ganze coole Animation killen“). Früher sprang das
+   Schiff bei jedem Abruf an den Start und glitt zurück (Fehler im Neuzeichnen, behoben) – jetzt eine ruhige, echte Bewegung:
+   Schiff schwebt, Triebwerk flackert, die Leuchtspur läuft in Flugrichtung. `translate`/`scale` wirken zusätzlich zur
+   Spiegelung (transform), das Bild bleibt also richtig herum. */
+.fleet-route .route-ship{animation:route-schweben 2.8s ease-in-out infinite}
+.fleet-route .route-engine{animation:route-schub .45s ease-in-out infinite alternate;transform-origin:right center}
+.fleet-route[data-returning=true] .route-engine{transform-origin:left center}
+.fleet-route .route-orbit-line{animation:route-spur 1.6s linear infinite}
+.fleet-route[data-returning=true] .route-orbit-line{animation-direction:reverse}
+.fleet-route[data-holding=true] :is(.route-ship,.route-engine,.route-orbit-line){animation:none}
+.fleet-route[data-holding=true] .route-ship{animation:route-schweben 5s ease-in-out infinite}
+@keyframes route-schweben{0%,100%{translate:0 0}50%{translate:0 -3px}}
+@keyframes route-schub{from{opacity:.45;scale:.8 1}to{opacity:.95;scale:1.25 1}}
+@keyframes route-spur{to{stroke-dashoffset:-18}}
+body[data-progress-motion=still] .fleet-route :is(.route-ship,.route-engine,.route-orbit-line){animation:none}
+@media(prefers-reduced-motion:reduce){.fleet-route :is(.route-ship,.route-engine,.route-orbit-line){animation:none}}

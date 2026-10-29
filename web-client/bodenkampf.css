@@ -1,0 +1,290 @@
+/* Invasion v2 (bodenkampf.js, lage.js, ground-ui.js, bauseite.js): Bodenkampf-Blatt, Bestätigungsblatt, Lagekarte „Invasion!“,
+   Miliz-Karte und „Reparieren“ auf der Bauseite. Ruhiges Weltraum-Epos wie das Einsatzblatt (DESIGNREGELN §9): Rot = Gefahr und
+   Feind, Orange = aktuelle Linie und Mangel, Grün = ausführen, Hellblau = Koordinaten. Eigene Stile nur im ID-Bereich;
+   Knopfflächen über --button-wash (command-deck.css legt sonst ein Motiv auf jeden Knopf). Handy: Tippziele ≥ 44 px. */
+
+/* ---------- Blatt (wie #einsatz-blatt, eine Ebene darunter: die Einsatzplanung liegt darüber) ---------- */
+#bodenkampf-blatt,#bk-frage{--bk-grund:#060c18;--bk-glas:rgba(10,21,36,.82);--bk-glas2:rgba(16,31,50,.78);--bk-rand:rgba(150,190,230,.18);--bk-rand2:rgba(150,190,230,.34);
+ --bk-text:#dbe6f0;--bk-leise:#8ea4b8;--bk-gruen:#3fae5f;--bk-gruen2:#56d27c;--bk-orange:#f2a43a;--bk-rot:#ff6464;--bk-blau:#8fd0ff;--bk-akzent:#ff9d3c;
+ --bk-s:var(--text-scale,1);--button-art:none;--button-wash:transparent;font-family:Oxanium,"Segoe UI",system-ui,sans-serif;color:var(--bk-text);font-size:calc(14px * var(--bk-s));line-height:1.45}
+#bodenkampf-blatt{position:fixed;inset:0;z-index:1400;display:flex;justify-content:flex-end;background:rgba(2,6,13,.55)}
+#bodenkampf-blatt[hidden],#bk-frage[hidden]{display:none!important}
+body.bk-offen{overflow:hidden}
+#bodenkampf-blatt *,#bk-frage *{box-sizing:border-box}
+#bodenkampf-blatt .bk-flaeche{position:relative;display:flex;flex-direction:column;width:min(640px,100%);height:100%;background:linear-gradient(180deg,rgba(255,100,100,.06),transparent 240px),var(--bk-grund);border-left:1px solid var(--bk-rand2);box-shadow:-24px 0 60px rgba(0,0,0,.55)}
+#bodenkampf-blatt .bk-innen{flex:1;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;padding:12px 16px 24px;-webkit-overflow-scrolling:touch}
+#bodenkampf-blatt .bk-kopf{flex:none;position:relative;padding:14px 16px 10px;border-bottom:1px solid var(--bk-rand);background:linear-gradient(180deg,rgba(255,100,100,.12),transparent)}
+#bodenkampf-blatt .bk-kopf::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--bk-rot);opacity:.85}
+#bodenkampf-blatt .bk-kopf-zeile{display:flex;gap:12px;align-items:center}
+#bodenkampf-blatt .bk-kopf-zeichen{flex:none;display:grid;place-items:center;width:34px;height:34px;color:var(--bk-akzent)}
+#bodenkampf-blatt .bk-kopf-text{flex:1;min-width:0}
+#bodenkampf-blatt .bk-augenbraue,#bk-frage .bk-augenbraue{display:block;margin:0;font-size:calc(11px * var(--bk-s));letter-spacing:.14em;text-transform:uppercase;color:#ff8a8a}
+#bodenkampf-blatt .bk-kopf h2{margin:0;font-size:calc(20px * var(--bk-s));font-weight:700;color:#f1f6fb;overflow-wrap:break-word}
+#bodenkampf-blatt .bk-kopf p{margin:2px 0 0;color:var(--bk-leise);font-size:calc(13px * var(--bk-s))}
+#bodenkampf-blatt .koord{color:var(--bk-blau);font-variant-numeric:tabular-nums}
+#bodenkampf-blatt button.bk-x{flex:none;width:44px;height:44px;min-height:44px;padding:0;border-radius:50%;border:1px solid var(--bk-rand2);--button-wash:transparent;color:var(--bk-text);font-size:18px;line-height:1}
+#bodenkampf-blatt .bk-welle{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;margin:10px 0 0;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,100,100,.4);background:rgba(255,100,100,.08)}
+#bodenkampf-blatt .bk-welle span{color:#ffc9c9;font-size:calc(13px * var(--bk-s))}
+#bodenkampf-blatt .bk-welle b{font-size:calc(20px * var(--bk-s));color:#fff;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+#bodenkampf-blatt .bk-welle small{flex-basis:100%;color:var(--bk-leise);font-size:calc(12.5px * var(--bk-s))}
+#bodenkampf-blatt .bk-welle-verwuestet{border-color:var(--bk-rot);background:rgba(255,100,100,.16)}
+
+/* ---------- Teile ---------- */
+#bodenkampf-blatt .bk-teil{margin:16px 0 0}
+#bodenkampf-blatt .bk-teil-titel{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin:0 0 8px;font-size:calc(13px * var(--bk-s));font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#c8d6e4}
+#bodenkampf-blatt .bk-teil-titel small{text-transform:none;letter-spacing:0;font-weight:400;color:var(--bk-leise)}
+#bodenkampf-blatt .bk-leise{color:var(--bk-leise);font-size:calc(13px * var(--bk-s));margin:6px 0}
+#bodenkampf-blatt .bk-leer{color:var(--bk-leise);font-size:calc(12px * var(--bk-s))}
+#bodenkampf-blatt .bk-hinweis{margin:8px 0;padding:8px 10px;border-left:3px solid var(--bk-orange);background:rgba(242,164,58,.08);font-size:calc(13px * var(--bk-s))}
+#bodenkampf-blatt .bk-verwuestet{margin:0 0 10px;padding:10px 12px;border-radius:8px;border:1px solid var(--bk-rot);background:rgba(255,100,100,.12);font-size:calc(13.5px * var(--bk-s))}
+#bodenkampf-blatt .bk-verwuestet b{color:#ffb0b0;letter-spacing:.06em;text-transform:uppercase}
+#bodenkampf-blatt .bk-kraefte{display:grid;grid-template-columns:1fr 1fr;gap:6px 8px}
+#bodenkampf-blatt .bk-kraft-typen{grid-column:1/-1;min-width:0}
+#bodenkampf-blatt .bk-kraft{display:flex;flex-direction:column;gap:2px;min-width:0;padding:8px 10px;border-radius:10px;border:1px solid var(--bk-rand);background:var(--bk-glas2)}
+#bodenkampf-blatt .bk-kraft small{color:var(--bk-leise);font-size:calc(12px * var(--bk-s));overflow-wrap:anywhere}
+#bodenkampf-blatt .bk-kraft>b{font-size:calc(20px * var(--bk-s));font-variant-numeric:tabular-nums;line-height:1.15}
+#bodenkampf-blatt .bk-kraft-a{border-color:rgba(255,100,100,.35)}#bodenkampf-blatt .bk-kraft-a>b{color:#ff9a9a}
+#bodenkampf-blatt .bk-kraft-v{border-color:rgba(143,208,255,.3)}#bodenkampf-blatt .bk-kraft-v>b{color:#bfe4ff}
+
+/* ---------- Linien als Front von oben (Linie 1) nach unten (Rückhalt) ---------- */
+#bodenkampf-blatt .bk-linien{list-style:none;margin:0;padding:0;display:grid;gap:8px;position:relative}
+#bodenkampf-blatt .bk-linien::before{content:"";position:absolute;left:21px;top:22px;bottom:22px;width:2px;background:linear-gradient(var(--bk-rot),var(--bk-rand2))}
+#bodenkampf-blatt .bk-linie{position:relative}
+#bodenkampf-blatt .bk-linie-knopf{display:grid;grid-template-columns:44px minmax(0,1fr) auto auto;grid-template-areas:"nr text zahl pfeil" "nr chips chips chips";gap:4px 10px;align-items:center;width:100%;min-height:56px;margin:0;padding:8px 10px 8px 0;border-radius:12px;border:1px solid var(--bk-rand);--button-wash:rgba(16,31,50,.78);background:var(--bk-glas2);color:var(--bk-text);font:inherit;text-align:left;line-height:1.3}
+#bodenkampf-blatt button.bk-linie-knopf{min-height:56px;padding:8px 10px 8px 0}
+#bodenkampf-blatt .bk-linie-nr{grid-area:nr;justify-self:center;align-self:start;margin-top:2px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;border:2px solid var(--bk-rand2);background:var(--bk-grund);font-weight:700;font-variant-numeric:tabular-nums;position:relative;z-index:1}
+#bodenkampf-blatt .bk-linie-text{grid-area:text;display:flex;flex-direction:column;min-width:0}
+#bodenkampf-blatt .bk-linie-text b{font-size:calc(15px * var(--bk-s))}
+#bodenkampf-blatt .bk-linie-text small{color:var(--bk-leise);font-size:calc(12.5px * var(--bk-s))}
+#bodenkampf-blatt .bk-linie-text small b{font-size:inherit;color:#fff;font-variant-numeric:tabular-nums}
+#bodenkampf-blatt .bk-linie-zahl{grid-area:zahl;font-size:calc(20px * var(--bk-s));font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+#bodenkampf-blatt .bk-linie-zahl small{font-size:calc(12px * var(--bk-s));font-weight:400;color:var(--bk-leise)}
+#bodenkampf-blatt .bk-pfeil{grid-area:pfeil;font-size:24px;color:var(--bk-akzent);line-height:1}
+#bodenkampf-blatt .bk-linie-chips{grid-area:chips;display:flex;flex-wrap:wrap;gap:4px 6px;min-width:0}
+#bodenkampf-blatt .bk-linie-liste{color:#c8d6e4;font-size:calc(12.5px * var(--bk-s));line-height:1.4}
+#bodenkampf-blatt .bk-linie-liste b{color:#fff;font-variant-numeric:tabular-nums}
+#bodenkampf-blatt .bk-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 2px;border-radius:999px;border:1px solid var(--bk-rand);background:rgba(143,208,255,.05);font-size:calc(12px * var(--bk-s));color:#c8d6e4;white-space:nowrap}
+#bodenkampf-blatt .bk-chip img{width:22px;height:22px;object-fit:contain;border-radius:50%;background:rgba(0,0,0,.3)}
+#bodenkampf-blatt .bk-chip b{color:#fff;font-variant-numeric:tabular-nums}
+#bodenkampf-blatt .bk-chip-mehr,#bodenkampf-blatt .bk-chip-hilfe{padding-left:8px}
+#bodenkampf-blatt .bk-chip-hilfe{border-color:rgba(79,168,255,.5)}
+#bodenkampf-blatt .bk-gebrochen .bk-linie-knopf{opacity:.72;background:rgba(255,100,100,.05);border-style:dashed;border-color:rgba(255,100,100,.4)}
+#bodenkampf-blatt .bk-gebrochen .bk-linie-nr{border-color:var(--bk-rot);color:var(--bk-rot);text-decoration:line-through}
+#bodenkampf-blatt .bk-gebrochen .bk-linie-text small{color:#ff9a9a}
+#bodenkampf-blatt .bk-aktuell .bk-linie-knopf{border-color:var(--bk-akzent);box-shadow:inset 0 0 0 1px rgba(255,157,60,.45);background:linear-gradient(90deg,rgba(255,157,60,.12),rgba(16,31,50,.78) 60%)}
+#bodenkampf-blatt .bk-aktuell .bk-linie-nr{border-color:var(--bk-akzent);background:var(--bk-akzent);color:#1a0d00}
+#bodenkampf-blatt .bk-aktuell .bk-linie-text small{color:#ffd2a3}
+#bodenkampf-blatt .bk-rueckhalt .bk-linie-knopf{border-color:rgba(226,189,98,.45)}
+#bodenkampf-blatt .bk-rueckhalt .bk-linie-nr{border-color:#e2bd62;color:#e2bd62}
+#bodenkampf-blatt .bk-tippbar .bk-linie-knopf{cursor:pointer}
+#bodenkampf-blatt button.bk-linie-knopf:active{transform:scale(.99)}
+@media (hover:hover) and (pointer:fine){#bodenkampf-blatt button.bk-linie-knopf:hover{border-color:var(--bk-akzent)}}
+
+/* ---------- Aktionen, Regeln ---------- */
+#bodenkampf-blatt .bk-aktionen{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:14px 0 0}
+#bodenkampf-blatt .bk-aktion{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;min-height:56px;margin:0;padding:8px 12px;border-radius:10px;border:1px solid var(--bk-rand2);--button-wash:rgba(143,208,255,.05);color:var(--bk-text);font:inherit;text-align:left;line-height:1.3}
+#bodenkampf-blatt button.bk-aktion{min-height:56px;padding:8px 12px}
+#bodenkampf-blatt .bk-aktion b{font-size:calc(14px * var(--bk-s))}
+#bodenkampf-blatt .bk-aktion small{color:var(--bk-leise);font-size:calc(12px * var(--bk-s))}
+#bodenkampf-blatt button.bk-aktion-miliz{border-color:rgba(255,100,100,.6);--button-wash:rgba(255,100,100,.12)}
+#bodenkampf-blatt .bk-aktion-info{background:var(--bk-glas2);border-style:dashed}
+#bodenkampf-blatt .bk-aktion-info progress{width:100%;height:8px;accent-color:var(--bk-gruen2)}
+#bodenkampf-blatt button.bk-schritt,#militia-card button.bk-schritt{margin-top:4px;min-height:44px;padding:6px 12px;border-radius:22px;border:1px solid rgba(226,189,98,.55);--button-wash:rgba(226,189,98,.1);color:#e2bd62;font:600 calc(13px * var(--bk-s,1))/1.2 Oxanium,sans-serif}
+#bodenkampf-blatt button.bk-aktion:active{transform:scale(.985)}
+#bodenkampf-blatt details>summary{list-style:none;cursor:pointer}
+#bodenkampf-blatt details>summary::-webkit-details-marker{display:none}
+#bodenkampf-blatt .bk-klapp{margin:16px 0 0}
+#bodenkampf-blatt .bk-klapp>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;padding:8px 12px;border:1px solid var(--bk-rand);border-radius:8px;background:var(--bk-glas2);font-weight:600}
+#bodenkampf-blatt .bk-klapp>summary small{font-weight:400;color:var(--bk-leise);text-align:right;font-size:calc(12px * var(--bk-s))}
+#bodenkampf-blatt .bk-klapp>summary::after,#bodenkampf-blatt .bk-bericht>summary::after{content:"";flex:none;width:9px;height:9px;border-right:2px solid var(--bk-leise);border-bottom:2px solid var(--bk-leise);transform:rotate(45deg);margin-top:-4px;transition:transform .15s}
+#bodenkampf-blatt .bk-klapp[open]>summary::after,#bodenkampf-blatt .bk-bericht[open]>summary::after{transform:rotate(225deg);margin-top:4px}
+#bodenkampf-blatt .bk-zeitleiste{margin:10px 0 0;padding:0 0 0 22px;display:grid;gap:6px;font-size:calc(13px * var(--bk-s))}
+#bodenkampf-blatt .bk-zeitleiste li::marker{color:var(--bk-akzent);font-weight:700}
+#bodenkampf-blatt .bk-zaehlt{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;padding:0}
+#bodenkampf-blatt .bk-zaehlt li{padding:4px 10px;border-radius:999px;border:1px solid var(--bk-rand2);font-size:calc(12px * var(--bk-s));color:#c8d6e4}
+
+/* ---------- Wellenberichte ---------- */
+#bodenkampf-blatt .bk-bericht{margin:0 0 6px;border:1px solid var(--bk-rand);border-radius:10px;background:var(--bk-glas2)}
+#bodenkampf-blatt .bk-bericht>summary{display:flex;align-items:center;gap:10px;min-height:52px;padding:8px 12px;flex-wrap:wrap}
+#bodenkampf-blatt .bk-bericht>summary>small{flex:1 1 100%;order:3;color:var(--bk-leise);font-size:calc(12px * var(--bk-s));font-variant-numeric:tabular-nums}
+#bodenkampf-blatt .bk-bericht-kopf{flex:1;display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
+#bodenkampf-blatt .bk-erg{padding:1px 8px;border-radius:999px;font-size:calc(12px * var(--bk-s));border:1px solid var(--bk-rand2)}
+#bodenkampf-blatt .bk-erg-gebrochen .bk-erg{border-color:var(--bk-rot);color:#ffb0b0}
+#bodenkampf-blatt .bk-erg-gehalten .bk-erg{border-color:var(--bk-orange);color:#ffd7a3}
+#bodenkampf-blatt .bk-erg-abgewehrt .bk-erg{border-color:var(--bk-gruen2);color:#b8f5cb}
+#bodenkampf-blatt .bk-tabelle{display:grid;margin:0 12px 10px;font-size:calc(12.5px * var(--bk-s));font-variant-numeric:tabular-nums}
+#bodenkampf-blatt .bk-tr{display:grid;grid-template-columns:minmax(0,1.3fr) 1fr 1fr;gap:6px;padding:5px 0;border-bottom:1px solid var(--bk-rand)}
+#bodenkampf-blatt .bk-tr small{display:block;color:#ff9a9a}
+#bodenkampf-blatt .bk-th{color:var(--bk-leise);font-size:calc(11.5px * var(--bk-s));text-transform:uppercase;letter-spacing:.06em}
+#bodenkampf-blatt .bk-runden{margin:0 12px 10px}
+#bodenkampf-blatt .bk-runden>summary{min-height:44px;display:flex;align-items:center;color:var(--bk-blau);font-size:calc(13px * var(--bk-s))}
+#bodenkampf-blatt .bk-runden ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+#bodenkampf-blatt .bk-runden li{display:grid;gap:1px;padding:6px 8px;border-left:2px solid var(--bk-rand2);font-size:calc(12.5px * var(--bk-s))}
+#bodenkampf-blatt .bk-runden li small{color:var(--bk-leise)}
+
+/* ---------- Zuteilung einer Linie ---------- */
+#bodenkampf-blatt .bk-unterkopf{display:flex;align-items:center;gap:10px;margin:0 0 4px}
+#bodenkampf-blatt .bk-unterkopf h3{margin:0;font-size:calc(17px * var(--bk-s))}
+#bodenkampf-blatt button.bk-unterzurueck{flex:none;min-height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--bk-rand2);--button-wash:transparent;color:var(--bk-text);font:inherit}
+#bodenkampf-blatt .bk-unterzurueck span{color:var(--bk-akzent);font-size:20px;line-height:1}
+#bodenkampf-blatt .bk-vorlagen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0}
+#bodenkampf-blatt button.bk-vorlage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:52px;padding:4px 6px;border-radius:10px;border:1px solid var(--bk-rand2);--button-wash:rgba(143,208,255,.05);color:var(--bk-text);font:inherit;text-align:center;line-height:1.2}
+#bodenkampf-blatt .bk-vorlage small{color:var(--bk-leise);font-size:calc(11.5px * var(--bk-s))}
+#bodenkampf-blatt .bk-typen{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+#bodenkampf-blatt .bk-typ{display:grid;grid-template-columns:52px minmax(0,1fr);grid-template-areas:"bild name" "zaehler zaehler";gap:6px 10px;align-items:center;padding:8px 10px;border-radius:10px;border:1px solid var(--bk-rand);background:var(--bk-glas2)}
+#bodenkampf-blatt .bk-typ.gewaehlt{border-color:rgba(255,157,60,.6)}
+#bodenkampf-blatt .bk-typ>img{grid-area:bild;width:52px;height:44px;object-fit:contain}
+#bodenkampf-blatt .bk-typ-name{grid-area:name;display:flex;flex-direction:column;min-width:0}
+#bodenkampf-blatt .bk-typ-name small{color:var(--bk-leise);font-size:calc(12px * var(--bk-s))}
+#bodenkampf-blatt .bk-zaehler{grid-area:zaehler;display:grid;grid-template-columns:44px minmax(56px,1fr) 44px auto;gap:6px;align-items:center}
+#bodenkampf-blatt .bk-zaehler input{width:100%;min-height:44px;padding:6px 8px;border-radius:8px;border:1px solid var(--bk-rand2);background:#081322;color:#fff;text-align:center;font:inherit;font-size:16px;font-variant-numeric:tabular-nums}
+#bodenkampf-blatt button.bk-z{min-height:44px;width:44px;padding:0;border-radius:8px;border:1px solid var(--bk-rand2);--button-wash:rgba(143,208,255,.06);color:#fff;font-size:20px;line-height:1}
+#bodenkampf-blatt button.bk-z[aria-disabled="true"]{opacity:.4}
+#bodenkampf-blatt button.bk-z-max{min-height:44px;padding:0 12px;border-radius:8px;border:1px solid var(--bk-rand2);--button-wash:transparent;color:var(--bk-blau);font:inherit;font-size:calc(13px * var(--bk-s))}
+#bodenkampf-blatt button.bk-z:active,#bodenkampf-blatt button.bk-z-max:active,#bodenkampf-blatt button.bk-vorlage:active{transform:scale(.96)}
+#bodenkampf-blatt .bk-rest{margin:12px 0 0;padding:10px 12px;border-radius:10px;border:1px solid rgba(226,189,98,.4);background:rgba(226,189,98,.07);font-size:calc(13px * var(--bk-s))}
+#bodenkampf-blatt .bk-rest b{color:#f3d27a}
+#bodenkampf-blatt .bk-rest span{display:block;color:var(--bk-leise);font-size:calc(12px * var(--bk-s))}
+
+/* ---------- Fußleiste ---------- */
+#bodenkampf-blatt .bk-fuss{flex:none;display:grid;grid-template-columns:72px 1fr;grid-template-areas:"text text" "zurueck weiter";gap:8px 10px;align-items:stretch;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--bk-rand2);background:linear-gradient(180deg,rgba(7,13,26,.94),rgba(4,8,16,.98))}
+#bodenkampf-blatt .bk-fuss-text{grid-area:text;margin:0;min-width:0;color:var(--bk-orange);font-size:calc(12.5px * var(--bk-s));line-height:1.35}
+#bodenkampf-blatt .bk-fuss-text:empty{display:none}
+#bodenkampf-blatt .bk-fuss-text.bk-fuss-fehler{color:#ffc9c9}
+#bodenkampf-blatt .bk-fuss-text.bk-fuss-ok{color:#b8f5cb}
+#bodenkampf-blatt button.bk-zurueck,#bodenkampf-blatt button.bk-weiter{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:56px;margin:0;border-radius:14px;line-height:1.15;font:inherit}
+#bodenkampf-blatt button.bk-zurueck{grid-area:zurueck;gap:2px;padding:4px 0;border:1px solid var(--bk-rand2);--button-wash:rgba(143,208,255,.05);color:var(--bk-text)}
+#bodenkampf-blatt button.bk-zurueck span{font-size:22px;line-height:1;color:var(--bk-akzent)}
+#bodenkampf-blatt button.bk-zurueck small{font-size:calc(11.5px * var(--bk-s));color:var(--bk-leise)}
+#bodenkampf-blatt button.bk-weiter{grid-area:weiter;gap:2px;padding:6px 16px;border:1px solid rgba(120,230,155,.45);--button-wash:#2b8a4c;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.16);min-width:0}
+#bodenkampf-blatt button.bk-weiter b{font-size:calc(15px * var(--bk-s));font-weight:700}
+#bodenkampf-blatt button.bk-weiter small{max-width:100%;font-size:calc(12px * var(--bk-s));color:rgba(230,255,238,.85);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;text-align:center}
+#bodenkampf-blatt button.bk-weiter[aria-busy="true"]{cursor:progress;opacity:.8}
+#bodenkampf-blatt button.bk-zurueck:active,#bodenkampf-blatt button.bk-weiter:active{transform:scale(.985)}
+#bodenkampf-blatt button:focus-visible,#bk-frage button:focus-visible{outline:2px solid var(--bk-akzent);outline-offset:2px}
+
+@media (max-height:700px){
+ #bodenkampf-blatt .bk-kopf{padding-bottom:6px}
+ #bodenkampf-blatt .bk-welle{margin-top:6px;padding:5px 10px}
+ #bodenkampf-blatt .bk-welle b{font-size:calc(17px * var(--bk-s))}
+ #bodenkampf-blatt .bk-welle small{flex-basis:auto}
+}
+@media (max-width:767px){
+ #bodenkampf-blatt{background:none}
+ #bodenkampf-blatt .bk-flaeche{width:100%;border-left:0;box-shadow:none}
+ #bodenkampf-blatt .bk-innen{padding:10px 12px 20px}
+ #bodenkampf-blatt .bk-kopf{padding:10px 12px 8px}
+ #bodenkampf-blatt .bk-fuss{padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));grid-template-columns:64px 1fr}
+ #bodenkampf-blatt .bk-aktionen{grid-template-columns:1fr}
+}
+
+
+/* ---------- Bestätigungsblatt (statt confirm) ---------- */
+#bk-frage{position:fixed;inset:0;z-index:1600;display:flex;align-items:flex-end;justify-content:center;background:rgba(2,6,13,.6)}
+#bk-frage .bk-frage-flaeche{width:min(520px,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;padding:16px 16px calc(14px + env(safe-area-inset-bottom,0px));border:1px solid var(--bk-rand2);border-bottom:0;border-radius:16px 16px 0 0;background:linear-gradient(180deg,rgba(255,157,60,.08),transparent 120px),var(--bk-grund);box-shadow:0 -20px 50px rgba(0,0,0,.6)}
+#bk-frage .bk-frage-gefahr{background:linear-gradient(180deg,rgba(255,100,100,.1),transparent 120px),var(--bk-grund)}
+#bk-frage h2{margin:2px 0 10px;font-size:calc(18px * var(--bk-s));color:#f1f6fb}
+#bk-frage .bk-folgen{margin:0;padding:0 0 0 18px;display:grid;gap:6px;font-size:calc(13.5px * var(--bk-s))}
+#bk-frage .bk-folgen b{color:#fff}
+#bk-frage .bk-fehler{margin:12px 0 0;padding:10px 12px;border:1px solid rgba(255,100,100,.5);border-radius:6px;background:rgba(255,100,100,.1);color:#ffc9c9;font-size:calc(13px * var(--bk-s))}
+#bk-frage .bk-frage-knoepfe{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin-top:16px}
+#bk-frage button.bk-abbrechen,#bk-frage button.bk-ja{min-height:52px;margin:0;border-radius:12px;font:600 calc(15px * var(--bk-s)) Oxanium,sans-serif}
+#bk-frage button.bk-abbrechen{border:1px solid var(--bk-rand2);--button-wash:rgba(143,208,255,.06);color:var(--bk-text)}
+#bk-frage button.bk-ja{border:1px solid rgba(120,230,155,.5);--button-wash:#2b8a4c;color:#fff}
+#bk-frage .bk-frage-gefahr button.bk-ja{border-color:rgba(255,120,120,.6);--button-wash:#8a2b2b}
+#bk-frage button.bk-ja[aria-busy="true"]{opacity:.8;cursor:progress}
+@media (min-width:768px){#bk-frage{align-items:center}#bk-frage .bk-frage-flaeche{border-radius:16px;border-bottom:1px solid var(--bk-rand2)}}
+
+/* ---------- Lagekarte „Invasion!“ in der Übersicht (lage.js); eigene Planeten ganz oben (#invasion-lage) ---------- */
+@media (max-width:767px){body.game-client[data-rahmen] #reich>#invasion-lage{order:0}}
+#invasion-lage[hidden]{display:none!important}
+body.game-client :is(#lagebericht,#invasion-lage) .iv2-linien li:has(>.iv2-linie-knopf){padding:0}
+body.game-client :is(#lagebericht,#invasion-lage) .iv2-linien button.iv2-linie-knopf{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:100%;height:100%;min-height:56px;margin:0;padding:6px 2px;border:0;border-radius:8px;--button-wash:transparent;background-color:transparent!important;color:inherit;font:inherit;line-height:1.25;text-align:center;box-shadow:none}
+body.game-client :is(#lagebericht,#invasion-lage) .iv2-linien button.iv2-linie-knopf:active{transform:scale(.97)}
+@media (hover:hover) and (pointer:fine){body.game-client :is(#lagebericht,#invasion-lage) .iv2-linien li:has(>.iv2-linie-knopf):hover{border-color:#ff9d3c}}
+:is(#lagebericht,#invasion-lage) .iv2{--iv-rot:#ff6464;--iv-akzent:#ff9d3c;--button-art:none;padding:0;overflow:hidden;border:1px solid rgba(255,100,100,.55);border-left-width:1px;background:rgba(40,10,14,.55)}
+:is(#lagebericht,#invasion-lage) .iv2.iv2-angreifer,:is(#lagebericht,#invasion-lage) .iv2.iv2-angriffshelfer{border-color:rgba(255,157,60,.55);background:rgba(36,22,8,.55)}
+:is(#lagebericht,#invasion-lage) .iv2.iv2-verbuendeter{border-color:rgba(79,168,255,.55);background:rgba(8,22,40,.55)}
+:is(#lagebericht,#invasion-lage) .iv2-kopf{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:8px 12px;background:linear-gradient(90deg,#b3262c,#6e1418);color:#fff}
+:is(#lagebericht,#invasion-lage) .iv2-angreifer .iv2-kopf,:is(#lagebericht,#invasion-lage) .iv2-angriffshelfer .iv2-kopf{background:linear-gradient(90deg,#a2560f,#5b2f08)}
+:is(#lagebericht,#invasion-lage) .iv2-verbuendeter .iv2-kopf{background:linear-gradient(90deg,#1f5c9c,#10325a)}
+:is(#lagebericht,#invasion-lage) .iv2-kopf h3{margin:0;flex:1 1 auto;min-width:0;font:700 calc(15px * var(--text-scale,1)) var(--r-schrift,Oxanium,sans-serif);letter-spacing:.08em;text-transform:uppercase;color:#fff}
+:is(#lagebericht,#invasion-lage) .iv2-kopf h3 .koord{color:#ffe1e1;letter-spacing:0}
+:is(#lagebericht,#invasion-lage) .iv2-kopf small{color:#ffd9d9;font-size:12.5px}
+:is(#lagebericht,#invasion-lage) .iv2-inhalt{padding:10px 12px 12px}
+:is(#lagebericht,#invasion-lage) .iv2-linien{list-style:none;display:grid;grid-template-columns:repeat(var(--iv2-n,4),minmax(0,1fr));gap:6px;margin:0;padding:0;contain:inline-size}
+:is(#lagebericht,#invasion-lage) .iv2-linien li{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;padding:6px 4px;border-radius:8px;border:1px solid rgba(150,190,230,.22);background:rgba(10,21,36,.7);text-align:center;font-size:12px;line-height:1.25}
+:is(#lagebericht,#invasion-lage) .iv2-linien li b{font-size:16px;font-variant-numeric:tabular-nums;color:#fff}
+:is(#lagebericht,#invasion-lage) .iv2-linien li small{color:#8ea4b8;font-size:11.5px}
+:is(#lagebericht,#invasion-lage) .iv2-linien .gebrochen{border-style:dashed;border-color:rgba(255,100,100,.5);opacity:.75}
+:is(#lagebericht,#invasion-lage) .iv2-linien .gebrochen b{color:#ff9a9a;font-size:12px;letter-spacing:-.01em}
+:is(#lagebericht,#invasion-lage) .iv2-linien .aktuell{border-color:var(--iv-akzent);background:rgba(255,157,60,.14);box-shadow:inset 0 0 0 1px rgba(255,157,60,.35)}
+:is(#lagebericht,#invasion-lage) .iv2-linien .aktuell small{color:#ffd2a3}
+:is(#lagebericht,#invasion-lage) .iv2-linien .rueckhalt{border-color:rgba(226,189,98,.5)}
+:is(#lagebericht,#invasion-lage) .iv2-welle{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;margin:10px 0 0;font-size:13.5px}
+:is(#lagebericht,#invasion-lage) .iv2-welle b{font-size:18px;color:#fff;font-variant-numeric:tabular-nums}
+:is(#lagebericht,#invasion-lage) .iv2-welle small{color:#8ea4b8;font-size:12.5px}
+:is(#lagebericht,#invasion-lage) .iv2-zeile{margin:6px 0 0;font-size:13px;color:#c8d6e4}
+:is(#lagebericht,#invasion-lage) .iv2-zeile.iv2-warn{color:#ffd7a3}
+:is(#lagebericht,#invasion-lage) .iv2-verwuestet{margin:0 0 8px;padding:8px 10px;border-radius:6px;border:1px solid var(--iv-rot);background:rgba(255,100,100,.14);font-size:13px}
+:is(#lagebericht,#invasion-lage) .iv2-verwuestet b{color:#ffb0b0;text-transform:uppercase;letter-spacing:.06em}
+:is(#lagebericht,#invasion-lage) .iv2-knoepfe{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:10px}
+body.game-client :is(#lagebericht,#invasion-lage) .iv2-knoepfe button{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;width:100%;min-height:48px;margin:0;padding:6px 12px;border-radius:8px;border:1px solid rgba(150,190,230,.34);--button-wash:rgba(143,208,255,.06);color:#dbe6f0;font:600 13.5px/1.25 var(--r-schrift,Oxanium,sans-serif);text-align:left}
+body.game-client :is(#lagebericht,#invasion-lage) .iv2-knoepfe button small{font-weight:400;font-size:12px;color:#9fb3c6}
+body.game-client :is(#lagebericht,#invasion-lage) .iv2-knoepfe button.iv2-haupt{border-color:rgba(120,230,155,.5);--button-wash:#2b8a4c;color:#fff}
+body.game-client :is(#lagebericht,#invasion-lage) .iv2-knoepfe button.iv2-haupt small{color:rgba(230,255,238,.85)}
+body.game-client :is(#lagebericht,#invasion-lage) .iv2-knoepfe button.iv2-miliz{border-color:rgba(255,100,100,.6);--button-wash:rgba(255,100,100,.14)}
+body.game-client :is(#lagebericht,#invasion-lage) .iv2-knoepfe button:active{transform:scale(.985)}
+:is(#lagebericht,#invasion-lage) .iv2-hinweis{grid-column:1/-1;margin:0;font-size:12.5px;color:#ffd7a3}
+:is(#lagebericht,#invasion-lage) .iv2-hinweis button.bk-schritt{min-height:44px}
+:is(#lagebericht,#invasion-lage) .iv2 progress{width:100%;height:8px;accent-color:#56d27c}
+@media (max-width:767px){body.game-client :is(#lagebericht,#invasion-lage) .iv2-knoepfe{grid-template-columns:1fr}:is(#lagebericht,#invasion-lage) .iv2-linien li{padding:6px 2px}}
+@media (max-width:767px),(pointer:coarse){body.game-client :is(#lagebericht,#invasion-lage) .iv2-knoepfe button{min-height:52px}}
+
+/* ---------- Miliz-Karte auf der Truppenseite (ground-ui.js) ---------- */
+#militia-card.iv-miliz{--bk-s:var(--text-scale,1);--button-art:none;display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px 14px;align-items:start;margin:0 0 12px;padding:12px;border:1px solid rgba(150,190,230,.24);border-radius:8px;background:rgba(9,20,34,.86)}
+#militia-card.iv-miliz.iv-belagert{border-color:rgba(255,100,100,.6);background:linear-gradient(180deg,rgba(255,100,100,.08),rgba(9,20,34,.86) 120px)}
+#militia-card.iv-miliz>img{width:96px;height:96px;object-fit:contain;border-radius:8px;background:rgba(0,0,0,.25)}
+#militia-card.iv-miliz .iv-augenbraue{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#ff9a9a}
+#militia-card.iv-miliz h3{margin:2px 0 6px;font-size:calc(16px * var(--bk-s))}
+#militia-card.iv-miliz .iv-bedingungen{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px;padding:0}
+#militia-card.iv-miliz .iv-bedingungen li{padding:3px 10px;border-radius:999px;border:1px solid rgba(150,190,230,.3);font-size:12.5px}
+#militia-card.iv-miliz .iv-bedingungen li.ok{border-color:rgba(86,210,124,.55);color:#b8f5cb}
+#militia-card.iv-miliz .iv-bedingungen li.fehlt{border-color:rgba(242,164,58,.7);color:#ffd7a3}
+#militia-card.iv-miliz .iv-werte{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 12px;margin:0;font-size:13px}
+#militia-card.iv-miliz .iv-werte div{display:flex;flex-direction:column;min-width:0}
+#militia-card.iv-miliz .iv-werte dt{color:#8ea4b8;font-size:12px}
+#militia-card.iv-miliz .iv-werte dd{margin:0;font-variant-numeric:tabular-nums}
+#militia-card.iv-miliz .iv-werte dd.fehlt{color:#ff6464}
+#militia-card.iv-miliz .iv-voelker{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0;padding:0}
+#militia-card.iv-miliz .iv-voelker li{padding:3px 10px;border-radius:999px;border:1px solid rgba(150,190,230,.22);font-size:12px;color:#c8d6e4}
+#militia-card.iv-miliz .iv-voelker li.eigen{border-color:#e2bd62;color:#f3d27a}
+#militia-card.iv-miliz .iv-zustand{margin:6px 0 0;font-size:13px}
+#militia-card.iv-miliz .iv-details{margin-top:10px;border-top:1px solid rgba(150,190,230,.18)}
+#militia-card.iv-miliz .iv-details>summary{display:flex;flex-direction:column;justify-content:center;gap:1px;min-height:44px;padding:6px 0;cursor:pointer;list-style:none;font-weight:600;font-size:13px}
+#militia-card.iv-miliz .iv-details>summary::-webkit-details-marker{display:none}
+#militia-card.iv-miliz .iv-details>summary span::after{content:" ▾";color:#8ea4b8}
+#militia-card.iv-miliz .iv-details[open]>summary span::after{content:" ▴"}
+#militia-card.iv-miliz .iv-details>summary small{font-weight:400;color:#8ea4b8;font-size:12px}
+#militia-card.iv-miliz .iv-zustand progress{display:block;width:100%;height:8px;margin-top:4px;accent-color:#56d27c}
+#militia-card.iv-miliz .iv-grund{margin:8px 0 0;color:#ffd7a3;font-size:13px}
+#militia-card.iv-miliz .iv-knoepfe{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+body.game-client #militia-card.iv-miliz .iv-knoepfe button{min-height:44px;margin:0;padding:6px 16px;border-radius:8px;border:1px solid rgba(150,190,230,.34);--button-wash:rgba(143,208,255,.06);color:#dbe6f0;font:600 13.5px Oxanium,sans-serif}
+body.game-client #militia-card.iv-miliz .iv-knoepfe button.iv-rufen{border-color:rgba(255,100,100,.6);--button-wash:rgba(255,100,100,.16);color:#fff}
+body.game-client #militia-card.iv-miliz .iv-knoepfe button.iv-blatt{border-color:rgba(255,157,60,.6);--button-wash:rgba(255,157,60,.14);color:#fff}
+@media (max-width:520px){#militia-card.iv-miliz{display:block}#militia-card.iv-miliz>img{float:left;width:60px;height:60px;margin:0 10px 6px 0}#militia-card.iv-miliz .iv-bedingungen{clear:both;padding-top:4px}#militia-card.iv-miliz .iv-knoepfe button{flex:1 1 100%}}
+body.game-client #militia-card.iv-miliz .iv-knoepfe button[aria-disabled="true"]{opacity:.5;cursor:not-allowed}
+
+/* ---------- Truppenseite: Hinweis während einer Invasion ---------- */
+body.game-client[data-rahmen] .bs-invasion{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:0 0 10px;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,100,100,.55);background:rgba(255,100,100,.08);font-size:13px;--button-art:none}
+body.game-client[data-rahmen] .bs-invasion b{color:#ffb0b0}
+body.game-client[data-rahmen] .bs-invasion button{min-height:44px;margin:0;padding:4px 14px;border-radius:8px;border:1px solid rgba(255,157,60,.6)!important;--button-wash:rgba(255,157,60,.14);color:#fff!important;font:600 13px Oxanium,sans-serif}
+
+/* ---------- Bauseite: „Reparieren“ statt „Bauen“ (bauseite.js) ---------- */
+body.game-client[data-rahmen] .bs-kachel .bs-integritaet{position:absolute;left:6px;top:6px;z-index:2;padding:1px 6px;border-radius:999px;border:1px solid rgba(255,100,100,.6);background:rgba(40,8,10,.85);color:#ffb0b0;font:700 11px/16px Oxanium,sans-serif;font-variant-numeric:tabular-nums}
+body.game-client[data-rahmen] .bs-kachel.beschaedigt .bs-bild img{filter:saturate(.55) brightness(.85)}
+body.game-client[data-rahmen] :is(#versorgung-bauseite,#anlagen-bauseite) .bs-kachel-bauen.bs-rep::before{content:"";display:inline-block;width:12px;height:12px;margin-right:4px;vertical-align:-1px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' d='M14.5 5.5a4 4 0 0 0 5 5l-9 9a2 2 0 0 1-3-3l9-9a4 4 0 0 0-2-2Z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' d='M14.5 5.5a4 4 0 0 0 5 5l-9 9a2 2 0 0 1-3-3l9-9a4 4 0 0 0-2-2Z'/%3E%3C/svg%3E") center/contain no-repeat}
+body.game-client[data-rahmen] .bs-rep-lauf{display:block;margin:0;padding:4px 6px;border-radius:6px;border:1px solid rgba(47,208,192,.45);background:rgba(47,208,192,.08);color:#bff5ee;font-size:11.5px;line-height:1.3;text-align:center}
+body.game-client[data-rahmen] .bs-rep-lauf b{font-variant-numeric:tabular-nums;color:#fff}
+body.game-client[data-rahmen] .bs-rep-info{margin:0 0 8px;padding:6px 10px;border-left:3px solid rgba(255,100,100,.7);background:rgba(255,100,100,.08);font-size:13px;line-height:1.4;border-radius:0 6px 6px 0}
+body.game-client[data-rahmen] .bs-rep-info b{color:#ffb0b0}

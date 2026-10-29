@@ -59,3 +59,169 @@
 .local-motion-paused .local-ship{animation-play-state:paused}
 @media(prefers-reduced-motion:reduce){.local-ship,#local-galaxy.arrive{animation:none}.local-ship{left:50%;opacity:.25}}
 @media(prefers-reduced-motion:reduce){.local-motion-enabled .local-ship{animation:local-fly var(--duration) linear var(--delay) infinite;opacity:.65}.local-motion-enabled .local-ship:nth-child(2n){animation-direction:reverse;opacity:.45}}
+
+/* Salvage is an orbital destination, separate from the planet attack target. */
+#galaxy-labels button.space-label.loch{top:-10px;left:14px;padding:3px 8px;background:#1a1035e6;border:1px solid #b79bff;color:#e6dcff;border-radius:999px;font-weight:600;box-shadow:0 0 12px #8c6bff88}
+/* Hyperraumtor-Generator neben dem Mond (Karl 22.10.2026): kalt-blaue Plakette, nur aus der Nähe beschriftet */
+#galaxy-labels button.space-label.tor{top:-10px;left:12px;padding:3px 8px;background:#0b2233e6;border:1px solid #7fd6ff;color:#dff6ff;border-radius:999px;font-weight:600;box-shadow:0 0 12px #3fb8ff66}
+#galaxy-labels button.space-label.debris{top:16px;left:12px;min-width:32px;min-height:32px;padding:2px;background:#0b171dcc;border:1px solid #d0ae6288;color:#f1d79b;border-radius:50%;font:22px/1 system-ui}
+.orbital-debris{margin:14px 0;padding:16px;border:1px solid #d7b97555;border-radius:12px;background:linear-gradient(110deg,#13232be8,#0a1720cf),url('assets/missions.recyceln.webp') center/cover}
+.orbital-debris h4{margin:6px 0 12px}.orbital-debris p{font-size:12px;line-height:1.5}.debris-resources{display:flex;gap:12px;flex-wrap:wrap}.debris-resources span{display:flex;align-items:center;gap:5px;font-size:12px}.debris-resources img{width:32px;height:32px;object-fit:contain}.orbital-debris button{margin-top:8px}
+
+/* Handy (< 768 px): die 3D-Karte IST die Galaxie-Seite. Kopf, Werkzeugleiste, Ebenen-Auswahl und Listen unter der Karte
+   entfallen; Pfad-Chips, Kamera und Planetenfeld liegen als Overlay auf der Karte (galaxy.js: overlayBauen). Die Höhe
+   setzt galaxy.js (--g3-hoehe): vom Planetenkopf bis zur unteren Leiste. */
+/* Desktop: nur das Infofeld (Planet, Mond, Trümmer, Sonne, Gürtel, Dyson, Flotte, Weltenkrümmer) als Karte rechts */
+#galaxy-space:not([data-handy=true]) .g3-overlay>:not(.g3-panel){display:none!important}
+#galaxy-space:not([data-handy=true]) .g3-panel{left:auto;right:12px;top:58px;bottom:auto;width:380px;max-width:calc(100% - 24px);max-height:calc(100% - 70px);border:1px solid #57789a;border-radius:14px}
+/* Sonnensystem: Namen der Mitspieler an ihren Planeten (mobile035.css blendet sie sonst am Handy aus) */
+body.game-client #galaxy-space[data-stage=system] #galaxy-labels .space-label.planet .space-resident{display:block!important;max-width:150px;margin-top:2px;color:var(--owner-color,#fff)!important;font:600 11px/1.2 system-ui!important;opacity:1;text-shadow:0 1px 3px #000,0 0 6px #000}
+body.game-client #galaxy-space[data-stage=system] #galaxy-labels .space-label.planet .space-number{text-shadow:0 1px 3px #000}
+@media(max-width:767px){
+ body.game-client #game #karte[data-ansicht=atlas]{padding:0!important;border:0!important;background:#030813!important;box-shadow:none!important}
+ body.game-client #game #karte[data-ansicht=atlas]>:is(.space-header,.space-toolbar,#galaxy-levels,#galaxy-friendly,#galaxy-occupancy,#galaxy-map-legend,.space-bottom,#galaxy-own-worlds){display:none!important}
+ body.game-client #game #karte[data-ansicht=atlas] #galaxy-space{height:var(--g3-hoehe,460px)!important;border-radius:10px}
+ body.game-client #galaxy-space[data-handy=true] :is(.space-camera-controls,.space-instructions){display:none!important}
+}
+.g3-overlay{position:absolute;inset:0;z-index:6;pointer-events:none;font:13px/1.3 system-ui;color:#dbe7f3}
+.g3-overlay>*{pointer-events:auto}
+.g3-overlay>[hidden]{display:none!important}
+.g3-pfad{position:absolute;top:8px;left:8px;right:100px;display:flex;flex-wrap:wrap;align-items:center;gap:4px;pointer-events:none}
+.g3-pfad>*{pointer-events:auto}
+.g3-trenner{color:#8fa9c2;font-size:14px}
+body.game-client #galaxy-space :is(.g3-chip,.g3-tabelle,.g3-seite button,.g3-x){display:inline-flex;align-items:center;justify-content:center;gap:4px;width:auto;min-width:0;min-height:36px;height:auto;margin:0;padding:6px 11px!important;border:1px solid #7495b46b!important;border-radius:18px!important;background:#071324e0!important;background-image:none!important;box-shadow:0 2px 8px #0008!important;color:#dfeaf5!important;font:600 12px/1 system-ui!important;letter-spacing:0;text-transform:none;white-space:nowrap;overflow:visible;text-overflow:clip}
+body.game-client #galaxy-space .g3-chip.g3-aktiv{border-color:#e2bf7d!important;color:#ffe2ad!important;background:#2a2112e6!important}
+body.game-client #galaxy-space .g3-chip.g3-hoch{width:36px;padding:0!important;font-size:20px!important}
+.g3-pfeil-ab{font-size:10px;opacity:.8}
+body.game-client #galaxy-space .g3-tabelle{position:absolute;top:8px;right:8px}
+.g3-seite{position:absolute;right:8px;top:56px;display:flex;flex-direction:column;gap:6px}
+body.game-client #galaxy-space .g3-seite button{width:42px;height:42px;min-height:42px;padding:0!important;border-radius:12px!important;font:500 19px/1 system-ui!important}
+body.game-client #galaxy-space .g3-chip:focus-visible,body.game-client #galaxy-space .g3-seite button:focus-visible,body.game-client #galaxy-space .g3-tabelle:focus-visible{outline:2px solid #e2bf7d;outline-offset:1px}
+.g3-liste{position:absolute;top:52px;left:8px;right:58px;max-height:calc(100% - 64px);overflow:auto;overscroll-behavior:contain;padding:10px;border:1px solid #4f6c8a;border-radius:12px;background:#08111fef;box-shadow:0 10px 30px #000a}
+.g3-liste header,.g3-panel header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.g3-liste header strong{font-size:13px;color:#f0d6a6}
+body.game-client #galaxy-space .g3-x{width:36px;padding:0!important;border-radius:50%!important;font-size:15px!important;flex:0 0 auto}
+.g3-raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
+.g3-raster-sektor{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+body.game-client #galaxy-space .g3-raster button{display:flex;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:40px;margin:0;padding:4px!important;border:1px solid #5a7896!important;border-radius:8px!important;background:#0f1d30!important;background-image:none!important;box-shadow:none!important;color:#dfe9f3!important;font:600 13px/1 system-ui!important;white-space:nowrap;overflow:visible}
+body.game-client #galaxy-space .g3-raster button[aria-current=true]{border-color:#e2bf7d!important;background:#2c2312!important;color:#ffe2ad!important}
+body.game-client #galaxy-space .g3-raster .g3-zustand-unknown{color:#8fa2b8!important;border-style:dashed!important}
+body.game-client #galaxy-space .g3-raster .g3-zustand-partial{border-color:#b89b6a!important}
+body.game-client #galaxy-space .g3-raster .g3-zustand-occupied.g3-rel-feindlich{border-color:#ff7e88!important}
+body.game-client #galaxy-space .g3-raster .g3-zustand-occupied.g3-rel-verbuendet{border-color:#65d9ff!important}
+body.game-client #galaxy-space .g3-raster .g3-zustand-occupied.g3-rel-nap{border-color:#f3d365!important}
+body.game-client #galaxy-space .g3-raster .g3-zustand-occupied.g3-rel-eigen{border-color:#64f5a0!important}
+.g3-eigen{color:#64f5a0;font-size:10px}
+.g3-panel{position:absolute;left:0;right:0;bottom:0;max-height:64%;overflow:auto;overscroll-behavior:contain;padding:12px 12px 14px;border-top:1px solid #57789a;border-radius:16px 16px 10px 10px;background:linear-gradient(#0e1d31f7,#081221fc);box-shadow:0 -10px 30px #000a}
+.g3-panel header{align-items:flex-start;justify-content:flex-start}
+.g3-panel header>div{flex:1;min-width:0}
+.g3-panel .eyebrow{display:block;font-size:10px;letter-spacing:.1em;color:#c9a96b}
+.g3-panel h3{margin:2px 0;font-size:19px;color:#f0d6a6;overflow-wrap:anywhere}
+.g3-panel header p{margin:0;font-size:12px;color:#b3c4d6}
+.g3-kugel{flex:0 0 64px;width:64px;height:64px;border-radius:50%;object-fit:cover;box-shadow:0 0 18px #7aadd540}
+.g3-kugel.g3-unerkundet{filter:saturate(.45) brightness(.8)}
+.g3-kugel.g3-leer{display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 25%,#607288,#172131 65%,#050811);font-size:26px;color:#a1b4cc}
+.g3-panel dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;margin:4px 0 10px;padding:8px 0;border-block:1px solid #2f4560;font-size:13px}
+.g3-panel dt{color:#93a9c0}.g3-panel dd{margin:0;color:#e3ecf5;overflow-wrap:anywhere}
+.g3-rel::before{content:"";display:inline-block;width:9px;height:9px;margin-right:6px;border-radius:50%;background:#7d8ea3;vertical-align:baseline}
+.g3-rel-eigen::before{background:#64f5a0}.g3-rel-verbuendet::before{background:#65d9ff}.g3-rel-feindlich::before{background:#ff7e88}.g3-rel-nap::before{background:#f3d365}.g3-rel-neutral::before,.g3-rel-fremde_allianz::before{background:#edf3fa}
+.g3-aktionen{display:flex;flex-wrap:wrap;gap:8px}
+body.game-client #galaxy-space .g3-aktionen button{flex:1 1 130px;min-height:42px;margin:0;font-size:13px!important;white-space:normal}
+body.game-client #galaxy-space .g3-aktionen .g3-haupt{border-color:#e2bf7d!important;color:#20170a!important;background:linear-gradient(#f0cf8d,#c99a4e)!important;background-image:linear-gradient(#f0cf8d,#c99a4e)!important;font-weight:700!important}
+body.game-client #galaxy-space :is(.g3-panel,.g3-liste)>header{position:static;margin:0 0 8px;padding:0;border:0;background:none;box-shadow:none;min-height:0}
+body.game-client #galaxy-space .g3-x{flex:0 0 36px!important;width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important}
+body.game-client #galaxy-space .g3-chip{padding:6px 9px!important}
+.g3-pfad{right:92px}
+body.game-client #galaxy-space .g3-tabelle{padding:6px 9px!important}
+/* Sonnensystem: Beschriftung genau an der berechneten Stelle (galaxy.js wählt rechts/links/unten/oben) */
+body.game-client #galaxy-space[data-stage=system] #galaxy-labels button.space-label.planet{top:0!important;left:0!important}
+
+/* Beschriftungen im Sonnensystem: dezente Plakette, immer lesbar über Nebel und Planeten */
+body.game-client #galaxy-space[data-stage=system] #galaxy-labels button.space-label.planet{padding:2px 7px 3px!important;border-radius:8px!important;background:rgba(4,10,20,.58)!important;backdrop-filter:blur(2px);box-shadow:0 0 0 1px rgba(150,180,215,.14)}
+body.game-client #galaxy-space[data-stage=system] #galaxy-labels button.space-label.planet .space-number::before{display:none}
+body.game-client #galaxy-space #galaxy-labels button.space-label.notiz{padding:3px 8px!important;border-radius:999px!important;background:rgba(40,8,12,.72)!important;border:1px solid #ff8a8a66!important;color:#ffd2cf!important;font:600 11px/1.2 system-ui!important}
+/* Hover-Kurzinfo (Maus) */
+.g3-hover{position:absolute;left:0;top:0;z-index:8;pointer-events:none;max-width:280px;padding:6px 10px;border-radius:9px;background:rgba(6,14,26,.86);border:1px solid #5e7fa266;color:#dbe7f3;font:12px/1.35 system-ui;box-shadow:0 6px 18px #0009;white-space:normal}
+.g3-hover b{color:#f0d6a6;font-weight:600}
+#galaxy-space:not([data-handy=true]) .g3-overlay>.g3-hover,#galaxy-space:not([data-handy=true]) .g3-overlay>.g3-meldung{display:block!important}
+#galaxy-space:not([data-handy=true]) .g3-overlay>.g3-hover[hidden],#galaxy-space:not([data-handy=true]) .g3-overlay>.g3-meldung[hidden]{display:none!important}
+/* Meldung im Sonnensystem (z. B. Mond zerstört): Band unter dem Pfad, blendet aus */
+.g3-meldung{position:absolute;left:50%;top:54px;transform:translateX(-50%);z-index:7;max-width:calc(100% - 120px);padding:8px 14px;border-radius:12px;background:linear-gradient(180deg,rgba(60,10,14,.88),rgba(28,6,10,.88));border:1px solid #ff8a7a77;color:#ffe2dc;text-align:center;box-shadow:0 10px 30px #000b;transition:opacity .5s ease,transform .5s ease;pointer-events:none}
+.g3-meldung strong{display:block;font:700 14px/1.2 system-ui;letter-spacing:.02em}.g3-meldung small{display:block;margin-top:2px;font:12px/1.3 system-ui;color:#f3b9b0}
+.g3-meldung.weg{opacity:0;transform:translateX(-50%) translateY(-8px)}
+/* Infokarte: Block „Letzter Scan“ zurückhaltend, aufklappbar */
+.g3-scan{margin:0 0 10px;border:1px solid #2f4560;border-radius:10px;background:rgba(10,22,38,.6)}
+.g3-scan>summary{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;cursor:pointer;color:#cfe0f2;font-size:13px;list-style:none}
+.g3-scan>summary small{color:#8ea6bf}.g3-scan[open]>summary{border-bottom:1px solid #2f4560}
+.g3-scan dl{margin:0!important;padding:8px 10px!important;border:0!important}
+.g3-hinweis{margin:0 0 10px;font-size:12px;color:#93a9c0}
+.g3-panel{max-height:54%}
+body.game-client #galaxy-space #galaxy-labels .space-label.planet.kompakt :is(.space-resident,.space-owner-codes){display:none!important}
+body.game-client #galaxy-space #galaxy-labels .space-label.debris.kompakt .space-debris-text{display:none}
+/* Chip „Abbauen“ (Karl 19.10.: klein, stilvoll – nicht einfach ein Knopf): Glas-Pille mit Goldrand, Symbolscheibe, Menge leise */
+button.g3-abbau{display:inline-flex!important;align-items:center;gap:9px;min-height:38px!important;width:auto;max-width:100%;margin:0;padding:4px 14px 4px 4px!important;border-radius:999px!important;border:1px solid transparent!important;background:linear-gradient(#0c1820f0,#0c1820f0) padding-box,linear-gradient(115deg,#f6d98a,#a8742f 48%,#5fc7b4) border-box!important;background-image:linear-gradient(#0c1820f0,#0c1820f0),linear-gradient(115deg,#f6d98a,#a8742f 48%,#5fc7b4)!important;background-origin:padding-box,border-box!important;background-clip:padding-box,border-box!important;color:#f6ead0!important;font:600 13px/1.2 system-ui,sans-serif!important;letter-spacing:.02em;text-align:left;white-space:normal;box-shadow:0 0 0 1px #00000066,0 6px 18px -10px #f3cf7aaa!important;cursor:pointer;transition:transform .12s ease,box-shadow .2s ease}
+button.g3-abbau:hover{box-shadow:0 0 0 1px #00000066,0 8px 24px -8px #f3cf7add!important}
+button.g3-abbau:active{transform:scale(.97)}
+button.g3-abbau:focus-visible{outline:2px solid #f6d98a;outline-offset:2px}
+.g3-abbau .g3-abbau-symbol{flex:0 0 auto;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 34% 28%,#fff0bf,#d29b45 55%,#6b4517);color:#1d1307;box-shadow:inset 0 -2px 4px #0005,0 0 10px #f3cf7a55}
+.g3-abbau .g3-abbau-text b{font-weight:700;color:#fff3d6}
+.g3-abbau .g3-abbau-text small{font-size:12px;font-weight:500;color:#d2c4a3}
+.g3-abbau .g3-abbau-text .g3-abbau-leute{color:#9fe6cb}
+button.g3-abbau.fehlt{background-image:linear-gradient(#1b1214f0,#1b1214f0),linear-gradient(115deg,#e08d76,#7c3d33)!important;color:#f3dcd4!important;box-shadow:0 0 0 1px #00000066,0 6px 18px -10px #e08d76aa!important}
+.g3-abbau.fehlt .g3-abbau-symbol{background:radial-gradient(circle at 34% 28%,#ffd0c2,#b75a47 55%,#4a1a12)}
+button.g3-abbau.klein{min-height:28px!important;gap:6px;padding:2px 10px 2px 2px!important;font-size:11.5px!important}
+.g3-abbau.klein .g3-abbau-symbol{width:22px;height:22px}.g3-abbau.klein .g3-abbau-symbol svg{width:13px;height:13px}
+.g3-abbau.klein .g3-abbau-text small{font-size:11px}
+body.game-client #galaxy-space .g3-aktionen button.g3-abbau{flex:1 1 100%;justify-content:flex-start;font-size:13px!important}
+.g3-panel dd.g3-abbau-zeile{overflow-wrap:normal}
+.gt-planetname .g3-abbau{display:flex!important;width:fit-content;margin-top:4px}
+/* Aktion „Mond vernichten“ (Karl 19.10.): auffällig, aber stilvoll – rot-violettes Glühen, Mond mit Riss, Chance als Ring */
+button.g3-vernichten{display:inline-flex!important;align-items:center;gap:10px;min-height:46px!important;width:auto;max-width:100%;margin:0;padding:5px 6px 5px 5px!important;border-radius:999px!important;border:1px solid transparent!important;background-image:linear-gradient(#160a1bf2,#160a1bf2),linear-gradient(115deg,#ff6f93,#9a3ddb 52%,#ff9d63)!important;background-origin:padding-box,border-box!important;background-clip:padding-box,border-box!important;color:#ffeaf2!important;font:650 13.5px/1.2 system-ui,sans-serif!important;letter-spacing:.02em;text-align:left;white-space:normal;cursor:pointer;box-shadow:0 0 0 1px #00000070,0 0 22px -7px #d6488acc,inset 0 0 20px -12px #ff6f93!important;animation:g3-glimmen 3.2s ease-in-out infinite;transition:transform .12s ease}
+button.g3-vernichten:active{transform:scale(.97)}
+button.g3-vernichten:focus-visible{outline:2px solid #ff9db8;outline-offset:2px}
+@keyframes g3-glimmen{0%,100%{box-shadow:0 0 0 1px #00000070,0 0 20px -8px #d6488ab0,inset 0 0 20px -12px #ff6f93}50%{box-shadow:0 0 0 1px #00000070,0 0 28px -6px #e0559ae6,inset 0 0 22px -10px #ff6f93}}
+@media (prefers-reduced-motion:reduce){button.g3-vernichten{animation:none}}
+.g3-vernichten .g3-vernichten-symbol{flex:0 0 auto;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 34% 28%,#ffd5e3,#c33d72 55%,#3c0a2a);color:#2b0718;box-shadow:inset 0 -2px 4px #0006,0 0 12px #ff5d8f80}
+.g3-vernichten .g3-abbau-text{flex:1 1 auto}
+.g3-vernichten .g3-abbau-text b{color:#fff1f6;font-weight:700}
+.g3-vernichten .g3-abbau-text small{color:#e6bfd0;font-weight:500;font-size:12px}
+.g3-chance-ring{flex:0 0 auto;width:38px;height:38px}
+.g3-chance-ring .bahn{fill:#0b050e;stroke:#ffffff1f;stroke-width:3.2}
+.g3-chance-ring .wert{fill:none;stroke:#ff7aa0;stroke-width:3.2;stroke-linecap:round}
+.g3-chance-ring text{fill:#ffe6ee;font:700 9.4px system-ui,sans-serif;text-anchor:middle}
+button.g3-vernichten.klein{min-height:30px!important;gap:6px;padding:2px 3px 2px 2px!important;font-size:11.5px!important}
+.g3-vernichten.klein .g3-vernichten-symbol{width:24px;height:24px}.g3-vernichten.klein .g3-vernichten-symbol svg{width:14px;height:14px}
+.g3-vernichten.klein .g3-chance-ring{width:26px;height:26px}.g3-vernichten.klein .g3-abbau-text small{display:none}
+body.game-client #galaxy-space .g3-aktionen button.g3-vernichten{flex:1 1 100%;justify-content:flex-start;font-size:13.5px!important}
+.g3-vernichten-zeile{display:block;margin-top:6px}
+.gt-planetname .g3-vernichten{display:flex!important;width:fit-content;margin-top:4px}
+/* Eignung für dein Volk (Karl 19.10.): drei Messleisten aus Kernwerten – Klima, Vermehrung, Sonne */
+.g3-panel dt.g3-voll{grid-column:1/-1;margin-top:4px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#c9a96a}
+.g3-panel dd.g3-voll{grid-column:1/-1}
+.g3-eignung{display:grid;gap:7px}
+.g3-eig{display:grid;grid-template-columns:86px minmax(60px,1fr) auto;align-items:center;column-gap:10px;row-gap:1px}
+.g3-eig-name{color:#a9bdd2;font-size:12.5px}
+.g3-eig b{font-weight:700;color:#f0f5fb;font-size:13px;text-align:right;white-space:nowrap}
+.g3-eig small{grid-column:2/-1;color:#8fa5bb;font-size:11.5px;line-height:1.3}
+.g3-eig small.warn{color:#f0a48c}
+.g3-eig-balken{width:100%;height:7px;display:block}
+.g3-eig-balken .bahn{fill:#ffffff14}
+.g3-eig-balken .wert.gut{fill:#6fd39a}.g3-eig-balken .wert.mittel{fill:#e8c46b}.g3-eig-balken .wert.schwach{fill:#f0956a}.g3-eig-balken .wert.null{fill:#d0556a}
+.gt-eignung{display:block;margin-top:2px;font-size:11px;letter-spacing:.01em;white-space:nowrap}
+.gt-eignung.gt-eig-gut{color:#8fe0b0}.gt-eignung.gt-eig-mittel{color:#e8c97c}.gt-eignung.gt-eig-schwach{color:#f2a383}.gt-eignung.gt-eig-null{color:#e07a8a}
+/* Kameraleiste (Karl 19.10.: hochwertig, durchdacht): Glasleiste in drei Gruppen, Liniensymbole, ruhige Rückmeldung */
+body.game-client #galaxy-space .g3-seite{right:10px;top:60px;gap:8px;z-index:3}
+body.game-client #galaxy-space .g3-seite .g3-gruppe{display:flex;flex-direction:column;padding:3px;border-radius:16px;background:linear-gradient(180deg,#0f1c2cdb,#08121fe8);border:1px solid #a9c1db30;box-shadow:0 12px 28px -16px #000d,inset 0 1px 0 #ffffff12;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+body.game-client #galaxy-space .g3-seite .g3-gruppe button{position:relative;display:grid!important;place-items:center;width:40px;height:40px;min-height:40px;margin:0;padding:0!important;border:0!important;border-radius:12px!important;background:transparent!important;background-image:none!important;box-shadow:none!important;color:#d9e6f3!important;transition:background-color .15s ease,color .15s ease,transform .1s ease}
+body.game-client #galaxy-space .g3-seite .g3-gruppe button+button{margin-top:3px}
+body.game-client #galaxy-space .g3-seite .g3-gruppe button+button::before{content:'';position:absolute;top:-2px;left:11px;right:11px;height:1px;background:#a9c1db24}
+body.game-client #galaxy-space .g3-seite .g3-gruppe button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+body.game-client #galaxy-space .g3-seite .g3-gruppe button:hover{background:#ffffff10!important;color:#ffffff!important}
+body.game-client #galaxy-space .g3-seite .g3-gruppe button:active{transform:scale(.9);background:#e2bf7d26!important;color:#ffe2a3!important}
+body.game-client #galaxy-space .g3-seite .g3-gruppe button:focus-visible{outline:2px solid #e2bf7d;outline-offset:-2px}
+/* Offenes Planeten-/Objektfeld: Kameraleiste ausblenden – sonst lag „Zu deinem Planeten“ über dem ✕ des Felds (Gerätetest
+   20.10., 411 px: Daumen am rechten Rand des ✕ sprang nach Hause statt zu schließen). Nach dem Schließen ist sie wieder da. */
+body.game-client #galaxy-space .g3-seite{transition:opacity .15s ease,visibility .15s}
+body.game-client #galaxy-space:has(.g3-panel:not([hidden])) .g3-seite{opacity:0;visibility:hidden;pointer-events:none}
+
+#galaxy-infocard .g3-spieler{min-height:44px;margin:-12px 0;padding:0 4px;border:0;border-radius:6px;background:none;box-shadow:none;color:inherit;font:inherit;text-transform:none;letter-spacing:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}

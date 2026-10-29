@@ -442,3 +442,81 @@ pre.code { margin: 0; white-space: pre-wrap; word-break: break-word; font: 12px/
 .agenten { margin-top:18px; } .agenten summary { cursor:pointer; font-weight:600; color:#e8c68b; }
 .agenten-platz { padding:14px; border:1px solid #35404b; border-radius:10px; background:#101c26; }
 .agenten .raster { margin:14px 0; gap:12px; }
+
+/* BEGIN SHARED ACTION SURFACES */
+/* Shared action surfaces. Build paths are resolved by build_cockpit_look.py and website_content.py.
+   The dark scrim stays above the artwork; white text never depends on the image's brightness. */
+.button, .button.secondary, .k, .k.gold, .k.leise, .los:not(.k), .knoepfe button.haupt,
+.game-client button:not(.item-tile):not(.faction-card):not(.planet-pick):not(.zoom):not(.space-label):not([data-tab]):not([aria-pressed]):not(.resource-hit):not(.danger) {
+  --action-accent: #89dce9; --action-border: rgba(137, 220, 233, .44);
+  position: relative; isolation: isolate; min-height: 44px; border-radius: 12px;
+  border: 1px solid var(--action-border); color: #f4fbff;
+  background-color: rgba(10, 24, 39, .88);
+  background-image: linear-gradient(180deg, rgba(225, 246, 255, .08), transparent 48%, rgba(2, 8, 18, .16)),
+    linear-gradient(110deg, rgba(7, 19, 33, .94), rgba(7, 19, 33, .72)), var(--action-image, none);
+  background-position: center, center, var(--action-position, 50% 44%);
+  background-size: cover; background-repeat: no-repeat;
+  box-shadow: inset 0 1px 0 rgba(230, 250, 255, .18), inset 0 -1px 0 rgba(2, 7, 16, .45), 0 5px 16px rgba(0, 0, 0, .24);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .85); font-weight: 650;
+  letter-spacing: .015em; line-height: 1.4; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  transition: transform 140ms cubic-bezier(.23, 1, .32, 1), border-color 160ms ease, box-shadow 160ms ease;
+}
+.button { gap: 14px; padding: 13px 22px; max-width: 100%; text-align: center; }
+.button:not(.secondary), .k.gold, .los:not(.k), .knoepfe button.haupt,
+.game-client form button:not([type="button"]):not(.secondary):not(.danger),
+.game-client #claim-submit {
+  --action-image: url("bilder/backgrounds.command.webp");
+  --action-border: rgba(137, 220, 233, .65);
+  box-shadow: inset 0 1px 0 rgba(230, 250, 255, .23), inset 0 -1px 0 rgba(2, 7, 16, .5), 0 6px 22px rgba(34, 128, 162, .17);
+}
+/* Download: ocean planet. Entry: command deck. Learning: violet nebula. */
+.button[href*="releases/download"], .button[href$=".apk"], .button[href$=".zip"] {
+  --action-image: url("bilder/planets.leben_ozean.webp");
+  --action-accent: #bfcaff; --action-border: rgba(172, 192, 255, .62); --action-position: 50% 32%;
+}
+.hero-actions .button.secondary, .button[href*="Sternenepoche-Start"], .button[href*="Sternenepoche-Handbuch"] {
+  --action-image: url("bilder/backgrounds.nebula.webp");
+  --action-accent: #c8bdff; --action-border: rgba(182, 164, 244, .42);
+}
+.game-client #forschen button:not(.item-tile):not(.secondary) { --action-image: url("bilder/backgrounds.research.webp"); --action-border: rgba(179, 171, 255, .55); }
+.game-client #werft button:not(.item-tile):not(.secondary), .k.gold.gross { --action-image: url("bilder/backgrounds.hangar.webp"); }
+.game-client #flotten form button:not(.secondary) { --action-image: url("bilder/backgrounds.shipyard.webp"); }
+.game-client #aktionen form button:not(.secondary) { --action-image: url("bilder/backgrounds.market.webp"); }
+.button.secondary, .k.leise { --action-border: rgba(169, 206, 229, .28); font-weight: 550; }
+.button.small, .k.klein { border-radius: 10px; }
+.button:focus-visible, .k:focus-visible, .los:focus-visible, .knoepfe button:focus-visible,
+.game-client button:focus-visible { outline: 2px solid #b7efff; outline-offset: 3px; }
+.button:active:focus-visible, .k:active:focus-visible, .los:active:focus-visible, .game-client button:active:focus-visible { transform: none; transition: none; }
+.button:active:not([aria-disabled="true"]), .k:active:not(:disabled), .los:active:not(:disabled),
+.knoepfe button.haupt:active:not(:disabled) { transform: scale(.97); filter: none; }
+.button[aria-disabled="true"], .k:disabled, .los:disabled, .knoepfe button.haupt:disabled { opacity: .5; cursor: not-allowed; filter: none; }
+.k.rot { --action-border: #f093a3; background: linear-gradient(180deg, #672536, #451b2c); color: #fff; }
+.rat-play, .haus-play { color: #f4fbff; background: linear-gradient(145deg, #2f6077, #102538); border: 1px solid #8ddbeb70; box-shadow: inset 0 1px #e1f8ff30; }
+.game-client #tabs button[data-tab][aria-selected="true"] { color: #c0f2ff; border-color: #7fd3ff42; background: linear-gradient(100deg, #7fd3ff20, #7fd3ff06); }
+.game-client #tabs button[data-tab][aria-selected="true"]::after { background: #7fd3ff; box-shadow: 0 0 10px #7fd3ff50; }
+.game-client .comm-tabs button[aria-pressed="true"], .rat-volk button.an { color: #e8f8ff; border-color: #7fd3ff80; background: linear-gradient(180deg, #7fd3ff20, #7fd3ff08); }
+@media (hover: hover) and (pointer: fine) {
+  .button:hover, .k:hover:not(:disabled), .los:hover:not(:disabled), .knoepfe button.haupt:hover:not(:disabled) {
+    border-color: var(--action-accent); filter: none;
+    box-shadow: inset 0 1px 0 rgba(230, 250, 255, .3), 0 6px 22px rgba(55, 136, 180, .22);
+  }
+  .game-client button:not(.item-tile):not(.faction-card):not(.planet-pick):not(.zoom):not(.space-label):not([data-tab]):not([aria-pressed]):not(.resource-hit):hover:not(:disabled) { filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .button, .k, .los, .knoepfe button.haupt { transition: none; }
+  .button:active:not([aria-disabled="true"]), .k:active:not(:disabled), .los:active:not(:disabled), .knoepfe button.haupt:active:not(:disabled) { transform: none; }
+}
+@media (max-width: 580px) {
+  .game-client header { min-height: 46px; gap: 6px; padding: 7px 10px; }
+  .game-client #account-strip, .game-client #world-time, .game-client #connection { padding: 3px 7px; font-size: 10px; }
+  .game-client header .brand { font-size: 12px; letter-spacing: .12em; gap: 7px; }
+  .game-client header .brand span { font-size: 8px; letter-spacing: .12em; }
+}
+@media (prefers-contrast: more) {
+  .button, .button.secondary, .k, .k.gold, .k.leise, .los:not(.k), .knoepfe button.haupt,
+  .game-client button:not(.item-tile):not(.faction-card):not(.planet-pick):not(.zoom):not(.space-label):not([data-tab]):not([aria-pressed]):not(.resource-hit):not(.danger) { background: #081321; border-color: #c5efff; color: #fff; text-shadow: none; }
+}
+@media (forced-colors: active) {
+  .button, .button.secondary, .k, .k.gold, .k.leise, .los:not(.k), .knoepfe button.haupt,
+  .game-client button:not(.item-tile):not(.faction-card):not(.planet-pick):not(.zoom):not(.space-label):not([data-tab]):not([aria-pressed]):not(.resource-hit):not(.danger) { background: ButtonFace; color: ButtonText; border: 1px solid ButtonText; box-shadow: none; text-shadow: none; }
+}

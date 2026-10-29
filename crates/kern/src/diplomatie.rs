@@ -17,6 +17,12 @@ impl Welt {
             .any(|v| v.art == art && Self::in_kraft(v) && ((v.a == a && v.b == b) || (v.a == b && v.b == a)))
     }
 
+    /// Dieselbe Allianz (ohne Verteidigungsbündnis).
+    pub fn gleiche_allianz(&self, a: SpielerId, b: SpielerId) -> bool {
+        let (aa, ab) = (self.spieler[a as usize].allianz, self.spieler[b as usize].allianz);
+        a != b && aa.is_some() && aa == ab
+    }
+
     /// Verteidigungsbündnis oder dieselbe Allianz.
     pub fn verbuendet(&self, a: SpielerId, b: SpielerId) -> bool {
         if a == b {
@@ -327,7 +333,7 @@ impl Welt {
         self.spieler[sid as usize].statistik.geschenkt += credits;
         self.spieler[b as usize].statistik.erhalten += credits;
         let (von, name) = (self.spieler[sid as usize].name.clone(), self.spieler[b as usize].name.clone());
-        self.vorfall(b, "geschenk", format!("{von} schenkt {} Credits", ganz(credits)));
+        self.vorfall(b, "geschenk", format!("{von} schenkt {} Credits", crate::schiffhandel::credits_text(ganz(credits))));
         self.wecke(b, Rolle::Diplomat, "Geschenk erhalten", false);
         Ok(format!("{} Credits an {name} überwiesen", ganz(credits)))
     }
@@ -391,6 +397,7 @@ impl Welt {
         self.kommunikation.allianz_tags.insert(id, tag);
         self.spieler[sid as usize].allianz = Some(id);
         self.kommunikationsereignis(sid,"alliance.membership",serde_json::json!({"alliance":id,"joined":true}));
+        self.dyson_allianzwechsel(sid);
         self.registrieren(0, "allianz", sid, sid, &format!("Allianz '{name}' gegründet"));
         Ok(format!("Allianz '{name}' gegründet"))
     }
@@ -419,6 +426,17 @@ impl Welt {
         Ok(format!("{} in die Allianz '{aname}' eingeladen", self.spieler[b as usize].name))
     }
 
+    /// Direkte Allianzeinladung ablehnen: die Einladung verschwindet, die Leitung erfährt es.
+    pub fn allianz_einladung_ablehnen(&mut self, sid: SpielerId, name: &str) -> Result<String, String> {
+        let n = name.trim();
+        let al = self.allianzen.iter_mut().find(|a| a.name.eq_ignore_ascii_case(n) && a.eingeladen.contains(&sid))
+            .ok_or_else(|| format!("für die Allianz '{n}' liegt keine Einladung vor"))?;
+        al.eingeladen.retain(|x| *x != sid);
+        let (aname, leitung) = (al.name.clone(), al.mitglieder.first().copied());
+        let wer = self.spieler[sid as usize].name.clone();
+        if let Some(l) = leitung { self.vorfall(l, "allianz", format!("{wer} hat die Einladung in die Allianz {aname} abgelehnt")); }
+        Ok(format!("Einladung in die Allianz {aname} abgelehnt"))
+    }
     pub fn allianz_beitreten(&mut self, sid: SpielerId, name: &str) -> Result<String, String> {
         let max = self.regeln.diplomatie.allianz_max;
         if self.spieler[sid as usize].allianz.is_some() {
@@ -441,6 +459,7 @@ impl Welt {
         let (id, aname, erster) = (al.id, al.name.clone(), al.mitglieder[0]);
         self.spieler[sid as usize].allianz = Some(id);
         self.kommunikationsereignis(sid,"alliance.membership",serde_json::json!({"alliance":id,"joined":true}));
+        self.dyson_allianzwechsel(sid);
         self.registrieren(0, "allianz", sid, erster, &format!("Beitritt zur Allianz '{aname}'"));
         Ok(format!("der Allianz '{aname}' beigetreten"))
     }
@@ -452,6 +471,7 @@ impl Welt {
                 if al.mitglieder.is_empty() {al.eingeladen.clear();}
             }
             self.kommunikationsereignis(sid,"alliance.membership",serde_json::json!({"alliance":aid,"joined":false}));
+            self.dyson_allianzwechsel(sid);
             self.kommunikation_tick();
         }
     }

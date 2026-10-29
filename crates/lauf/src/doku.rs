@@ -84,6 +84,7 @@ pub fn regelwerk_md(r: &Regelwerk) -> String {
     let mut j = serde_json::to_value(r).expect("Regelwerk serialisierbar");
     let m = j.as_object_mut().unwrap();
     m.remove("cache");
+    m.insert("stufen".into(), serde_json::to_value(r.stufen_daten()).unwrap());
     let mut aus = String::new();
     let _ = writeln!(aus, "{KOPF}\n");
     let _ = writeln!(aus, "# Regelwerk – Referenz\n");
@@ -122,12 +123,20 @@ wo nichts anderes steht; Faktoren 1.0 bedeuten keine Abweichung.\n",
             }
         }
         if *name == "stufen" {
-            let _ = writeln!(
-                aus,
-                "Eine 0 oder ein leeres Feld heißt: keine Bedingung dieser Art. Haltezeit: alle Bedingungen müssen {} Stunden \
+            if r.stufen_haltezeit_stunden == 0 {
+                let _ = writeln!(
+                    aus,
+                    "Eine 0 oder ein leeres Feld heißt: keine Bedingung dieser Art. Keine Haltezeit: sobald alle Bedingungen erfüllt \
+sind, ist der Aufstieg sofort möglich (Aktion `stufenaufstieg`, die Kosten werden dabei abgebucht).\n"
+                );
+            } else {
+                let _ = writeln!(
+                    aus,
+                    "Eine 0 oder ein leeres Feld heißt: keine Bedingung dieser Art. Haltezeit: alle Bedingungen müssen {} Stunden \
 ununterbrochen erfüllt sein, dann gilt der Aufstieg (Aktion `stufenaufstieg`, die Kosten werden dabei abgebucht).\n",
-                r.stufen_haltezeit_stunden
-            );
+                    r.stufen_haltezeit_stunden
+                );
+            }
         }
     }
     let _ = writeln!(aus, "## aktionen\n\nWelche Rolle welche Aktion senden darf (Antwortschema der Engine, `kern::aktion`). \
@@ -158,6 +167,12 @@ menschlichen Spieler und für Prüfungen. Der Orchestrator stellt Antwortformat 
     );
     for rolle in [Rolle::Alle, Rolle::Stratege, Rolle::Verwalter, Rolle::Feldherr, Rolle::Diplomat] {
         let _ = writeln!(aus, "## {}\n\n```text\n{}\n```\n", rolle.name(), regeltext(r, rolle).trim_end());
+    }
+    // Invasion (docs/INVASION.md): v1 für Welten ohne Wellen, v2 für neue Welten mit Verteidigungslinien – ergänzt dort die
+    // Kolonisationsregeln.
+    let _ = writeln!(aus, "## Invasion v1 (Welten ohne Verteidigungslinien)\n\n```text\n{}\n```\n", kern::invasion::REGELTEXT_INVASION);
+    if r.kw().boden.wellen > 0 {
+        let _ = writeln!(aus, "## Invasion v2 (neue Welten)\n\n```text\n{}\n```\n", kern::invasion2::regeltext_v2(&r.kw().boden));
     }
     aus
 }

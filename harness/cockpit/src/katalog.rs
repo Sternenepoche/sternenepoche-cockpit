@@ -29,15 +29,31 @@ pub const SKILLS: [(&str, &str); 10] = [
     ("ausbau", "Ausbau"), ("aufklaerung", "Aufklärung"), ("diplomatie", "Diplomatie"), ("handel", "Handel"),
     ("bauketten", "Bauketten"), ("auswertung", "Auswertung"),
 ];
-/// Lesende Werkzeuge mit Erklärung (Server und lokal).
-pub const WERKZEUGE: [(&str, &str); 11] = [
+/// Lesende Werkzeuge mit Erklärung (Server und lokal). Die Serverabfragen entsprechen
+/// `Welt::werkzeug_als` im Spielkern; der Harness schickt sie mit der Rolle des Zugs.
+pub const WERKZEUGE: [(&str, &str); 29] = [
     ("kosten", "Kosten und Bauzeit von Gebäuden, Forschung, Einheiten"), ("flugzeit", "Flugdauer, Treibstoff, Laderaum"),
-    ("kampfsimulator", "Kampf gegen eigenen Spionagebericht simulieren"), ("regel", "Regeltext nachschlagen"),
-    ("galaxie", "Bekannte Systeme und Planeten eines Sektors"), ("kolonieplan", "Kolonie planen und prüfen"),
-    ("briefarchiv", "Ältere Briefe lesen"), ("gedaechtnis_suche", "Im eigenen Langzeitgedächtnis suchen (lokal)"),
+    ("kampfsimulator", "Kampf gegen eigenen Spionagebericht simulieren"), ("kampfszenario", "Kampf frei zusammengestellter Flotten durchrechnen"),
+    ("regel", "Regeltext nachschlagen"), ("galaxie", "Bekannte Systeme und Planeten eines Sektors"),
+    ("kolonieplan", "Kolonie planen und prüfen"), ("briefarchiv", "Ältere Briefe lesen"),
+    ("koloniebedarf", "Siedler und Startfracht einer Kolonie"), ("raketenplan", "Raketenstart vorab prüfen"),
+    ("terraformbedarf", "Terraformer und Dauer für einen Planeten"), ("habitabilitaet", "Klima und Bewohnbarkeit eines Platzes"),
+    ("missionsplan", "Flottenmission vorab prüfen (Rechte, Töpfe, Treibstoff)"), ("marktplan", "Marktauftrag vorab prüfen"),
+    ("ablaufplan", "Mehrschrittigen Plan durchrechnen"), ("regelkontext", "Wirksame Regelwerte für Planungen"),
+    ("wirtschaftsdiagnose", "Engpässe eines Planeten erklären"), ("kostenplan", "Mehrere Bau- und Fertigungsposten zusammen rechnen"),
+    ("planet_aufgeben", "Vorschau: was beim Aufgeben eines Planeten passiert"), ("soforthandel", "Angebot des Soforthandels prüfen"),
+    ("raketensimulator", "Raketensalve gegen Verteidigung simulieren"), ("wiederaufbau", "Reparaturkosten eines ausgespähten Ziels"),
+    ("flugkoordination", "Mehrere Flotten zeitgleich ankommen lassen"),
+    ("gedaechtnis_suche", "Im eigenen Langzeitgedächtnis suchen (lokal)"),
     ("analyse", "Befunde zu allen Planeten: Engpässe, Reichweiten, Trends (lokal)"), ("inventur", "Alle Planeten als kompakte Liste (lokal)"),
     ("wissen", "Eigene Wissensquellen: Datenbank, RAG, MCP (lokal, nur freigegebene)"),
+    ("planet_detail", "Einen Planeten vollständig mit Mond nachladen (lokal, über die Lage)"), ("lage_teil", "Einzelne Abschnitte der Lage nachladen (lokal, über die Lage)"),
 ];
+/// Seit Katalogstand 2 neue Werkzeuge: ältere Einstellungen bekommen sie einmalig dazu.
+pub const NEUE_WERKZEUGE: [&str; 18] = ["kampfszenario", "koloniebedarf", "raketenplan", "terraformbedarf", "habitabilitaet", "missionsplan", "marktplan", "ablaufplan",
+    "regelkontext", "wirtschaftsdiagnose", "kostenplan", "planet_aufgeben", "soforthandel", "raketensimulator", "wiederaufbau", "flugkoordination", "planet_detail", "lage_teil"];
+/// Stand von Rechten und Werkzeugen in cockpit.json (2: echte Missionen, alle Serverwerkzeuge).
+pub const KATALOG_STAND: u32 = 2;
 pub const ROUTINEN: [(&str, &str, &str); 3] = [
     ("inventur", "Planeten-Inventur", "holt alle Planeten in eine Liste und speichert sie als Zeitreihe im Gedächtnis"),
     ("analyse", "Analyse", "findet Engpässe, volle Lager, leere Schleifen und Trends – mit Vorschlag je Befund"),
@@ -50,24 +66,80 @@ pub const AUSLOESER: [(&str, &str); 4] = [
     ("angriff", "Neuer feindlicher Anflug erkannt"), ("brief", "Neuer Brief eingegangen"),
     ("bauschleife_leer", "Bauschleife eines Planeten ist leer"), ("aufgabe", "Neue Aufgabe für diese Rolle"),
 ];
-/// Spielaktionen je Rolle (wie im Spielkern) mit Gruppe für die Rechte-Matrix.
-pub const AKTIONEN: [(&str, &str, &[&str]); 30] = [
-    ("bauen", "Wirtschaft", &["verwalter"]), ("reparieren", "Wirtschaft", &["verwalter"]), ("abreissen", "Wirtschaft", &["verwalter"]),
-    ("schleife_leeren", "Wirtschaft", &["verwalter"]), ("forschen", "Wirtschaft", &["verwalter"]), ("steuersatz", "Wirtschaft", &["verwalter"]),
-    ("prioritaeten", "Wirtschaft", &["verwalter"]), ("fertigen", "Wirtschaft", &["verwalter", "feldherr"]), ("stufenaufstieg", "Wirtschaft", &["stratege", "verwalter"]),
-    ("doktrin", "Führung", &["stratege"]), ("meldung", "Führung", &["stratege", "verwalter", "feldherr", "diplomat"]),
-    ("markt_order", "Handel", &["verwalter"]), ("markt_storno", "Handel", &["verwalter"]), ("intern_anbieten", "Handel", &["diplomat", "verwalter"]),
-    ("intern_kaufen", "Handel", &["diplomat", "verwalter"]), ("schenken", "Handel", &["diplomat"]),
-    ("flotte_senden", "Flotte", &["verwalter", "feldherr"]), ("flotte_zurueckrufen", "Flotte", &["verwalter", "feldherr"]), ("flotte_ausspaehen", "Flotte", &["feldherr"]),
-    ("verband_oeffnen", "Flotte", &["feldherr"]), ("raketen_bauen", "Flotte", &["verwalter", "feldherr"]), ("raketen_starten", "Flotte", &["feldherr"]),
-    ("brief_senden", "Diplomatie", &["diplomat"]), ("vertrag_anbieten", "Diplomatie", &["diplomat"]), ("vertrag_annehmen", "Diplomatie", &["diplomat"]),
-    ("vertrag_kuendigen", "Diplomatie", &["diplomat"]), ("allianz_gruenden", "Diplomatie", &["diplomat"]), ("allianz_beitreten", "Diplomatie", &["diplomat"]),
-    ("allianz_verlassen", "Diplomatie", &["diplomat"]), ("diplomatie_anfrage", "Diplomatie", &["diplomat"]),
+const V: &[&str] = &["verwalter"];
+const F: &[&str] = &["feldherr"];
+const D: &[&str] = &["diplomat"];
+const S: &[&str] = &["stratege"];
+const VF: &[&str] = &["verwalter", "feldherr"];
+const DF: &[&str] = &["diplomat", "feldherr"];
+const DV: &[&str] = &["diplomat", "verwalter"];
+const SV: &[&str] = &["stratege", "verwalter"];
+const SD: &[&str] = &["stratege", "diplomat"];
+/// Spielaktionen je Rolle mit Gruppe für die Rechte-Matrix – genau die Typen des Spielkerns:
+/// `aktion::erlaubte_typen` (75), `monde::MOND_AKTIONEN` (8) und `dyson::DYSON_AKTIONEN` (9),
+/// Rollen wie `Aktion::zustaendig`, `mond_zustaendig` und `dyson_zustaendig`.
+pub const AKTIONEN: [(&str, &str, &[&str]); 93] = [
+    // Wirtschaft
+    ("bauen", "Wirtschaft", V), ("reparieren", "Wirtschaft", V), ("abreissen", "Wirtschaft", V), ("schleife_leeren", "Wirtschaft", V),
+    ("forschen", "Wirtschaft", V), ("steuersatz", "Wirtschaft", V), ("prioritaeten", "Wirtschaft", V), ("ausbilden", "Wirtschaft", V),
+    ("produktion_setzen", "Wirtschaft", V), ("fertigen", "Wirtschaft", VF), ("produktionsserie", "Wirtschaft", VF), ("auftrag_pause", "Wirtschaft", VF),
+    ("warteschlange_aendern", "Wirtschaft", VF), ("planet_benennen", "Wirtschaft", SV), ("mond_bauen", "Wirtschaft", V), ("mond_faehre", "Wirtschaft", V),
+    ("mond_fertigen", "Wirtschaft", VF), ("mond_umbenennen", "Wirtschaft", SV), ("dyson_einzahlen", "Wirtschaft", SV), ("dyson_auszahlen", "Wirtschaft", SV),
+    // Handel
+    ("markt_order", "Handel", V), ("markt_storno", "Handel", V), ("soforthandel", "Handel", V), ("intern_anbieten", "Handel", DV),
+    ("intern_kaufen", "Handel", DV), ("intern_storno", "Handel", DV), ("schenken", "Handel", D), ("schiffangebot", "Handel", DF),
+    ("schiffangebot_antwort", "Handel", DF), ("orbitflotte_anbieten", "Handel", DF),
+    // Flotte
+    ("flotte_senden", "Flotte", VF), ("flotte_starten", "Flotte", F), ("flotte_planen", "Flotte", VF), ("flugplan_storno", "Flotte", VF),
+    ("flotte_beladen", "Flotte", VF), ("flotte_versorgen", "Flotte", VF), ("flotte_zurueckrufen", "Flotte", VF), ("flotte_ausspaehen", "Flotte", F),
+    ("verband_oeffnen", "Flotte", F), ("verband_beitreten", "Flotte", F), ("personen_senden", "Flotte", VF), ("expedition_starten", "Flotte", VF),
+    ("expedition_reparieren", "Flotte", VF), ("rettung_starten", "Flotte", VF), ("system_aufklaeren", "Flotte", F), ("raketen_bauen", "Flotte", VF),
+    ("raketen_starten", "Flotte", F), ("raketen_storno", "Flotte", VF), ("orbitflotte_angreifen", "Flotte", F), ("miliz_aufrufen", "Flotte", F),
+    ("miliz_ausrufen", "Flotte", F), ("miliz_entlassen", "Flotte", F), ("invasion_linien", "Flotte", F), ("boden_bauen", "Flotte", F),
+    ("boden_storno", "Flotte", F), ("boden_senden", "Flotte", F), ("phalanx_scannen", "Flotte", F), ("sprungtor_freigabe", "Flotte", DF),
+    ("hyperraumloch_oeffnen", "Flotte", F), ("hyperraumloch_durchreisen", "Flotte", F),
+    // Diplomatie
+    ("brief_senden", "Diplomatie", D), ("brief_lesen", "Diplomatie", D), ("nachricht", "Diplomatie", D), ("vertrag_anbieten", "Diplomatie", D),
+    ("vertrag_annehmen", "Diplomatie", D), ("vertrag_ablehnen", "Diplomatie", D), ("vertrag_kuendigen", "Diplomatie", D), ("diplomatie_anfrage", "Diplomatie", D),
+    ("diplomatie_entscheiden", "Diplomatie", D), ("allianz_gruenden", "Diplomatie", D), ("allianz_einladen", "Diplomatie", D), ("allianz_beitreten", "Diplomatie", D),
+    ("allianz_einladung_ablehnen", "Diplomatie", D), ("allianz_anfrage", "Diplomatie", D), ("allianz_rolle", "Diplomatie", D), ("allianz_ausschliessen", "Diplomatie", D),
+    ("allianz_pakt_kuendigen", "Diplomatie", D), ("allianz_verlassen", "Diplomatie", D), ("allianz_hilfe", "Diplomatie", DF), ("allianz_hilfe_status", "Diplomatie", DF),
+    ("dyson_vorschlagen", "Diplomatie", SD), ("dyson_beitreten", "Diplomatie", SD), ("dyson_austreten", "Diplomatie", SD), ("dyson_bau_starten", "Diplomatie", SD),
+    ("dyson_abbrechen", "Diplomatie", SD), ("dyson_anschluss_waehlen", "Diplomatie", SD), ("dyson_anschluss_loesen", "Diplomatie", SD),
+    // Führung
+    ("doktrin", "Führung", S), ("topf_umbuchen", "Führung", S), ("meldung", "Führung", &["stratege", "verwalter", "feldherr", "diplomat"]), ("stufenaufstieg", "Führung", SV),
+    ("plan_uebernehmen", "Führung", &["stratege", "verwalter", "feldherr"]), ("planet_aufgeben", "Führung", S),
 ];
-pub const MISSIONEN: [&str; 12] = ["angriff", "pluenderung", "belagerung", "blockade", "kolonisieren", "transport", "stationieren", "saven", "spionage", "system_erkunden", "abbau", "recyceln"];
+/// Die 17 Missionen des Spielkerns (`typen::Mission`).
+pub const MISSIONEN: [&str; 17] = ["angriff", "transport", "stationieren", "halten", "spionage", "kolonisieren", "recyceln", "abbau", "blockade", "invasion",
+    "bombardieren", "kampfkolonisieren", "saven", "flotten_spionage", "system_erkunden", "mond_zerstoeren", "terraformen"];
+/// Rollen, die eine Mission fliegen dürfen (`Aktion::zustaendig` für flotte_senden).
+pub fn mission_rollen(m: &str) -> &'static [&'static str] {
+    match m { "transport" | "stationieren" | "kolonisieren" | "abbau" | "recyceln" | "terraformen" | "saven" => VF, _ => F }
+}
+/// Große Marktaufträge haben ein eigenes Recht (Wert über der Grenze des Wachpostens).
+pub const MARKT_GROSS: &str = "markt_order:gross";
 /// Grundeinstellung: diese Aktionen fragen, bis der Besitzer anders entscheidet.
-pub const RISKANT: [&str; 15] = ["schenken", "vertrag_anbieten", "vertrag_kuendigen", "abreissen", "schleife_leeren", "allianz_verlassen", "raketen_starten",
-    "flotte_senden:angriff", "flotte_senden:pluenderung", "flotte_senden:belagerung", "flotte_senden:blockade", "flotte_senden:kolonisieren", "intern_anbieten", "markt_order", "allianz_gruenden"];
+pub const RISKANT: [&str; 28] = ["flotte_senden:angriff", "flotte_senden:blockade", "flotte_senden:invasion", "flotte_senden:bombardieren",
+    "flotte_senden:kampfkolonisieren", "flotte_senden:mond_zerstoeren", "flotte_senden:kolonisieren", "raketen_starten", "orbitflotte_angreifen", "boden_senden",
+    "planet_aufgeben", "abreissen", "schleife_leeren", "allianz_verlassen", "allianz_ausschliessen", "allianz_gruenden", "vertrag_anbieten", "vertrag_kuendigen",
+    "allianz_pakt_kuendigen", "schenken", "schiffangebot", "orbitflotte_anbieten", "intern_anbieten", MARKT_GROSS, "hyperraumloch_oeffnen", "dyson_bau_starten", "dyson_auszahlen", "dyson_austreten"];
+/// Alte Missionsnamen früherer Fassungen und ihr heutiges Gegenstück.
+pub const ALTE_MISSIONEN: [(&str, &str); 2] = [("flotte_senden:pluenderung", "flotte_senden:angriff"), ("flotte_senden:belagerung", "flotte_senden:blockade")];
+/// Strengeres von zwei Rechten (verbieten vor fragen vor erlauben).
+pub fn strenger(a: &str, b: &str) -> String {
+    let rang = |r: &str| match r { "verbieten" => 2, "fragen" => 1, _ => 0 };
+    if rang(a) >= rang(b) { a.to_string() } else { b.to_string() }
+}
+/// Rechte alter Fassungen still auf die echten Missionen abbilden (bei Doppelung gilt das strengere).
+pub fn rechte_migrieren(rechte: &mut BTreeMap<String, String>) {
+    for (alt, neu) in ALTE_MISSIONEN {
+        if let Some(r) = rechte.remove(alt) {
+            let wert = match rechte.get(neu) { Some(vorhanden) => strenger(vorhanden, &r), None => r };
+            rechte.insert(neu.to_string(), wert);
+        }
+    }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Anbieter { Ollama, OpenRouter, Eigen }
@@ -274,6 +346,9 @@ pub struct Auswahl {
     pub routinen: Vec<RoutineWahl>,
     #[serde(default = "standard_wissen")]
     pub wissen: Vec<WissenWahl>,
+    /// Stand der Rechte und Werkzeuge (siehe KATALOG_STAND); ältere Einstellungen werden beim Laden angepasst.
+    #[serde(default)]
+    pub katalog_stand: u32,
 }
 
 fn lokale_bots() -> u16 { 30 }
@@ -307,7 +382,7 @@ impl Default for Auswahl {
             schnittstelle: Schnittstelle::LokaleApiMcp, ollama_url: "http://127.0.0.1:11434".into(), openrouter_budget: 1.0, eigen_url: w_eigen_url(), ollama_kontext: w_num_ctx(), spielstil: String::new(),
             arbeitsordner: standard_ordner().display().to_string(), gebaut: None, selbst_bauen: false, doktrin: String::new(), planung_aktiv: true, max_offen: 40, notizen_behalten: 50,
             erinnerungen_im_kontext: 8, max_aktionen_je_zug: 4, geschenk_limit: 0.0, probe_vor_zug: true, korrekturrunden: 1, wache_sekunden: 60, kontext_zeichen: 24_000,
-            routinen: standard_routinen(), wissen: standard_wissen() }
+            routinen: standard_routinen(), wissen: standard_wissen(), katalog_stand: KATALOG_STAND }
     }
 }
 
@@ -333,7 +408,27 @@ impl Auswahl {
     /// Wirksames Recht einer Aktion für eine Rolle (Besitzer-Einstellung oder Grundregel).
     pub fn recht(&self, rolle: &str, kennung: &str) -> String {
         if let Some(r) = self.rollen.get(rolle).and_then(|w| w.rechte.get(kennung)) { return r.clone(); }
+        // Große Marktaufträge: ohne eigenes Recht gilt das Recht für markt_order.
+        if kennung == MARKT_GROSS { if let Some(r) = self.rollen.get(rolle).and_then(|w| w.rechte.get("markt_order")) { return r.clone(); } }
         if RISKANT.contains(&kennung) && self.wache == Wache::Bestaetigen { "fragen".into() } else { "erlauben".into() }
+    }
+    /// Ältere Einstellungen anpassen: alte Missionsnamen in den Rechten auf die echten Missionen
+    /// abbilden und die neuen Werkzeuge einmalig freigeben. Gibt zurück, ob sich etwas änderte.
+    pub fn migrieren(&mut self) -> bool {
+        let vorher = self.clone();
+        for w in self.rollen.values_mut() { rechte_migrieren(&mut w.rechte); }
+        if self.katalog_stand < 2 {
+            for w in self.rollen.values_mut() {
+                // Vorlage bekannt: deren neue Werkzeuge; sonst alle neuen.
+                let neu: Vec<&str> = match crate::vorlagen::VORLAGEN.iter().find(|v| v.name == w.vorlage) {
+                    Some(v) => v.werkzeuge.iter().copied().filter(|x| NEUE_WERKZEUGE.contains(x)).collect(),
+                    None => NEUE_WERKZEUGE.to_vec(),
+                };
+                for x in neu { if !w.werkzeuge.iter().any(|y| y == x) { w.werkzeuge.push(x.to_string()); } }
+            }
+            self.katalog_stand = KATALOG_STAND;
+        }
+        *self != vorher
     }
     pub fn pruefen(&self) -> Result<(), String> {
         if self.aktive().is_empty() { return Err("Mindestens eine KI-Rolle aktivieren".into()); }
@@ -433,10 +528,13 @@ pub fn kennungen(gruppe: &str) -> Vec<(String, &'static [&'static str])> {
     let mut v = Vec::new();
     for (typ, g, rollen) in AKTIONEN {
         if g != gruppe { continue; }
-        if typ == "flotte_senden" { for m in MISSIONEN { v.push((format!("flotte_senden:{m}"), rollen)); } } else { v.push((typ.to_string(), rollen)); }
+        if typ == "flotte_senden" { for m in MISSIONEN { v.push((format!("flotte_senden:{m}"), mission_rollen(m))); } } else { v.push((typ.to_string(), rollen)); }
+        if typ == "markt_order" { v.push((MARKT_GROSS.to_string(), rollen)); }
     }
     v
 }
+/// Alle Rechte-Kennungen (für Prüfungen von Vorlagen und gespeicherten Rechten).
+pub fn alle_kennungen() -> Vec<String> { GRUPPEN.iter().flat_map(|(g, _)| kennungen(g).into_iter().map(|(k, _)| k)).collect() }
 
 impl Auswahl {
     /// Autonomie eines Bereichs für eine Rolle (oder alle Rollen) setzen.
@@ -483,6 +581,8 @@ pub fn laden() -> Auswahl {
         }
     }
     a.seelen_laden();
+    // Alte Missionsnamen (pluenderung, belagerung) und fehlende neue Werkzeuge; still, gespeichert wird beim nächsten Sichern.
+    a.migrieren();
     a
 }
 
@@ -514,6 +614,7 @@ pub fn profil_laden(name: &str, aktuell: &Auswahl) -> Result<Auswahl, String> {
     a.server = aktuell.server.clone();
     a.arbeitsordner = aktuell.arbeitsordner.clone();
     a.gebaut = aktuell.gebaut.clone();
+    a.migrieren();
     Ok(a)
 }
 pub fn profil_loeschen(name: &str) { if profil_name_ok(name) { let _ = std::fs::remove_file(profil_ordner().join(format!("{name}.json"))); } }
@@ -582,5 +683,73 @@ mod tests {
         assert!(w.contains(&json!("routine:inventur")) && w.contains(&json!("wissen:http")) && !m.to_string().contains("rag.example"));
         a3.wissen[1].vorlage = "{kaputt".into();
         assert!(a3.pruefen().is_err());
+    }
+
+    #[test]
+    fn alte_missionen_werden_still_abgebildet() {
+        // cockpit.json einer früheren Fassung: Raider mit pluenderung/belagerung, alte Werkzeugliste.
+        let alt = r#"{"server":"https://x","rollen":{"feldherr":{"aktiv":true,"anbieter":"Ollama","modell":"m","takt_minuten":15,"skills":["kampf"],"vorlage":"Raider",
+            "werkzeuge":["kosten","flugzeit","kampfsimulator"],
+            "rechte":{"flotte_senden:angriff":"fragen","flotte_senden:pluenderung":"erlauben","flotte_senden:belagerung":"verbieten","raketen_starten":"fragen"}},
+            "diplomat":{"aktiv":false,"anbieter":"Ollama","modell":"m","takt_minuten":20,"skills":[],"werkzeuge":["kosten"],"rechte":{"flotte_senden:pluenderung":"fragen"}}},
+            "datenbank":"Sqlite","wache":"Bestaetigen","erweiterung":"Ohne","schnittstelle":"Ohne","ollama_url":"http://127.0.0.1:11434","openrouter_budget":1.0,"arbeitsordner":"x"}"#;
+        let mut a: Auswahl = serde_json::from_str(alt).unwrap();
+        assert_eq!(a.katalog_stand, 0);
+        assert!(a.migrieren());
+        let f = &a.rollen["feldherr"];
+        assert_eq!(f.rechte.get("flotte_senden:angriff").map(String::as_str), Some("fragen"), "bei Doppelung gilt das strengere Recht");
+        assert_eq!(f.rechte.get("flotte_senden:blockade").map(String::as_str), Some("verbieten"));
+        assert!(!f.rechte.keys().any(|k| k.contains("pluenderung") || k.contains("belagerung")));
+        assert_eq!(a.rollen["diplomat"].rechte.get("flotte_senden:angriff").map(String::as_str), Some("fragen"));
+        assert!(f.werkzeuge.iter().any(|w| w == "missionsplan") && f.werkzeuge.iter().any(|w| w == "planet_detail"), "neue Werkzeuge der Vorlage dazu");
+        assert!(a.rollen["diplomat"].werkzeuge.len() == 1 + NEUE_WERKZEUGE.len(), "ohne Vorlage alle neuen");
+        assert_eq!(a.katalog_stand, KATALOG_STAND);
+        // Zweites Laden ändert nichts mehr; entfernte Werkzeuge bleiben entfernt.
+        a.rollen.get_mut("feldherr").unwrap().werkzeuge.retain(|w| w != "missionsplan");
+        assert!(!a.migrieren());
+        assert!(!a.rollen["feldherr"].werkzeuge.iter().any(|w| w == "missionsplan"));
+        // harness.json enthält nur echte Kennungen.
+        let v = a.harness_json();
+        assert!(!v.to_string().contains("pluenderung") && !v.to_string().contains("belagerung"));
+    }
+
+    #[test]
+    fn rechte_matrix_kennt_alle_kernaktionen_und_missionen() {
+        use std::collections::BTreeSet;
+        let rolle = |r: &str| kern::Rolle::aus_name(r).unwrap();
+        // Typen und Rollen genau wie im Spielkern.
+        let mut kern_typen: BTreeSet<String> = BTreeSet::new();
+        for (r, _, _) in ROLLEN {
+            let mut typen: Vec<&str> = kern::aktion::erlaubte_typen(rolle(r));
+            typen.extend(kern::monde::MOND_AKTIONEN.iter().copied().filter(|t| kern::monde::mond_zustaendig(t).contains(&rolle(r))));
+            typen.extend(kern::dyson::DYSON_AKTIONEN.iter().copied().filter(|t| kern::dyson::dyson_zustaendig(t).contains(&rolle(r))));
+            for t in &typen {
+                kern_typen.insert(t.to_string());
+                let eintrag = AKTIONEN.iter().find(|(k, _, _)| k == t).unwrap_or_else(|| panic!("{t} fehlt in AKTIONEN"));
+                assert!(eintrag.2.contains(&r), "{t}: Rolle {r} fehlt");
+            }
+            for (k, _, rollen) in AKTIONEN { if rollen.contains(&r) { assert!(typen.contains(&k), "{k} gehört laut Kern nicht zu {r}"); } }
+        }
+        assert_eq!(kern_typen.len(), AKTIONEN.len(), "keine erfundenen Aktionen");
+        let missionen: Vec<&str> = kern::Mission::ALLE.iter().map(|m| m.name()).collect();
+        assert_eq!(missionen, MISSIONEN.to_vec());
+        // Riskant: mindestens die feindlichen Missionen und die unumkehrbaren Aktionen; alles echte Kennungen.
+        let alle = alle_kennungen();
+        for k in RISKANT { assert!(alle.iter().any(|x| x == k), "{k} ist keine Kennung der Matrix"); }
+        for m in kern::Mission::ALLE.iter().filter(|m| m.feindlich()) { assert!(RISKANT.contains(&format!("flotte_senden:{}", m.name()).as_str()), "{} nicht riskant", m.name()); }
+        for k in ["raketen_starten", "orbitflotte_angreifen", "planet_aufgeben", "abreissen", "allianz_verlassen", "allianz_ausschliessen", "vertrag_kuendigen", "allianz_pakt_kuendigen",
+            "schenken", "schiffangebot", "hyperraumloch_oeffnen", "dyson_bau_starten", "dyson_auszahlen", MARKT_GROSS] { assert!(RISKANT.contains(&k), "{k} nicht riskant"); }
+        // Im Fragemodus fragen die feindlichen Missionen, Transporte nicht.
+        let mut a = Auswahl::default();
+        for w in a.rollen.values_mut() { w.rechte.clear(); }
+        assert_eq!(a.recht("feldherr", "flotte_senden:invasion"), "fragen");
+        assert_eq!(a.recht("feldherr", "flotte_senden:mond_zerstoeren"), "fragen");
+        assert_eq!(a.recht("verwalter", "flotte_senden:transport"), "erlauben");
+        assert_eq!(a.recht("verwalter", MARKT_GROSS), "fragen");
+        assert_eq!(a.recht("verwalter", "markt_order"), "erlauben");
+        // Missionen nur in der Matrix der Rollen, die sie fliegen dürfen.
+        let flotte = kennungen("Flotte");
+        assert!(flotte.iter().any(|(k, r)| k == "flotte_senden:invasion" && *r == ["feldherr"]));
+        assert!(flotte.iter().any(|(k, r)| k == "flotte_senden:transport" && r.contains(&"verwalter")));
     }
 }

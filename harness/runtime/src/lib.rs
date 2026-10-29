@@ -4,11 +4,14 @@ pub mod gedaechtnis;
 pub mod kaefig;
 pub mod konfig;
 pub mod modell;
+pub mod pinwand;
 pub mod prompt;
+pub mod regelblock;
 pub mod routinen;
 pub mod schleife;
 pub mod selbsttest;
 pub mod server;
+pub mod skillpaket;
 pub mod wachposten;
 pub mod wissen;
 #[cfg(feature = "lokale-api")]

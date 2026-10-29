@@ -1,0 +1,445 @@
+{
+  "version": 1,
+  "aktionen": {
+    "flotte_senden": {
+      "bereich": "flotte",
+      "zweck": "Schickt Schiffe eines eigenen Planeten (oder mit startart mond eines eigenen Mondes) mit einer Mission zu einem Ziel. Die Mission bestimmt alles Weitere; welche Mission wofür passt, steht im Missionskatalog (aktionen → missionen).",
+      "ids_aus": ["start: lage.planeten[].koord (eigener Planet mit Raumhafen) oder lage.monde.eigene[].koord mit startart mond", "ziel: lage.atlas, lage.erkundet[], lage.berichte[], lage.nachbarn[] oder werkzeug galaxie", "schiffe: lage.planeten[].einheiten (Bestand am Start); alle aktiven Schiffsnamen angeben, nicht beteiligte 0"],
+      "vorher": ["werkzeug missionsplan {aktion:<diese Aktion>} mit rolle", "werkzeug flugzeit (Dauer, Treibstoff, Laderaum)", "bei Angriffen werkzeug kampfsimulator mit aktuellem Spionagebericht", "handeln probe=true"],
+      "fallen": [
+        {"text": "alle {plaetze} Flottenplätze sind belegt", "abhilfe": "Eine Flotte zurückrufen oder landen lassen; Computertechnik erhöht die Zahl der Plätze."},
+        {"text": "Flottenstart braucht einen Raumhafen auf …", "abhilfe": "Vom Planeten mit Raumhafen starten oder den Raumhafen bauen lassen (Verwalter)."},
+        {"text": "Sonnensystem zuerst mit system_erkunden und einer Spionagesonde kartieren", "abhilfe": "Feldherr: erst flotte_senden mission system_erkunden mit einer Sonde ins Zielsystem."},
+        {"text": "Ziel zuerst mit einer eigenen Planetensonde aufklären", "abhilfe": "Feldherr: spionage mit Sonden auf genau diesen Planeten; Allianzwissen ersetzt die eigene Sonde nicht (außer bei halten)."},
+        {"text": "Position 0 ist der Asteroidengürtel: nur die Mission abbau fliegt dorthin, und nur dorthin", "abhilfe": "Für Gürtelabbau Position 0 und Mission abbau, sonst eine Planetenposition."},
+        {"text": "… gehört nicht zur Rolle verwalter, zuständig: feldherr", "abhilfe": "Feindliche Missionen, Spionage und Erkundung führt der Feldherr; Auftrag über die Pinwand."},
+        {"text": "Topf militaer reicht nicht: …", "abhilfe": "Der Feldherr zahlt aus dem Topf militaer; Anfrage an den Strategen (doktrin)."},
+        {"text": "{} steht unter Anfängerschutz", "abhilfe": "Anderes Ziel wählen; Schutz läuft ab (lage.anfaengerschutz_bis bzw. Bericht des Ziels)."}
+      ],
+      "unumkehrbar": false
+    },
+    "flotte_versorgen": {
+      "bereich": "flotte",
+      "zweck": "Bringt einer eigenen Flotte, die unterwegs im Orbit steht oder gestrandet ist, Treibstoff und Güter mit einer zweiten Flotte vom Planeten.",
+      "ids_aus": ["versorgungsflotte: lage.flotten[].flotte (eigene Flotte, Ziel = ihr Ort)", "start: lage.planeten[].koord", "ziel: lage.flotten[].ziel bzw. lage.flotten[].gestrandet.ort"],
+      "vorher": ["werkzeug flugzeit für die Versorgungsschiffe", "handeln probe=true"],
+      "fallen": [
+        {"text": "Flottenversorgung benötigt V4-Regeln", "abhilfe": "In dieser Welt nicht verfügbar; gestrandete Flotten mit flotte_starten heimholen oder übergeben."},
+        {"text": "Laderaum der Flotte reicht nicht: frei …, geliefert würden …", "abhilfe": "Weniger laden; der freie Laderaum der Zielflotte begrenzt die Lieferung."},
+        {"text": "Diese Flotte hat keinen Laderaum – sie kann keinen Treibstoff aufnehmen", "abhilfe": "Flotte ohne Frachtraum kann nicht versorgt werden."},
+        {"text": "Keine berechtigte Flotte unter dieser Kennung", "abhilfe": "Nur eigene Flotten aus lage.flotten."}
+      ],
+      "unumkehrbar": false
+    },
+    "flotte_zurueckrufen": {
+      "bereich": "flotte",
+      "zweck": "Holt eine eigene Flotte im Hinflug oder im Orbit sofort auf den Rückflug zum Start.",
+      "ids_aus": ["flotte: lage.flotten[].flotte mit zustand hinflug oder im_orbit"],
+      "vorher": ["lage.flotten[].zustand prüfen"],
+      "fallen": [
+        {"text": "Keine eigene rückrufbare Flotte unter dieser Kennung", "abhilfe": "Kennung aus der aktuellen lage.flotten nehmen; landende Flotten sind weg."},
+        {"text": "Flotte {fid} ist schon auf dem Rückflug", "abhilfe": "Nichts zu tun."},
+        {"text": "Vermisste Expedition kann nicht zurückgerufen werden", "abhilfe": "rettung_starten innerhalb der Rettungsfrist."},
+        {"text": "Gestrandete Flotte: mit Deuterium aus der Ladung zu einem eigenen Planeten fliegen …", "abhilfe": "Gestrandete Flotten mit flotte_starten (stationieren) heimfliegen oder versorgen."}
+      ],
+      "unumkehrbar": false
+    },
+    "flotte_ausspaehen": {
+      "bereich": "kampf",
+      "zweck": "Schickt Sonden gegen eine erkannte fremde Flotte (Flottenspionage), um Zusammensetzung und Ladung zu sehen – die einzige Art der Mission flotten_spionage.",
+      "ids_aus": ["flotte: lage.angriffe[].flotte oder lage.orbitflotten_bekannt[].flotte", "start: lage.planeten[].koord mit Sonden"],
+      "vorher": ["Geheimdienst-Gebäude muss es im Regelwerk geben (sonst fehlt die Aktion)", "handeln probe=true"],
+      "fallen": [
+        {"text": "Flottenaufklärung verwendet ausschließlich Sonden", "abhilfe": "Nur spionagesonde schicken."},
+        {"text": "Keine berechtigte Flotte unter dieser Kennung", "abhilfe": "Nur erkannte Flotten aus lage.angriffe bzw. orbitflotten_bekannt."}
+      ],
+      "unumkehrbar": false
+    },
+    "verband_oeffnen": {
+      "bereich": "kampf",
+      "zweck": "Macht eine eigene ausfliegende Angriffsflotte zur Führung eines Verbands, dem Verbündete derselben Allianz beitreten können (gemeinsame Ankunft).",
+      "ids_aus": ["flotte: lage.flotten[].flotte mit mission angriff im Hinflug"],
+      "vorher": ["Absprache mit Verbündeten per brief_senden kanal allianz und Pinwand"],
+      "fallen": [
+        {"text": "Keine berechtigte Flotte unter dieser Kennung", "abhilfe": "Eigene Angriffsflotte im Hinflug wählen."}
+      ],
+      "unumkehrbar": false
+    },
+    "verband_beitreten": {
+      "bereich": "kampf",
+      "zweck": "Hängt eine eigene ungebundene Flotte mit demselben Ziel an einen offenen Verband (eigener oder eines Allianzmitglieds); alle treffen zur Ankunft der Führung ein.",
+      "ids_aus": ["flotte: lage.flotten[].flotte (eigene, gleiches Ziel, im Hinflug)", "fuehrung: lage.verbaende[].fuehrung bzw. Kennung, die der Verbündete nennt"],
+      "vorher": ["werkzeug flugzeit: die eigene Flotte muss die Ankunft der Führung erreichen können"],
+      "fallen": [
+        {"text": "Beide Flotten müssen im Hinflug dasselbe Angriffsziel haben", "abhilfe": "Mit gleichem ziel und Mission angriff starten."},
+        {"text": "Verbandsangriffe erfordern dieselbe Allianz", "abhilfe": "Nur Allianzmitglieder."},
+        {"text": "Ein Verband umfasst höchstens 16 Flotten", "abhilfe": "Mehr Schiffe in eine Flotte packen."},
+        {"text": "Führung hat keinen Verband geöffnet", "abhilfe": "Führung muss verband_oeffnen ausführen."},
+        {"text": "Flotte ist bereits einem anderen Verband beigetreten", "abhilfe": "Nichts zu tun."}
+      ],
+      "unumkehrbar": false
+    },
+    "flotte_starten": {
+      "bereich": "flotte",
+      "zweck": "Startet eine gestrandete eigene Orbitflotte weiter (stationieren, transport, halten, spionage, angriff) mit Deuterium aus der eigenen Ladung – es gibt keinen kostenlosen Rückruf.",
+      "ids_aus": ["flotte: lage.flotten[] mit gestrandet", "ziel: eigener Planet (stationieren) oder Ziel; null mit zielflotte = Ort der Zielflotte", "zielflotte: lage.orbitflotten_bekannt[].flotte"],
+      "vorher": ["werkzeug flugzeit mit flotte (Treibstoffbedarf)", "handeln probe=true"],
+      "fallen": [
+        {"text": "Ohne Rückflugtreibstoff kein Rückruf: … Deuterium in der Ladung nötig, an Bord …", "abhilfe": "flotte_versorgen mit Deuterium oder Flotte per orbitflotte_anbieten übergeben."},
+        {"text": "Von einer gestrandeten Flotte aus gehen Stationieren, Transport, Halten, Spionage und Angriff …", "abhilfe": "Andere Mission wählen."},
+        {"text": "Nach einem Angriff von hier aus: nur noch Heimflug (Stationieren auf einen eigenen Planeten) oder Flottenübergabe", "abhilfe": "Stationieren auf eigenen Planeten."},
+        {"text": "Start aus dem Orbit gibt es in Welten mit Orbitflotten", "abhilfe": "In dieser Welt nicht verfügbar."}
+      ],
+      "unumkehrbar": false
+    },
+    "orbitflotte_angreifen": {
+      "bereich": "kampf",
+      "zweck": "Greift eine erkannte fremde gestrandete Flotte im Orbit mit Schiffen eines eigenen Planeten an.",
+      "ids_aus": ["zielflotte: lage.orbitflotten_bekannt[].flotte (nicht eigene)", "start: lage.planeten[].koord"],
+      "vorher": ["werkzeug kampfszenario mit den bekannten Schiffen der Zielflotte", "handeln probe=true"],
+      "fallen": [
+        {"text": "Angriffe auf gestrandete Flotten gibt es in Welten mit Orbitflotten", "abhilfe": "In dieser Welt nicht verfügbar."},
+        {"text": "Sonnensystem zuerst kartieren – gestrandete Flotten sieht, wer das System kennt", "abhilfe": "system_erkunden ins System der Zielflotte."},
+        {"text": "alle {plaetze} Flottenplätze sind belegt", "abhilfe": "Platz schaffen."}
+      ],
+      "unumkehrbar": true
+    },
+    "orbitflotte_anbieten": {
+      "bereich": "flotte",
+      "zweck": "Bietet eine eigene gestrandete Flotte dem Besitzer des Zielplaneten zum Kauf oder als Geschenk an (preis 0); bei Annahme fliegt sie dorthin und wechselt den Besitzer.",
+      "ids_aus": ["flotte: lage.flotten[] mit gestrandet", "ziel: bewohnter Planet des Empfängers"],
+      "vorher": ["Absprache mit dem Empfänger per Brief (Diplomat)"],
+      "fallen": [
+        {"text": "Keine gestrandete eigene Flotte unter dieser Kennung", "abhilfe": "Nur gestrandete Flotten aus lage.flotten."},
+        {"text": "Preis: 0 bis 1 Milliarde Credits; 0 bedeutet Geschenk", "abhilfe": "Preis im Bereich wählen."},
+        {"text": "Für diese Flotte liegt schon ein offenes Angebot vor", "abhilfe": "Antwort abwarten oder Angebot mit schiffangebot_antwort annehmen=false beenden."}
+      ],
+      "unumkehrbar": false
+    },
+    "flotte_planen": {
+      "bereich": "planung",
+      "zweck": "Plant einen Flug (flotte_senden oder Hülle wie boden_senden, personen_senden, flotte_beladen) so, dass die Flotte zu einer gewünschten Ankunftszeit eintrifft; der Kern startet ihn selbst. Gut für gleichzeitige Ankünfte mehrerer Flotten.",
+      "ids_aus": ["flug: vollständige Aktion wie bei flotte_senden", "ankunft: Spielsekunden (lage.zeit/sekunden + Flugdauer aus werkzeug flugzeit)"],
+      "vorher": ["werkzeug flugkoordination {flug, ankunft, rueckgeschwindigkeit}: bereit, abflug, grund"],
+      "fallen": [
+        {"text": "Ankunft zu früh oder Abflug mehr als sieben Spieltage entfernt", "abhilfe": "Ankunft so wählen, dass der Abflug zwischen jetzt und sieben Spieltagen liegt."},
+        {"text": "Geplante Ankunft mit aktueller Flotte nicht mehr erreichbar", "abhilfe": "Neu planen; der Flugplan verfällt sonst."},
+        {"text": "Höchstens 20 geplante Flüge", "abhilfe": "Mit flugplan_storno alte Pläne löschen."},
+        {"text": "Rückflugtempo: 10 bis 100 %", "abhilfe": "rueckgeschwindigkeit 0.1 bis 1.0; 0 nur in Welten mit Orbitflotten (kein Rückflug)."}
+      ],
+      "unumkehrbar": false
+    },
+    "flugplan_storno": {
+      "bereich": "planung",
+      "zweck": "Löscht einen noch nicht gestarteten geplanten Flug.",
+      "ids_aus": ["auftrag: lage.flugtermine[].id"],
+      "vorher": [],
+      "fallen": [{"text": "Kein eigener geplanter Flug", "abhilfe": "Kennung aus lage.flugtermine; gestartete Flüge mit flotte_zurueckrufen."}],
+      "unumkehrbar": false
+    },
+    "flotte_beladen": {
+      "bereich": "flotte",
+      "zweck": "Startet einen Flug mit Gütern, Personen und/oder Bodentruppen an Bord. Mit Personen gelten die Regeln von personen_senden (nur transport/stationieren), mit Truppen die von boden_senden (nur Feldherr).",
+      "ids_aus": ["flug: vollständige flotte_senden-Aktion", "personen: lage.planeten[].personengruppen (Tausendstel-Personen)", "truppen: lage.planeten[].bodentruppen.bestand"],
+      "vorher": ["werkzeug flugkoordination {flug} oder missionsplan", "handeln probe=true"],
+      "fallen": [
+        {"text": "Beladung benötigt einen Flottenauftrag", "abhilfe": "flug mit \"typ\":\"flotte_senden\" angeben."},
+        {"text": "boden_senden gehört nicht zur Rolle verwalter …", "abhilfe": "Truppen verlädt nur der Feldherr; Verwalter setzt truppen auf 0."},
+        {"text": "… Personen übersteigen die … zusätzlichen Personenplätze", "abhilfe": "Mehr Schiffe mit Personenplätzen oder weniger Reisende."},
+        {"text": "keine ganzen Reisenden", "abhilfe": "Personen in Vielfachen von 1000 angeben (1000 = 1 Person)."}
+      ],
+      "unumkehrbar": false,
+      "beispiel": {"typ": "flotte_beladen", "flug": {"typ": "flotte_senden", "start": "1:27:6", "ziel": "1:28:6", "mission": "transport", "siedler_volk": null, "siedler_mischung": null, "schiffe": {"grosser_transporter": 2}, "geschwindigkeit": 1.0, "ladung": {"erz": 5000}, "haltedauer_stunden": 0}, "personen": {"gruppen": [[10000, 5000, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]}, "truppen": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
+    },
+    "personen_senden": {
+      "bereich": "flotte",
+      "zweck": "Bringt Bewohner, Fachkräfte oder Forscher zwischen Planeten (Arbeitskräfte und Wissen umverteilen). Nur Missionen transport oder stationieren, nie zu oder von Monden.",
+      "ids_aus": ["personen: lage.planeten[].personengruppen am Start", "flug.schiffe: Schiffe mit Personenplätzen"],
+      "vorher": ["werkzeug flugzeit (Personenplätze)", "handeln probe=true"],
+      "fallen": [
+        {"text": "Personenverkehr benötigt Generation 12", "abhilfe": "In dieser Welt nicht verfügbar."},
+        {"text": "Monde besitzen keine zivile Bevölkerung; Personen starten und landen auf Planeten", "abhilfe": "Planeten als Start und Ziel."},
+        {"text": "… Personen übersteigen die … zusätzlichen Personenplätze", "abhilfe": "Mehr Personenplätze oder weniger Reisende."}
+      ],
+      "unumkehrbar": false
+    },
+    "expedition_starten": {
+      "bereich": "flotte",
+      "zweck": "Schickt Pathfinder (mit Bordsonden, Bergungsschiffen) als Expedition zu Position 0 eines Systems (Mission saven); Ereignisse bringen Funde, Wracks oder Verluste.",
+      "ids_aus": ["flug.ziel: Sektor:System:0", "flug.schiffe: pathfinder (+ spionagesonde bis 20 je Pathfinder, bergungsschiff)"],
+      "vorher": ["werkzeug flugzeit", "handeln probe=true"],
+      "fallen": [
+        {"text": "Expedition benötigt einen Save-Flugauftrag als Flugplan", "abhilfe": "flug.mission saven."},
+        {"text": "Höchstens 20 Bordsonden je Pathfinder", "abhilfe": "Mehr Pathfinder oder weniger Sonden."},
+        {"text": "Expedition: höchstens 10.000 Schiffe insgesamt", "abhilfe": "Kleiner aufteilen."},
+        {"text": "Expedition benötigt Generation 12", "abhilfe": "In dieser Welt nicht verfügbar."}
+      ],
+      "unumkehrbar": false
+    },
+    "expedition_reparieren": {
+      "bereich": "flotte",
+      "zweck": "Repariert während einer laufenden Expedition einen beschädigten Rumpf mit Bergungsschiff und Bordvorrat.",
+      "ids_aus": ["flotte: lage.expeditionen[].flotte", "einheit: beschädigter Schiffstyp der Expedition"],
+      "vorher": [],
+      "fallen": [
+        {"text": "Aktive Expedition, Bergungsschiff und reparierbarer Rumpf nötig", "abhilfe": "Nur aktive Expeditionen mit Bergungsschiff."},
+        {"text": "20 % Baukosten und Rückflugtreibstoff müssen an Bord liegen", "abhilfe": "Mehr Ladung mitgeben."}
+      ],
+      "unumkehrbar": false
+    },
+    "rettung_starten": {
+      "bereich": "flotte",
+      "zweck": "Schickt Bergungsschiffe zu einer vermissten Expedition, solange die 24-Stunden-Frist läuft.",
+      "ids_aus": ["expedition: lage.expeditionen[].flotte mit status vermisst und rettungsfrist"],
+      "vorher": ["lage.expeditionen[].rettungsfrist prüfen"],
+      "fallen": [
+        {"text": "Die 24-Stunden-Startfrist ist abgelaufen", "abhilfe": "Zu spät; Verlust hinnehmen."},
+        {"text": "Zu wenige gerettete Personen als neue Crew", "abhilfe": "Mehr Bergungsschiffe/Besatzung."}
+      ],
+      "unumkehrbar": false
+    },
+    "system_aufklaeren": {
+      "bereich": "kampf",
+      "zweck": "Sendet Sonden vom Start in ein fremdes System, um es zu kartieren (wie Mission system_erkunden, aus dem Flottenkommando).",
+      "ids_aus": ["start: lage.planeten[].koord mit Spionagesonden", "ziel: beliebige Koordinate des Zielsystems"],
+      "vorher": ["werkzeug flugzeit"],
+      "fallen": [
+        {"text": "Systemaufklärung verwendet ausschließlich Spionagesonden", "abhilfe": "Nur Sonden."},
+        {"text": "Systemaufklärung benötigt Online-Regeln v1", "abhilfe": "In dieser Welt nicht verfügbar."}
+      ],
+      "unumkehrbar": false
+    },
+    "raketen_bauen": {
+      "bereich": "raketen",
+      "zweck": "Baut Raketen im Raketensilo: abfang (verteidigen automatisch), interplanetar (Verteidigungsanlagen), flottenrakete (Schiffe eines erkannten Anflugs), bunkerbrecher, hyperrakete.",
+      "ids_aus": ["planet: lage.planeten[].koord mit raketensilo (lage.planeten[].raketensilo)"],
+      "vorher": ["werkzeug kosten {rakete, anzahl, planet}", "werkzeug raketensimulator"],
+      "fallen": [
+        {"text": "Siloplätze einschließlich bezahlter Bauaufträge reichen nicht aus", "abhilfe": "Silo ausbauen oder weniger bestellen."},
+        {"text": "Raketensilo zuerst vollständig reparieren", "abhilfe": "reparieren (Verwalter)."},
+        {"text": "Raketenbau bei Unruhen nicht möglich", "abhilfe": "Stabilität heben (Steuern, Konsumgüter)."},
+        {"text": "Forschungsvoraussetzungen für … fehlen", "abhilfe": "werkzeug kosten zeigt die Voraussetzungen."}
+      ],
+      "unumkehrbar": false
+    },
+    "raketen_starten": {
+      "bereich": "raketen",
+      "zweck": "Startet fertige Raketen: interplanetar/bunkerbrecher/hyperrakete auf Verteidigungsanlagen eines fremden Planeten (zielart mond: Monde, nur Anlagen und Solarsatelliten); flottenrakete mit flotte auf einen erkannten feindlichen Anflug.",
+      "ids_aus": ["start: lage.planeten[].koord mit fertigen Raketen", "ziel: aufgeklärter fremder Planet; bei flottenrakete lage.angriffe[].ziel", "flotte: lage.angriffe[].flotte (nur flottenrakete)", "zieltyp: Einheitname"],
+      "vorher": ["werkzeug raketenplan {aktion:<diese Aktion>}", "werkzeug raketensimulator"],
+      "fallen": [
+        {"text": "Zu wenige fertige Raketen: … bereit, … angefragt", "abhilfe": "Bestand in lage.planeten[].raketensilo."},
+        {"text": "Ziel zuerst mit eigener Planetensonde aufklären", "abhilfe": "spionage auf das Ziel."},
+        {"text": "Eigene und verbündete Ziele können nicht angegriffen werden", "abhilfe": "Anderes Ziel."},
+        {"text": "Abfangraketen werden nicht gestartet; sie verteidigen automatisch den eigenen Planeten", "abhilfe": "art interplanetar, flottenrakete, bunkerbrecher oder hyperrakete."},
+        {"text": "Raketen erreichen den Anflug nicht mehr rechtzeitig", "abhilfe": "Früher starten; Reichweite hängt von der Silostufe ab."},
+        {"text": "Ziel steht unter Anfängerschutz", "abhilfe": "Anderes Ziel."}
+      ],
+      "unumkehrbar": true
+    },
+    "raketen_storno": {
+      "bereich": "raketen",
+      "zweck": "Bricht einen Raketenbauauftrag im Silo ab.",
+      "ids_aus": ["auftrag: lage.planeten[].raketensilo.warteschlange[].auftrag"],
+      "vorher": [],
+      "fallen": [{"text": "Auftrag fehlt", "abhilfe": "Kennung aus der aktuellen Warteschlange."}],
+      "unumkehrbar": false
+    },
+    "miliz_aufrufen": {
+      "bereich": "boden",
+      "zweck": "Zieht während einer laufenden Invasion Arbeitskräfte als Miliz ein (Verteidiger).",
+      "ids_aus": ["planet: eigener Planet mit lage.planeten[].invasion"],
+      "vorher": ["lage.planeten[].invasion (Wellen, Linien) lesen"],
+      "fallen": [
+        {"text": "Miliz kann nur während einer laufenden Invasion gerufen werden", "abhilfe": "Erst bei Landung feindlicher Truppen."},
+        {"text": "Nicht genug einziehbare Arbeitskräfte; 25-%-Grenze und 500 verbleibende Zivilisten beachten", "abhilfe": "Weniger einziehen."}
+      ],
+      "unumkehrbar": false
+    },
+    "miliz_ausrufen": {
+      "bereich": "boden",
+      "zweck": "Ruft auf einem eigenen Planeten die Miliz aus (Bereitschaft der Bevölkerung).",
+      "ids_aus": ["planet: lage.planeten[].koord"],
+      "vorher": [],
+      "fallen": [{"text": "Miliz kann nur während einer laufenden Invasion gerufen werden", "abhilfe": "Nur bei laufender Invasion."}],
+      "unumkehrbar": false
+    },
+    "miliz_entlassen": {
+      "bereich": "boden",
+      "zweck": "Entlässt die Miliz zurück in die Arbeit.",
+      "ids_aus": ["planet: lage.planeten[].koord"],
+      "vorher": [],
+      "fallen": [
+        {"text": "Auf diesem Planeten ist keine Miliz ausgerufen", "abhilfe": "Nichts zu tun."},
+        {"text": "Während einer Belagerung bleibt die Miliz im Dienst", "abhilfe": "Ende der Belagerung abwarten."}
+      ],
+      "unumkehrbar": false
+    },
+    "invasion_linien": {
+      "bereich": "boden",
+      "zweck": "Verteidiger einer laufenden Invasion (v2) teilt Bodentruppen und Miliz den Verteidigungslinien zu; nicht Zugeteiltes bildet den Rückhalt. Jeder Aufruf ersetzt die ganze Zuteilung.",
+      "ids_aus": ["planet: eigener Planet mit lage.planeten[].invasion", "linien[l][typ]: Truppentypen in Reihenfolge der Bodeneinheiten, Index 12 = Miliz; Bestand aus lage.planeten[].bodentruppen.bestand"],
+      "vorher": ["lage.planeten[].invasion.wellen lesen (gebrochene Linien bleiben 0)"],
+      "fallen": [
+        {"text": "Verteidigungslinien gibt es in Welten mit Invasion v2", "abhilfe": "In dieser Welt nicht verfügbar."},
+        {"text": "Auf diesem Planeten läuft keine Invasion", "abhilfe": "Nur während einer Invasion."},
+        {"text": "Höchstens … Linien vor dem Rückhalt", "abhilfe": "Neue Welten: höchstens 3 Linien angeben."},
+        {"text": "Linie … ist schon gebrochen", "abhilfe": "Gebrochene Linien mit 0 belegen."},
+        {"text": "Mehr … zugeteilt als vorhanden", "abhilfe": "Summe je Typ höchstens Bestand."}
+      ],
+      "unumkehrbar": false
+    },
+    "boden_bauen": {
+      "bereich": "boden",
+      "zweck": "Bildet Bodeneinheiten in der Kaserne aus (für Invasion, Kampfkolonisation, Garnison und Verstärkung von Verbündeten).",
+      "ids_aus": ["planet: lage.planeten[].koord mit Kaserne", "art: Bodeneinheit (Schema-Aufzählung)"],
+      "vorher": ["lage.planeten[].bodentruppen (Kasernenschlange, Bestand)"],
+      "fallen": [
+        {"text": "… benötigt Kaserne … und Zivilisationsstufe …", "abhilfe": "Kaserne ausbauen lassen (Verwalter) bzw. Stufe erreichen."},
+        {"text": "Kasernenschlange ist voll (8 Aufträge)", "abhilfe": "Warten oder boden_storno."},
+        {"text": "Mindestens 500 Einwohner müssen auf dem Planeten bleiben", "abhilfe": "Weniger ausbilden."},
+        {"text": "1 bis 1000 Einheiten wählen", "abhilfe": "anzahl 1–1000."}
+      ],
+      "unumkehrbar": false
+    },
+    "boden_storno": {
+      "bereich": "boden",
+      "zweck": "Bricht einen Kasernenauftrag ab.",
+      "ids_aus": ["auftrag: lage.planeten[].bodentruppen.auftraege[].id"],
+      "vorher": [],
+      "fallen": [{"text": "Kasernenauftrag existiert nicht mehr", "abhilfe": "Aktuelle Kennung nehmen."}],
+      "unumkehrbar": false
+    },
+    "boden_senden": {
+      "bereich": "boden",
+      "zweck": "Verlädt Bodentruppen auf Truppentransporter: transport/stationieren zu eigenen Planeten, kampfkolonisieren oder bombardieren (v2: Landung, sobald die Gebäude bei 30 % Integrität stehen), kolonisieren (Garnison der neuen Kolonie), halten = zu Verbündeten verstärken.",
+      "ids_aus": ["truppen: lage.planeten[].bodentruppen.bestand am Start", "flug.schiffe.truppentransporter: Plätze je Transporter"],
+      "vorher": ["werkzeug missionsplan mit dem flug", "handeln probe=true"],
+      "fallen": [
+        {"text": "… Truppenplätze benötigt, … vorhanden; … je Truppentransporter", "abhilfe": "Mehr Truppentransporter in flug.schiffe."},
+        {"text": "Bodeneinheiten fehlen auf dem Startplaneten", "abhilfe": "Bestand prüfen oder ausbilden."},
+        {"text": "Bodentruppen starten und landen auf Planeten", "abhilfe": "Keine Monde."},
+        {"text": "Verstärken geht nur zu Planeten von Verbündeten …", "abhilfe": "Eigene Planeten mit transport oder stationieren."},
+        {"text": "Bodentruppen können transportiert, stationiert, zur Kampfkolonisation oder beim Bombardieren zur Landung mitgeführt …", "abhilfe": "Passende Mission wählen."}
+      ],
+      "unumkehrbar": false
+    },
+    "fertigen": {
+      "bereich": "flotte",
+      "zweck": "Baut Schiffe, Verteidigungsanlagen oder Bauteile (antriebskern, habitatmodul) in der Werft bzw. Orbitalwerft eines Planeten. Verwalter: nur zivile Schiffe (Topf wirtschaft); Feldherr: alles (Topf militaer).",
+      "ids_aus": ["planet: lage.planeten[].koord", "einheit: lage.einheiten_kosten[].einheit"],
+      "vorher": ["werkzeug kosten {einheit, anzahl, planet}", "lage.einheiten_kosten[].braucht und werft"],
+      "fallen": [
+        {"text": "… bestellt der Feldherr, nicht der Verwalter", "abhilfe": "Militärische Einheiten über eine Pinwandkarte an den Feldherrn."},
+        {"text": "von … sind höchstens … je Planet erlaubt", "abhilfe": "Anderen Planeten nutzen."},
+        {"text": "auf … fehlen …", "abhilfe": "Güter per Transport oder Markt beschaffen."},
+        {"text": "Topf … reicht nicht: …", "abhilfe": "Anfrage an den Strategen (doktrin)."},
+        {"text": "fertigen braucht genau eines von einheit oder bauteil", "abhilfe": "Entweder einheit oder bauteil."}
+      ],
+      "unumkehrbar": false
+    },
+    "mond_bauen": {
+      "bereich": "mond",
+      "zweck": "Baut ein Mondgebäude (mondbasis, regolithfoerderung, kryolager, werftdock, tiefenphalanx, sprungtor, ortungsschleier); bezahlt aus dem Mondbestand.",
+      "ids_aus": ["mond: lage.monde.eigene[].koord (gleich der Planetenkoordinate)"],
+      "vorher": ["lage.monde.eigene[] (Felder, Bauschleife, Bestand)", "werkzeug regel {stichwort:\"monde\"}"],
+      "fallen": [
+        {"text": "Keine freien Felder auf dem Mond (…); Mondbasis ausbauen, solange die Obergrenze es erlaubt", "abhilfe": "Mondbasis ausbauen."},
+        {"text": "Mondbestand reicht nicht: … fehlt (Mond …; Nachschub per Transport oder Fähre)", "abhilfe": "mond_faehre oder Transport mit zielart mond."},
+        {"text": "Mondbauschleife ist voll", "abhilfe": "Warten."},
+        {"text": "Höchste Ausbaustufe erreicht", "abhilfe": "Nichts zu tun."}
+      ],
+      "unumkehrbar": false,
+      "beispiel": {"typ": "mond_bauen", "mond": "1:27:6", "gebaeude": "mondbasis"}
+    },
+    "mond_fertigen": {
+      "bereich": "mond",
+      "zweck": "Fertigt Einheiten im Werftdock des Mondes (Weltenkrümmer ab der nötigen Werftdockstufe, Schiffe, Solarsonden); Besatzung kommt vom Mutterplaneten. Verwalter: nur Solarsonden.",
+      "ids_aus": ["mond: lage.monde.eigene[].koord"],
+      "vorher": ["werkzeug kosten {einheit}", "lage.monde.eigene[] Werftdock"],
+      "fallen": [
+        {"text": "… bestellt der Feldherr, nicht der Verwalter", "abhilfe": "Verwalter fertigt auf Monden nur solarsonde."},
+        {"text": "Besatzung fehlt: auf dem Mutterplaneten müssen mindestens 500 Einwohner bleiben", "abhilfe": "Weniger fertigen."},
+        {"text": "Werftdock-Schleife ist voll", "abhilfe": "Warten."},
+        {"text": "Planetenschilde gibt es nur auf Planeten", "abhilfe": "Andere Einheit."}
+      ],
+      "unumkehrbar": false,
+      "beispiel": {"typ": "mond_fertigen", "mond": "1:27:6", "einheit": "solarsonde", "anzahl": 20}
+    },
+    "mond_umbenennen": {
+      "bereich": "mond",
+      "zweck": "Gibt einem eigenen Mond einen Namen.",
+      "ids_aus": ["mond: lage.monde.eigene[].koord"],
+      "vorher": [],
+      "fallen": [{"text": "Name darf nicht leer sein", "abhilfe": "1–40 Zeichen."}],
+      "unumkehrbar": false,
+      "beispiel": {"typ": "mond_umbenennen", "mond": "1:27:6", "name": "Wächtermond"}
+    },
+    "mond_faehre": {
+      "bereich": "mond",
+      "zweck": "Richtet einen stündlichen Güterpendel zwischen Mutterplanet und Mond ein: positive Menge zum Mond, negative zum Planeten, 0 beendet.",
+      "ids_aus": ["mond: lage.monde.eigene[].koord"],
+      "vorher": ["lage.monde.eigene[] Fähre und Bestand"],
+      "fallen": [
+        {"text": "Fähre gedeckelt auf … Einheiten je Spielstunde (2.000 je Mondbasisstufe); belegt …", "abhilfe": "Menge senken oder Mondbasis ausbauen."},
+        {"text": "Bauteile fahren nicht mit der Fähre", "abhilfe": "Bauteile per Transport."}
+      ],
+      "unumkehrbar": false,
+      "beispiel": {"typ": "mond_faehre", "mond": "1:27:6", "gut": "deuterium", "menge_je_stunde": 1000}
+    },
+    "phalanx_scannen": {
+      "bereich": "mond",
+      "zweck": "Scannt mit der Tiefenphalanx eines eigenen Mondes die Flüge eines Planeten in Reichweite (eigener Sektor) – zeigt Anflüge und Abflüge, kostet Deuterium aus dem Mondbestand.",
+      "ids_aus": ["mond: lage.monde.eigene[].koord mit tiefenphalanx", "ziel: Planetenkoordinate in Reichweite"],
+      "vorher": ["lage.monde.eigene[] Phalanx-Bereitschaft"],
+      "fallen": [
+        {"text": "Auf diesem Mond steht keine Tiefenphalanx", "abhilfe": "tiefenphalanx bauen."},
+        {"text": "Ziel außerhalb der Reichweite (… Systeme im eigenen Sektor)", "abhilfe": "Näheres Ziel oder Phalanx ausbauen."},
+        {"text": "Tiefenphalanx lädt noch bis …", "abhilfe": "Warten."},
+        {"text": "Scan kostet … Deuterium aus dem Mondbestand", "abhilfe": "Deuterium per Fähre bringen."},
+        {"text": "Die Tiefenphalanx kann keine Monde scannen", "abhilfe": "Planetenkoordinate wählen."}
+      ],
+      "unumkehrbar": false,
+      "beispiel": {"typ": "phalanx_scannen", "mond": "1:27:6", "ziel": "1:28:4"}
+    },
+    "sprungtor_freigabe": {
+      "bereich": "mond",
+      "zweck": "Gibt den Hyperraumtor-Generator eines eigenen Mondes für Allianz- und Bündnispartner als Gegenstelle frei (oder sperrt ihn).",
+      "ids_aus": ["mond: lage.monde.eigene[].koord mit sprungtor"],
+      "vorher": ["Absprache mit Partnern"],
+      "fallen": [{"text": "Mond … hat keinen Hyperraumtor-Generator", "abhilfe": "sprungtor bauen."}],
+      "unumkehrbar": false,
+      "beispiel": {"typ": "sprungtor_freigabe", "mond": "1:27:6", "freigegeben": true}
+    },
+    "hyperraumloch_oeffnen": {
+      "bereich": "mond",
+      "zweck": "Öffnet am eigenen Mond ein Hyperraumloch zu einem zweiten Generator (eigener oder freigegebener Partnermond); optional reist sofort eine Flotte durch. Das Loch bleibt eine feste Zeit offen und kostet Deuterium.",
+      "ids_aus": ["mond: lage.monde.eigene[].koord", "gegenstelle: lage.monde.eigene[].sprungtor.ziele[].koord"],
+      "vorher": ["lage.monde.eigene[].sprungtor (Ziele, Ladezustand)"],
+      "fallen": [
+        {"text": "Hyperraumtor-Generator … lädt bis …", "abhilfe": "Warten."},
+        {"text": "Gegenstelle … Systeme entfernt; Reichweite …", "abhilfe": "Nähere Gegenstelle oder Tor ausbauen."},
+        {"text": "Gegenstelle muss ein eigener oder freigegebener Mond eines Allianz- oder Bündnispartners sein", "abhilfe": "Partner um sprungtor_freigabe bitten."},
+        {"text": "Hyperraumtor-Generator … braucht volle Energie und bezahlten Unterhalt", "abhilfe": "Energie/Unterhalt sichern."},
+        {"text": "Erstdurchreise abgelehnt – im Antworttext", "abhilfe": "Der Text der Antwort nennt den Grund auch dann, wenn das Loch offen ist; danach hyperraumloch_durchreisen."}
+      ],
+      "unumkehrbar": true,
+      "beispiel": {"typ": "hyperraumloch_oeffnen", "mond": "1:27:6", "gegenstelle": "1:31:4", "erstdurchreise": null}
+    },
+    "hyperraumloch_durchreisen": {
+      "bereich": "mond",
+      "zweck": "Schickt Schiffe von einem Planeten, Mond oder einer Orbitflotte im Start- oder Zielsystem durch ein offenes Hyperraumloch; danach landen (nur am eigenen Austrittsmond) oder im Orbit bleiben.",
+      "ids_aus": ["loch: lage.monde.hyperraumloecher[].id", "von.koord: eigener Planet/Mond im System des Lochs; von.flotte: lage.flotten[].flotte im Orbit"],
+      "vorher": ["lage.monde.hyperraumloecher[] (offen bis, Kapazität)"],
+      "fallen": [
+        {"text": "Dieses Hyperraumloch ist nicht offen", "abhilfe": "Neu öffnen."},
+        {"text": "Kapazität des Lochs überschritten: … Struktur, frei …", "abhilfe": "Weniger Schiffe."},
+        {"text": "Weltenkrümmer passen durch kein Hyperraumloch", "abhilfe": "Ohne Weltenkrümmer reisen."},
+        {"text": "Mitreisen darf nur, wer im Start- oder Zielsystem des Lochs steht", "abhilfe": "Von dort starten."},
+        {"text": "Landen nur am eigenen Austrittsmond; sonst danach = orbit", "abhilfe": "danach orbit."}
+      ],
+      "unumkehrbar": false,
+      "beispiel": {"typ": "hyperraumloch_durchreisen", "loch": 1, "von": {"art": "mond", "koord": "1:27:6"}, "schiffe": {"kreuzer": 10}, "danach": "orbit", "ladung": {"deuterium": 2000}}
+    }
+  }
+}

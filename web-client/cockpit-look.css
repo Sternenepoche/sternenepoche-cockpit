@@ -37,19 +37,13 @@
 .game-client #connection[data-stand="aus"]::before, .game-client #connection[data-stand="ende"]::before { background: var(--rot); animation: none; }
 @keyframes cockpit-puls { 0% { box-shadow: 0 0 0 0 rgba(143, 220, 165, .55); } 70% { box-shadow: 0 0 0 8px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
 
-/* ---------- Knöpfe wie die .k-Familie: Cyan-Glas, Hauptknöpfe in Gold */
-.game-client button:not(.item-tile):not(.faction-card):not(.planet-pick):not(.zoom):not(.space-label) { border-radius: 10px; border: 1px solid var(--linie2); background: rgba(127, 211, 255, .07); color: var(--text-hell);
+/* ---------- Buttons; shared action-surfaces.css supplies the final surface. */
+.game-client button:not(.item-tile):not(.tile-select):not(.tile-info):not(.tile-build):not(.tile-cancel):not(.faction-card):not(.planet-pick):not(.zoom):not(.space-label):not(.resource-hit) { border-radius: 10px; border: 1px solid var(--linie2); background: rgba(127, 211, 255, .07); color: var(--text-hell);
   box-shadow: none; transition: background-color .15s, border-color .15s, filter .15s; }
-/* Hauptknöpfe (ohne .secondary) in Gold-Glas; volles Gold nur für das Absenden eines Formulars. */
-.game-client button:not(.secondary):not(.danger):not(.item-tile):not(.faction-card):not(.planet-pick):not(.zoom):not([data-tab]):not([aria-pressed]):not(.space-label) {
-  background: linear-gradient(180deg, rgba(218, 181, 123, .22), rgba(218, 181, 123, .08)); color: var(--gold2); border-color: rgba(218, 181, 123, .6); font-weight: 600; }
-.game-client form button:not([type="button"]):not(.secondary):not(.danger), .game-client #claim-panel button:not(.secondary):not(.faction-card):not(.planet-pick) {
-  background: linear-gradient(180deg, #f1d39c, #c99a55); color: #1d1406; border-color: #f6dfb0; font-weight: 650;
-  box-shadow: 0 6px 22px rgba(218, 181, 123, .22), inset 0 1px 0 rgba(255, 255, 255, .5); }
 .game-client button.danger { background: linear-gradient(180deg, #a8364a, #7a2232); border-color: #ff8c8c; color: #fff; }
 .game-client button:disabled { opacity: .45; filter: grayscale(.4); }
 @media (hover: hover) and (pointer: fine) {
-  .game-client button:not(.item-tile):not(.faction-card):not(.planet-pick):not(.zoom):hover:not(:disabled) { filter: brightness(1.08); border-color: var(--cyan); }
+  .game-client button:not(.item-tile):not(.tile-select):not(.tile-info):not(.tile-build):not(.tile-cancel):not(.faction-card):not(.planet-pick):not(.zoom):hover:not(:disabled) { filter: brightness(1.08); border-color: var(--cyan); }
 }
 
 /* ---------- Schiene links: Symbol und Text, aktive Seite in Gold mit leuchtendem Balken */
@@ -78,6 +72,8 @@
 .game-client #tabs button[data-tab="berichte"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2'/%3E%3C/svg%3E")}
 .game-client #tabs button[data-tab="imperium"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20V11M10 20V4M16 20v-7M2 20h20'/%3E%3C/svg%3E")}
 .game-client #tabs button[data-tab="freischaltungen"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm14 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM12 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM6.5 6.5l4.5 9.5M17.5 6.5L13 16M7 5h10'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="codex"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4h7l2 2 2-2h7v15h-7l-2 2-2-2H3zM12 6v15M6 8h3M6 12h3M15 8h3M15 12h3'/%3E%3C/svg%3E")}
+.game-client #tabs button[data-tab="warsim"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4l16 16M20 4L4 20M4 4h4M4 4v4M20 4h-4M20 4v4M8 20h8'/%3E%3C/svg%3E")}
 .game-client #tabs button[data-tab="agent"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2l8.7 5v10L12 22l-8.7-5V7zM12 22V12m8.7-5L12 12 3.3 7'/%3E%3C/svg%3E")}
 .game-client #tabs button[data-tab="pinwaende"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 3h6l-1 6 4 4H6l4-4zM12 13v8'/%3E%3C/svg%3E")}
 .game-client #tabs button[data-tab="profil"]{--symbol:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM5 21a7 7 0 0 1 14 0'/%3E%3C/svg%3E")}
@@ -130,3 +126,142 @@
 }
 @media (prefers-reduced-motion: reduce) { .game-client::before, .game-client #connection::before { animation: none; } }
 @media print { .game-client::before { display: none; } }
+
+/* Shared action surfaces. Build paths are resolved by build_cockpit_look.py and website_content.py.
+   The dark scrim stays above the artwork; white text never depends on the image's brightness. */
+.button, .button.secondary, .k, .k.gold, .k.leise, .los:not(.k), .knoepfe button.haupt,
+.game-client button:not(.item-tile):not(.tile-select):not(.tile-info):not(.tile-build):not(.tile-cancel):not(.faction-card):not(.planet-pick):not(.zoom):not(.space-label):not([data-tab]):not([aria-pressed]):not(.resource-hit):not(.danger) {
+  --action-accent: #89dce9; --action-border: rgba(137, 220, 233, .44);
+  position: relative; isolation: isolate; min-height: 44px; border-radius: 12px;
+  border: 1px solid var(--action-border); color: #f4fbff;
+  background-color: rgba(10, 24, 39, .88);
+  background-image: linear-gradient(180deg, rgba(225, 246, 255, .08), transparent 48%, rgba(2, 8, 18, .16)),
+    linear-gradient(110deg, rgba(7, 19, 33, .94), rgba(7, 19, 33, .72)), var(--action-image, none);
+  background-position: center, center, var(--action-position, 50% 44%);
+  background-size: cover; background-repeat: no-repeat;
+  box-shadow: inset 0 1px 0 rgba(230, 250, 255, .18), inset 0 -1px 0 rgba(2, 7, 16, .45), 0 5px 16px rgba(0, 0, 0, .24);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .85); font-weight: 650;
+  letter-spacing: .015em; line-height: 1.4; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  transition: transform 140ms cubic-bezier(.23, 1, .32, 1), border-color 160ms ease, box-shadow 160ms ease;
+}
+.button { gap: 14px; padding: 13px 22px; max-width: 100%; text-align: center; }
+.button:not(.secondary), .k.gold, .los:not(.k), .knoepfe button.haupt,
+.game-client form button:not([type="button"]):not(.secondary):not(.danger),
+.game-client #claim-submit {
+  --action-image: url("assets/backgrounds.command.webp");
+  --action-border: rgba(137, 220, 233, .65);
+  box-shadow: inset 0 1px 0 rgba(230, 250, 255, .23), inset 0 -1px 0 rgba(2, 7, 16, .5), 0 6px 22px rgba(34, 128, 162, .17);
+}
+/* Download: ocean planet. Entry: command deck. Learning: violet nebula. */
+.button[href*="releases/download"], .button[href$=".apk"], .button[href$=".zip"] {
+  --action-image: url("assets/planets.leben_ozean.webp");
+  --action-accent: #bfcaff; --action-border: rgba(172, 192, 255, .62); --action-position: 50% 32%;
+}
+.hero-actions .button.secondary, .button[href*="Sternenepoche-Start"], .button[href*="Sternenepoche-Handbuch"] {
+  --action-image: url("assets/backgrounds.nebula.webp");
+  --action-accent: #c8bdff; --action-border: rgba(182, 164, 244, .42);
+}
+.game-client #forschen button:not(.item-tile):not(.tile-select):not(.tile-info):not(.tile-build):not(.tile-cancel):not(.secondary) { --action-image: url("assets/backgrounds.research.webp"); --action-border: rgba(179, 171, 255, .55); }
+.game-client #werft button:not(.item-tile):not(.tile-select):not(.tile-info):not(.tile-build):not(.tile-cancel):not(.secondary), .k.gold.gross { --action-image: url("assets/backgrounds.hangar.webp"); }
+.game-client #flotten form button:not(.secondary) { --action-image: url("assets/backgrounds.shipyard.webp"); }
+.game-client #aktionen form button:not(.secondary) { --action-image: url("assets/backgrounds.market.webp"); }
+.button.secondary, .k.leise { --action-border: rgba(169, 206, 229, .28); font-weight: 550; }
+.button.small, .k.klein { border-radius: 10px; }
+.button:focus-visible, .k:focus-visible, .los:focus-visible, .knoepfe button:focus-visible,
+.game-client button:focus-visible { outline: 2px solid #b7efff; outline-offset: 3px; }
+.button:active:focus-visible, .k:active:focus-visible, .los:active:focus-visible, .game-client button:active:focus-visible { transform: none; transition: none; }
+.button:active:not([aria-disabled="true"]), .k:active:not(:disabled), .los:active:not(:disabled),
+.knoepfe button.haupt:active:not(:disabled) { transform: scale(.97); filter: none; }
+.button[aria-disabled="true"], .k:disabled, .los:disabled, .knoepfe button.haupt:disabled { opacity: .5; cursor: not-allowed; filter: none; }
+.k.rot { --action-border: #f093a3; background: linear-gradient(180deg, #672536, #451b2c); color: #fff; }
+.rat-play, .haus-play { color: #f4fbff; background: linear-gradient(145deg, #2f6077, #102538); border: 1px solid #8ddbeb70; box-shadow: inset 0 1px #e1f8ff30; }
+.game-client #tabs button[data-tab][aria-selected="true"] { color: #c0f2ff; border-color: #7fd3ff42; background: linear-gradient(100deg, #7fd3ff20, #7fd3ff06); }
+.game-client #tabs button[data-tab][aria-selected="true"]::after { background: #7fd3ff; box-shadow: 0 0 10px #7fd3ff50; }
+.game-client .comm-tabs button[aria-pressed="true"], .rat-volk button.an { color: #e8f8ff; border-color: #7fd3ff80; background: linear-gradient(180deg, #7fd3ff20, #7fd3ff08); }
+@media (hover: hover) and (pointer: fine) {
+  .button:hover, .k:hover:not(:disabled), .los:hover:not(:disabled), .knoepfe button.haupt:hover:not(:disabled) {
+    border-color: var(--action-accent); filter: none;
+    box-shadow: inset 0 1px 0 rgba(230, 250, 255, .3), 0 6px 22px rgba(55, 136, 180, .22);
+  }
+  .game-client button:not(.item-tile):not(.tile-select):not(.tile-info):not(.tile-build):not(.tile-cancel):not(.faction-card):not(.planet-pick):not(.zoom):not(.space-label):not([data-tab]):not([aria-pressed]):not(.resource-hit):hover:not(:disabled) { filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .button, .k, .los, .knoepfe button.haupt { transition: none; }
+  .button:active:not([aria-disabled="true"]), .k:active:not(:disabled), .los:active:not(:disabled), .knoepfe button.haupt:active:not(:disabled) { transform: none; }
+}
+@media (max-width: 580px) {
+  .game-client header { min-height: 46px; gap: 6px; padding: 7px 10px; }
+  .game-client #account-strip, .game-client #world-time, .game-client #connection { padding: 3px 7px; font-size: 10px; }
+  .game-client header .brand { font-size: 12px; letter-spacing: .12em; gap: 7px; }
+  .game-client header .brand span { font-size: 8px; letter-spacing: .12em; }
+}
+@media (prefers-contrast: more) {
+  .button, .button.secondary, .k, .k.gold, .k.leise, .los:not(.k), .knoepfe button.haupt,
+  .game-client button:not(.item-tile):not(.tile-select):not(.tile-info):not(.tile-build):not(.tile-cancel):not(.faction-card):not(.planet-pick):not(.zoom):not(.space-label):not([data-tab]):not([aria-pressed]):not(.resource-hit):not(.danger) { background: #081321; border-color: #c5efff; color: #fff; text-shadow: none; }
+}
+@media (forced-colors: active) {
+  .button, .button.secondary, .k, .k.gold, .k.leise, .los:not(.k), .knoepfe button.haupt,
+  .game-client button:not(.item-tile):not(.tile-select):not(.tile-info):not(.tile-build):not(.tile-cancel):not(.faction-card):not(.planet-pick):not(.zoom):not(.space-label):not([data-tab]):not([aria-pressed]):not(.resource-hit):not(.danger) { background: ButtonFace; color: ButtonText; border: 1px solid ButtonText; box-shadow: none; text-shadow: none; }
+}
+
+/* Mobile game density: spend space on information, reserve large artwork for the atlas.
+   Appended to cockpit-look.css by build_cockpit_look.py so embedded clients need no new route. */
+.stat-label-compact{display:none}
+@media(max-width:850px){
+  .game-client #game>#planet-sidebar{position:static}
+  .game-client #game>#tabs{position:static}
+  .game-client #game>.panel{min-height:0;padding:12px;border-radius:10px;box-shadow:0 6px 20px #0003}
+  .game-client #game>.panel>.row:first-child h2,.game-client #game>.panel>h2:first-child{font-size:19px;line-height:1.25;letter-spacing:0;margin-bottom:10px;color:#edf7ff}
+  .game-client #empire-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;padding:8px 0;margin:0 0 8px;border-block:1px solid #8dbad129}
+  .game-client #empire-summary .stat{display:flex;flex-direction:column;gap:1px;min-width:0;min-height:0;padding:0 7px;border:0;border-radius:0;background:none}
+  .game-client #empire-summary .stat:first-child{padding-left:0}
+  .game-client #empire-summary .stat+.stat{border-left:1px solid #8dbad129}
+  .game-client #empire-summary .stat strong{font:650 18px/1.25 system-ui,sans-serif;letter-spacing:-.3px;color:#edf8ff;overflow-wrap:anywhere}
+  .game-client #empire-summary .stat>span{font-size:11px;line-height:1.35;color:#afc5d8}
+  .stat-label-full{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .stat-label-compact{display:inline}
+  .game-client #control-state{margin:0 0 8px;font-size:11px;line-height:1.45;color:#b6c9d9}
+  .game-client #warnings>.warning,.game-client #warnings>.defeat-notice{margin:6px 0 10px;padding:8px 10px;min-height:0;border-radius:8px;font-size:11px;line-height:1.4}
+  .game-client #warnings strong{font-size:12px}
+  .game-client #warnings p{margin:3px 0 0;font-size:11px;line-height:1.4}
+  .game-client #warnings>.pause-notice{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .game-client #warnings>.pause-notice p{margin:0}
+  .game-client #reich{background:linear-gradient(150deg,#0c1b2ae8,#0a1523e0)}
+  .game-client #reich::before,.game-client #reich::after{display:none}
+  .game-client .hero-planet{min-height:0;display:grid;grid-template-columns:60px minmax(0,1fr);grid-template-rows:auto auto auto auto;gap:2px 12px;padding:10px;border-radius:9px;background:linear-gradient(110deg,#10253be8,#0b182ad9);align-items:center}
+  .game-client .hero-planet .hero-orb{grid-column:1;grid-row:1/4;width:60px;height:60px;object-fit:contain;margin:0}
+  .game-client .hero-info{display:contents}
+  .game-client .hero-info>.eyebrow{grid-column:2;grid-row:1;font-size:8px;line-height:1.3;letter-spacing:.08em;color:#a8cbdc;margin:0}
+  .game-client .hero-info>h3{grid-column:2;grid-row:2;font-size:18px;line-height:1.2;color:#edf8ff;margin:0}
+  .game-client .hero-info>span:not(.eyebrow){grid-column:2;grid-row:3;font-size:11px;line-height:1.3;color:#b6cddd}
+  .game-client .hero-info dl{grid-column:1/-1;grid-row:4;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.85fr) minmax(0,1fr) minmax(0,.85fr);gap:0 6px;margin:8px 0 0;font-size:11px;line-height:1.35}
+  .game-client .hero-info dt,.game-client .hero-info dd{margin:0;padding:5px 0;border-top:1px solid #8dbad119;overflow-wrap:anywhere}
+  .game-client .hero-info dt{color:#aec4d5}
+  .game-client .hero-info dd{color:#edf8ff;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+  .game-client .queue-grid{gap:6px;margin-top:8px}
+  .game-client .queue-card{min-height:0;border-radius:8px;padding:8px 10px}
+  .game-client .queue-card.queue-empty{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1px 8px;align-items:center}
+  .game-client .queue-empty>strong{grid-column:1;grid-row:1;font-size:10px;letter-spacing:.04em;color:#bcd8e8}
+  .game-client .queue-empty>.empty{grid-column:1;grid-row:2;margin:0;padding:0;font-size:11px;line-height:1.35}
+  .game-client .queue-empty>button{grid-column:2;grid-row:1/3;min-height:44px;padding:6px 12px;font-size:12px}
+  .game-client .section-actions{gap:6px;margin:8px 0 0}
+  .game-client .section-actions>button{font-size:12px;padding:8px 10px}
+}
+@media(max-width:580px){
+  .game-client .site-ai-notice{padding:4px 8px;gap:4px 8px;font-size:10px;line-height:1.4}
+  .game-client .site-ai-notice .site-ai-description{flex-basis:auto;text-align:left}
+  .game-client .site-ai-notice a{min-height:24px}
+  .game-client[data-playing="true"] #offline-entry{display:none}
+  .game-client main{margin-top:8px;padding:0 8px}
+  .game-client #event-bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;padding:6px 2px;border:0;border-radius:0;background:none;box-shadow:none;backdrop-filter:none;font-size:11px;line-height:1.4}
+  .game-client #event-bar>.event-location{grid-column:1;grid-row:1;font-weight:600}
+  .game-client #event-bar>.event-fleets{grid-column:2;grid-row:1;text-align:right}
+  .game-client #event-bar>.event-contacts{grid-column:1;grid-row:2}
+  .game-client #event-bar>.event-protection{grid-column:2;grid-row:2;text-align:right;font-size:10px;color:#b2c5d5}
+  .game-client #event-bar>.event-clock{display:none}
+  .game-client #event-bar>.event-critical{grid-column:1/-1;color:#ffb8aa;line-height:1.5}
+  .game-client #game>#tabs{gap:2px;padding:0 0 4px;margin-bottom:6px}
+  .game-client #tabs button[data-tab]{gap:6px;padding:8px 9px;min-height:44px;font-size:11px;border-radius:9px}
+  .game-client #tabs button[data-tab]::before{width:16px;height:16px}
+  .game-client #offline-entry{padding:7px 10px;margin-bottom:7px;font-size:10px;line-height:1.4;border-radius:8px;box-shadow:none}
+}

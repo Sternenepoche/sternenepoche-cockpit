@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "missionen": {
+    "transport": {
+      "zweck": "Güter (ladung) zu einem Planeten bringen: eigene Planeten versorgen, Verbündeten oder Handelspartnern liefern. Die Schiffe kehren leer zurück.",
+      "ziel": "bewohnter Planet (eigener, verbündeter oder fremder); mit zielart mond ein Mond; auch die eigene gestrandete Flotte am Ziel",
+      "schiffe": "Frachter (kleiner_transporter, grosser_transporter, Schnell-/Schwerlast-/Handelsfrachter); Laderaum aus werkzeug flugzeit",
+      "voraussetzungen": ["Raumhafen am Start", "fremde Ziele: eigene Planetensonde auf das Ziel (Allianzwissen reicht nicht)"],
+      "rollen": ["verwalter", "feldherr"],
+      "feindlich": false,
+      "vorher": ["werkzeug missionsplan (ready/blocked nur zwischen eigenen Planeten exakt)", "werkzeug flugzeit (Laderaum, Treibstoff)"],
+      "fallen": [{"text": "Ladung … übersteigt die Kapazität …", "abhilfe": "Mehr Frachter oder weniger Ladung; Treibstoff zählt nicht zur Ladung."}],
+      "danach": "Ladung wird beim Ziel abgeladen (an einen gebundenen Empfänger), die Flotte fliegt zurück."
+    },
+    "stationieren": {
+      "zweck": "Schiffe dauerhaft auf einen anderen eigenen Planeten (oder Mond) verlegen, mit Ladung.",
+      "ziel": "eigener Planet oder eigener Mond (zielart mond), nicht der Start",
+      "schiffe": "beliebige Schiffe",
+      "voraussetzungen": ["Raumhafen am Start"],
+      "rollen": ["verwalter", "feldherr"],
+      "feindlich": false,
+      "vorher": ["werkzeug missionsplan"],
+      "fallen": [{"text": "Start und Ziel sind derselbe Planet", "abhilfe": "Anderen eigenen Planeten wählen."}, {"text": "Stationieren nur auf einem eigenen Planeten", "abhilfe": "Fremde Ziele: transport oder halten."}],
+      "danach": "Schiffe und Ladung bleiben am Ziel; kein Rückflug."
+    },
+    "halten": {
+      "zweck": "Eine Flotte beim Planeten eines Verbündeten parken, damit sie ihn mitverteidigt (haltedauer_stunden).",
+      "ziel": "Planet eines Partners in derselben Allianz oder mit Verteidigungsbündnis",
+      "schiffe": "Kampfschiffe",
+      "voraussetzungen": ["Allianz oder Verteidigungsbündnis mit dem Besitzer", "haltedauer_stunden 1 bis Höchstwert"],
+      "rollen": ["feldherr"],
+      "feindlich": false,
+      "vorher": ["Absprache per Brief/Allianzhilfe", "werkzeug flugzeit"],
+      "fallen": [{"text": "Halten geht nur bei einem Partner mit Verteidigungsbündnis oder in derselben Allianz", "abhilfe": "Erst Bündnis oder Allianz (Diplomat)."}, {"text": "haltedauer_stunden muss zwischen 1 und … liegen", "abhilfe": "Dauer im Bereich."}],
+      "danach": "Flotte kämpft bei Angriffen auf den Partner mit und fliegt nach der Haltedauer zurück."
+    },
+    "spionage": {
+      "zweck": "Spionagesonden auf einen fremden Planeten: Bericht über Rohstoffe, Gebäude, Flotte, Verteidigung, Forschung (je nach Sondenzahl und Technik). Grundlage für kampfsimulator und alle Angriffe.",
+      "ziel": "fremder Planet in einem kartierten System; mit zielart mond ein Mond",
+      "schiffe": "nur spionagesonde",
+      "voraussetzungen": ["System zuerst mit system_erkunden kartieren"],
+      "rollen": ["feldherr"],
+      "feindlich": false,
+      "vorher": ["werkzeug flugzeit"],
+      "fallen": [{"text": "eine Spionageflotte besteht nur aus Spionagesonden", "abhilfe": "Nur Sonden."}, {"text": "eigene Planeten muss man nicht ausspionieren", "abhilfe": "Fremdes Ziel."}, {"text": "Sonnensystem zuerst mit system_erkunden und einer Spionagesonde kartieren", "abhilfe": "Erst system_erkunden."}],
+      "danach": "Bericht in lage.berichte; Sonden können entdeckt und abgeschossen werden."
+    },
+    "system_erkunden": {
+      "zweck": "Ein Sonnensystem kartieren: welche Plätze besiedelt, frei, mit Gürtel, Nebel, Trümmern – Voraussetzung für Spionage, Kolonisation, Abbau und Recycling dort.",
+      "ziel": "beliebige Koordinate im Zielsystem",
+      "schiffe": "nur spionagesonde",
+      "voraussetzungen": ["Online-Regeln"],
+      "rollen": ["feldherr"],
+      "feindlich": false,
+      "vorher": ["werkzeug galaxie (bekannter Stand)"],
+      "fallen": [{"text": "Systemaufklärung verwendet ausschließlich Spionagesonden", "abhilfe": "Nur Sonden."}],
+      "danach": "Systembericht in lage.systemberichte, Atlas aktualisiert."
+    },
+    "kolonisieren": {
+      "zweck": "Einen freien Planetenplatz mit einem Kolonieschiff besiedeln (neuer Planet des Reichs).",
+      "ziel": "freier, erkundeter Planetenplatz (lage.erkundet[] mit frei)",
+      "schiffe": "kolonieschiff oder grosses_kolonieschiff (Siedler vom Startplaneten) und mindestens ein bewaffnetes Begleitschiff (Pflicht)",
+      "voraussetzungen": ["freier Kolonieplatz (lage.kolonien: Grenze)", "Koloniefracht für 24 Spielstunden (werkzeug koloniebedarf)", "mindestens 1000 Einwohner bleiben zurück", "System erkundet (Feldherr: system_erkunden)"],
+      "rollen": ["verwalter", "feldherr"],
+      "feindlich": false,
+      "vorher": ["werkzeug kolonieplan", "werkzeug koloniebedarf", "werkzeug missionsplan"],
+      "fallen": [{"text": "Kolonisation braucht mindestens ein bewaffnetes Begleitschiff", "abhilfe": "Ein Kampfschiff (z. B. leichter_jaeger oder kreuzer) mitschicken."}, {"text": "Kolonielimit erreicht", "abhilfe": "Kolonieforschung bzw. lage.kolonien prüfen."}, {"text": "Koloniefracht muss die tatsächlichen organischen Siedler 24 Spielstunden versorgen", "abhilfe": "ladung nach werkzeug koloniebedarf."}, {"text": "{} ist schon besiedelt", "abhilfe": "Anderen freien Platz."}, {"text": "Siedlermischung muss genau … Siedler ergeben …", "abhilfe": "siedler_mischung summiert auf die Siedlerplätze oder null."}],
+      "danach": "Neue Kolonie mit Startgebäuden; Kolonieschiff wird verbraucht, Eskorte fliegt zurück."
+    },
+    "recyceln": {
+      "zweck": "Trümmerfelder (Erz, Kristall nach Kämpfen) einsammeln.",
+      "ziel": "Koordinate mit Trümmern (lage.truemmer)",
+      "schiffe": "recycler oder bergungsschiff",
+      "voraussetzungen": ["System erkundet"],
+      "rollen": ["verwalter", "feldherr"],
+      "feindlich": false,
+      "vorher": ["werkzeug missionsplan", "werkzeug flugzeit (Laderaum)"],
+      "fallen": [{"text": "Trümmerbergung braucht Recycler oder Bergungsschiffe", "abhilfe": "Passende Schiffe."}],
+      "danach": "Trümmer im Laderaum zurück zum Start."
+    },
+    "abbau": {
+      "zweck": "Bergbauschiffe fördern im Asteroidengürtel (Position 0) oder an einem natürlichen Ring Rohstoffe für haltedauer_stunden.",
+      "ziel": "Sektor:System:0 eines Systems mit Gürtel (oder Ring)",
+      "schiffe": "bergbauschiff",
+      "voraussetzungen": ["System erkundet", "haltedauer_stunden 1 bis Höchstwert"],
+      "rollen": ["verwalter", "feldherr"],
+      "feindlich": false,
+      "vorher": ["lage.bergbauziele", "werkzeug missionsplan"],
+      "fallen": [{"text": "Abbau braucht Bergbauschiffe", "abhilfe": "bergbauschiff."}, {"text": "Position 0 ist der Asteroidengürtel: nur die Mission abbau fliegt dorthin, und nur dorthin", "abhilfe": "Ziel Position 0."}, {"text": "Ring einer fremden Welt: erst diplomatischen Zugang herstellen", "abhilfe": "Diplomat."}],
+      "danach": "Förderung während der Haltedauer, dann Rückflug mit Ertrag."
+    },
+    "saven": {
+      "zweck": "Flotte und Ladung vor einem Angriff in Sicherheit bringen: Flug zu einer anderen Koordinate mit Wartezeit (0–72 h), danach Rückkehr. Auch Flugplan von Expeditionen.",
+      "ziel": "beliebige andere Koordinate",
+      "schiffe": "beliebige",
+      "voraussetzungen": ["Online-Regeln", "Ziel ungleich Start"],
+      "rollen": ["verwalter", "feldherr"],
+      "feindlich": false,
+      "vorher": ["lage.angriffe (Ankunft des Gegners)", "werkzeug flugzeit"],
+      "fallen": [{"text": "Save-Flug benötigt eine andere Zielkoordinate", "abhilfe": "Andere Koordinate."}, {"text": "Save-Wartezeit: 0 bis 72 Spielstunden", "abhilfe": "haltedauer_stunden 0–72."}],
+      "danach": "Flotte kehrt nach Wartezeit zurück; Rückkehr selbst überwachen."
+    },
+    "angriff": {
+      "zweck": "Kampf gegen Flotte und Verteidigung eines fremden Planeten (oder mit zielart mond eines Mondes); Sieg bringt Beute im freien Laderaum und Trümmer.",
+      "ziel": "aufgeklärter fremder Planet eines nicht verbündeten Reichs ohne Schutz",
+      "schiffe": "Kampfschiffe plus Laderaum für Beute",
+      "voraussetzungen": ["eigene Planetensonde auf das Ziel", "kein Anfänger-/Schwachenschutz", "kein Nichtangriffspakt/Bündnis/Allianz mit dem Ziel"],
+      "rollen": ["feldherr"],
+      "feindlich": true,
+      "vorher": ["frischer Spionagebericht", "werkzeug kampfsimulator {ziel, schiffe}", "Pinwand: Diplomat bestätigt, dass kein Pakt besteht"],
+      "fallen": [{"text": "eigene Planeten kann man nicht angreifen", "abhilfe": "Fremdes Ziel."}, {"text": "Gegner ist inzwischen eigener oder verbündeter Spieler", "abhilfe": "Ziel streichen."}, {"text": "Tatsächlicher Gegner steht unter Schwachenschutz", "abhilfe": "Anderes Ziel."}, {"text": "{} steht unter Anfängerschutz", "abhilfe": "Anderes Ziel."}],
+      "danach": "Kampfbericht in lage.kampfberichte; Überlebende fliegen mit Beute zurück; ab genug Trümmern Mondchance."
+    },
+    "blockade": {
+      "zweck": "Orbit eines fremden Planeten besetzen und Handel/Lieferungen dort sperren; endet erst mit Rückruf oder Vernichtung.",
+      "ziel": "aufgeklärter fremder Planet (oder Mond)",
+      "schiffe": "Kampfschiffe",
+      "voraussetzungen": ["Zivilisationsstufe 4"],
+      "rollen": ["feldherr"],
+      "feindlich": true,
+      "vorher": ["werkzeug kampfsimulator"],
+      "fallen": [{"text": "Orbitbesetzung benötigt Zivilisationsstufe 4", "abhilfe": "Stufe IV zuerst (Stratege/Verwalter)."}],
+      "danach": "Nach gewonnenem Orbitkampf bleibt die Flotte; flotte_zurueckrufen beendet die Blockade."
+    },
+    "bombardieren": {
+      "zweck": "Erster Schritt der Eroberung in neuen Welten: Bomber gewinnen den Orbit und senken alle 15 Spielminuten die Integrität aller Gebäude; sind alle bei 30 % und der Orbit unbewaffnet, landen mitgeführte Bodentruppen automatisch. Truppen fliegen in DERSELBEN Flotte: boden_senden mit flug.mission bombardieren (Bomber, Eskorte und Truppentransporter zusammen).",
+      "ziel": "aufgeklärter fremder Planet, nicht die ursprüngliche Heimatwelt",
+      "schiffe": "bomber oder strategischer_bomber, dazu Kampfschiffe; für die Landung Truppentransporter mit Truppen",
+      "voraussetzungen": ["Kolonisationsregeln aktiv", "Zivilisationsstufe 4"],
+      "rollen": ["feldherr"],
+      "feindlich": true,
+      "vorher": ["werkzeug kampfsimulator", "werkzeug wiederaufbau {ziel}"],
+      "fallen": [{"text": "Bombardieren braucht Bomber (bomber oder strategischer_bomber)", "abhilfe": "Bomber mitschicken."}, {"text": "Der ursprüngliche Heimatplanet ist vor Übernahme geschützt", "abhilfe": "Kolonien angreifen."}],
+      "danach": "Orbit gehalten, Bombenrunden alle 15 Spielminuten; Landung der Truppen, dann Wellenkampf (Invasion v2); bei Fall des Rückhalts ist der Planet verwüstet und ein Kolonieschiff der Besatzer (kampfkolonisieren) übernimmt."
+    },
+    "kampfkolonisieren": {
+      "zweck": "Ein Kolonieschiff mit Eskorte in den Orbit eines fremden Planeten: nach gewonnenem Orbit und Ablauf der Reaktionsfenster bzw. nach dem Fall des Rückhalts übernimmt es den Planeten.",
+      "ziel": "fremder Planet (nicht ursprüngliche Heimatwelt), freier Kolonieplatz nötig",
+      "schiffe": "kolonieschiff plus Kampfschiffe; Bodentruppen per boden_senden möglich",
+      "voraussetzungen": ["Kolonisationsregeln aktiv", "Kolonieplatz frei"],
+      "rollen": ["feldherr"],
+      "feindlich": true,
+      "vorher": ["lage.kampfkolonisationen", "werkzeug kampfsimulator"],
+      "fallen": [{"text": "Kampfkolonisierung braucht ein Kolonieschiff", "abhilfe": "Kolonieschiff mitschicken."}, {"text": "Koloniekapazität bereits belegt oder reserviert", "abhilfe": "Kolonieplatz freimachen."}],
+      "danach": "Übernahme erst nach Abschluss der letzten Reaktion und bei fortbestehender Orbitkontrolle; ohne Bomber sinkt die Integrität nicht."
+    },
+    "invasion": {
+      "zweck": "Alte Stabilitäts-Invasion mit Truppentransportern. In Welten mit Kolonisationsregeln (alle neuen Welten) ersetzt durch bombardieren + boden_senden + kampfkolonisieren; das Schema bietet sie dort nicht an.",
+      "ziel": "fremder Planet, keine Heimatwelt",
+      "schiffe": "truppentransporter",
+      "voraussetzungen": ["nur ohne Kolonisationsregeln", "Zivilisationsstufe 4"],
+      "rollen": ["feldherr"],
+      "feindlich": true,
+      "vorher": ["werkzeug regel {stichwort:\"eroberung\"}"],
+      "fallen": [{"text": "Stabilitäts-Invasion ersetzt: bombardieren und kampfkolonisieren verwenden", "abhilfe": "Weg über bombardieren (siehe dort)."}, {"text": "eine Invasion braucht Truppentransporter", "abhilfe": "Truppentransporter."}, {"text": "Heimatwelten können nicht erobert werden", "abhilfe": "Kolonien angreifen."}],
+      "danach": "Belagerung nach den alten Regeln."
+    },
+    "flotten_spionage": {
+      "zweck": "Sonden gegen eine fremde Flotte – nur über die Aktion flotte_ausspaehen, nicht über flotte_senden.",
+      "ziel": "erkannte fremde Flotte (lage.angriffe, lage.orbitflotten_bekannt)",
+      "schiffe": "spionagesonde",
+      "voraussetzungen": ["Geheimdienst"],
+      "rollen": ["feldherr"],
+      "feindlich": false,
+      "vorher": [],
+      "fallen": [{"text": "Flottensonden mit flotte_ausspaehen starten", "abhilfe": "Aktion flotte_ausspaehen."}],
+      "danach": "Flottenbericht in lage.flottenberichte."
+    },
+    "mond_zerstoeren": {
+      "zweck": "Weltenkrümmer greifen einen fremden Mond an und zerstören ihn nach vollständigem Sieg mit einer Chance, die mit der Mondgröße sinkt.",
+      "ziel": "fremder Mond (flotte_senden mit zielart mond)",
+      "schiffe": "mindestens ein weltentruemmer (vom eigenen Mond), Begleitflotte",
+      "voraussetzungen": ["Monde aktiv", "Weltenkrümmer aus dem Werftdock"],
+      "rollen": ["feldherr"],
+      "feindlich": true,
+      "vorher": ["Spionage des Mondes", "werkzeug kampfsimulator mit zielart mond"],
+      "fallen": [{"text": "Mondzerstörung zielt auf einen Mond: flotte_senden mit zielart mond", "abhilfe": "zielart mond setzen."}, {"text": "Mondzerstörung braucht mindestens einen Weltenkrümmer", "abhilfe": "weltentruemmer mitschicken."}],
+      "danach": "Zerstörter Mond wird zum Trümmerring; Weltenkrümmer können dabei verloren gehen."
+    },
+    "terraformen": {
+      "zweck": "Terraformer formen Klima und Kruste eines Platzes für ein Zielvolk (siedler_volk) – macht Plätze bewohnbarer bzw. besiedelbar.",
+      "ziel": "Planetenplatz (eigener oder freier)",
+      "schiffe": "terraformer",
+      "voraussetzungen": ["Terraformer im Regelwerk", "Forschung terraforming"],
+      "rollen": ["verwalter", "feldherr"],
+      "feindlich": false,
+      "vorher": ["werkzeug terraformbedarf {koord, volk}", "werkzeug habitabilitaet {planet}", "werkzeug missionsplan"],
+      "fallen": [{"text": "Siedlervolk nur bei freier Kolonisation oder als Zielvolk beim Terraformen angeben", "abhilfe": "siedler_volk = Zielvolk."}],
+      "danach": "Terraforming-Fortschritt am Platz; Terraformer bleiben bis zum Abschluss."
+    }
+  }
+}

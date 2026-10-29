@@ -1,0 +1,153 @@
+/* Existing faction art, small readable instruments and one-shot research completion. */
+.game-client{--tree-light:#8edeff;--tree-soft:#8edeff25}
+.game-client[data-volk=aurelianer]{--tree-light:#ffdc90;--tree-soft:#ffdc9025}
+.game-client[data-volk=krath]{--tree-light:#ffa08c;--tree-soft:#ff806625}
+.game-client[data-volk=veyari]{--tree-light:#a4f4d0;--tree-soft:#a4f4d025}
+.game-client[data-volk=syntheten]{--tree-light:#a9bdff;--tree-soft:#a9bdff25}
+.game-client #account-strip{display:inline-flex;align-items:center;gap:6px;color:#edf6ff;background:#10203399;border:1px solid #aac6e536;border-radius:20px;padding:2px 8px 2px 3px;line-height:1.3}
+#account-strip img{width:24px;height:24px;object-fit:cover;border-radius:50%}
+.tree-heading,.hangar-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:8px 0}
+.tree-heading h3,.hangar-heading h3{font-size:19px;margin:4px 0;color:#f3f8ff}.tree-heading label{min-width:0;max-width:100%}.tree-heading select{max-width:100%}
+.tree-explanation{font-size:11px;line-height:1.6;color:#c0d4e4;margin:6px 0}
+.tree-legend{display:flex;flex-wrap:wrap;gap:7px 15px;font-size:10px;color:#dcecf8;margin:10px 0}
+.research-tree{padding:12px 0 18px;margin:0 0 12px;border-bottom:1px solid #9cc1dd40}
+.tree-scroll{overflow:auto;max-width:100%;padding:10px 4px 12px;border-radius:12px;background:linear-gradient(125deg,#081421e8,#081421c2),url('assets/backgrounds.research.webp') center/cover;scrollbar-color:var(--tree-light) #0b1726}
+.tree-canvas{display:flex;gap:48px;position:relative;width:max-content;min-width:100%;align-items:center;padding:8px 12px}
+.tree-tier{display:flex;flex-direction:column;gap:14px;width:190px;flex:0 0 190px;position:relative;z-index:1}
+.game-client .tree-node{border:1px solid #adc9de40;border-radius:10px;background:linear-gradient(135deg,#12263bea,#0b1725f0);overflow:visible;position:relative;min-height:98px}
+.game-client .tree-node>button{display:flex;align-items:center;gap:9px;padding:10px 8px;width:100%;height:auto;text-align:left;background:none;border:0;box-shadow:none;min-height:98px;border-radius:10px;color:#f3f8ff}
+.tree-node>button img{width:48px;height:58px;object-fit:cover;border-radius:6px;flex:0 0 auto}.tree-node>button>span{min-width:0}.tree-node strong,.tree-node small,.tree-node b{display:block}
+.tree-node strong{font-size:12px;line-height:1.4}.tree-node small{font-size:10px;color:#bdd0e1;margin:3px 0}.tree-node b{font-size:10px;line-height:1.45;font-weight:500;color:#d3e3f0}
+.tree-node.locked img{filter:grayscale(1);opacity:.55}.game-client .tree-node.ready{border-color:var(--tree-light);box-shadow:inset 0 0 20px var(--tree-soft)}.tree-node.ready b{color:var(--tree-light)}
+.tree-node.done{border-color:#75ca9b80}.tree-node.done b{color:#a2edbf}.game-client .tree-node.tree-target{border-width:2px}
+.tree-node details{padding:0 9px 10px;font-size:10px;line-height:1.55;color:#dceaf6}.tree-node details summary{min-height:32px;color:#ffe1aa}.tree-node details ul{padding-left:14px}.tree-node .costs{gap:4px}.tree-node .cost{font-size:10px}
+.civilization-core{padding:0 9px;margin:0 0 5px;font-size:10px;color:#ffdfa0;line-height:1.5}
+.tree-wires{position:absolute;inset:0;overflow:visible;pointer-events:none}.tree-path{stroke:#607f9c;stroke-width:1.3;fill:none}.tree-path.active{stroke:var(--tree-light);opacity:.65}.tree-packet{fill:var(--tree-light);filter:drop-shadow(0 0 4px var(--tree-light))}
+.tree-edge-label{font-size:9px;fill:#d3e6f5;paint-order:stroke;stroke:#081421;stroke-width:3px;stroke-linejoin:round}
+.tree-followers{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}.game-client .tree-follow{display:flex;align-items:center;gap:9px;text-align:left;padding:8px;color:#eef7ff;background:#102438a8;border:1px solid #89b4d138;box-shadow:none;min-height:74px}
+.tree-follow img{width:44px;height:52px;object-fit:cover;border-radius:6px}.tree-follow strong,.tree-follow small{display:block}.tree-follow strong{font-size:12px}.tree-follow small{font-size:10px;line-height:1.5;color:#bcd1e2;margin-top:3px}.game-client .tree-follow.unlock.ready{border-color:var(--tree-light)}.tree-follow.locked img{filter:grayscale(1);opacity:.55}.completion-ball.companion{opacity:.45;width:5px;height:5px}
+.tree-job{padding:0 8px 8px}.tree-job>.art-shell{width:60px;height:60px;margin:0 auto}.tree-job .timer-label{display:none}.tree-job .queue-bottom{margin:6px 0 0;padding:0;font-size:10px}.tree-job .job-time{font-variant-numeric:tabular-nums;line-height:1.5}.tree-status{font-size:11px;color:var(--tree-light);margin:5px 0;min-height:0}.tree-status:empty{display:none}
+.completion-orbit{position:absolute;inset:-5px;border:1px solid var(--tree-light);border-radius:14px;pointer-events:none;box-shadow:0 0 16px var(--tree-soft);animation:orbit-glow 1050ms cubic-bezier(.16,1,.3,1) both}
+.completion-ball{content:'';position:absolute;width:9px;height:9px;border-radius:50%;background:var(--tree-light);box-shadow:0 0 10px var(--tree-light);left:0;top:0;margin:-4px}
+[data-volk=krath] .completion-ball{border-radius:2px;width:10px;height:5px}
+[data-volk=veyari] .completion-ball{box-shadow:0 0 6px 3px var(--tree-soft),0 0 12px var(--tree-light);width:7px;height:7px}
+[data-volk=syntheten] .completion-orbit{border-style:dashed}[data-volk=syntheten] .completion-ball{width:7px;height:7px;border-radius:1px}
+.newly-ready{position:relative}.newly-ready::before{content:"";position:absolute;inset:0;border-radius:inherit;border:1px solid var(--tree-light);box-shadow:0 0 20px var(--tree-soft);pointer-events:none;animation:research-reveal 900ms cubic-bezier(.16,1,.3,1) both}.research-complete{box-shadow:0 0 18px var(--tree-soft)}
+@keyframes orbit-glow{0%{opacity:0}15%,85%{opacity:1}100%{opacity:0}}
+@keyframes research-reveal{0%{opacity:0}25%{opacity:1}100%{opacity:0}}
+.hangar-heading h3 small{font-size:11px;display:block;color:#bbd1e2;margin-top:5px}.hangar-heading button{flex-shrink:0}
+.hangar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin:12px 0 18px}
+.hangar-ship{overflow:hidden;border:1px solid #93b6d450;border-radius:12px;background:linear-gradient(120deg,#102237de,#0b1729e8);box-shadow:0 6px 20px #0003}
+.game-client .hangar-art{display:block;padding:0;width:100%;height:150px;position:relative;background:#0b1824;border:0;border-radius:0;overflow:hidden;box-shadow:none}.hangar-art img{width:100%;height:100%;object-fit:cover}.hangar-art::after{content:'';position:absolute;inset:40% 0 0;background:linear-gradient(transparent,#07121ded)}
+.hangar-count{position:absolute;bottom:8px;left:12px;font-size:28px;color:#fff;text-shadow:0 2px 6px #000;z-index:1;line-height:1.1}.hangar-count small{font-size:8px;display:block;letter-spacing:.1em}
+.hangar-copy{padding:10px 12px}.hangar-copy h4{font-size:15px;color:#f4f8ff;margin:0 0 4px}.hangar-copy p{font-size:10px;color:#bed3e5;line-height:1.5;margin:4px 0}.hangar-copy dl{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:8px 0}.hangar-copy dt{font-size:9px;color:#ffe0a0}.hangar-copy dd{font-size:12px;margin:3px 0;color:#f3f8ff}.hangar-copy details{font-size:11px}.hangar-copy summary{min-height:36px;color:#daedf9}.game-client .hangar-copy button{font-size:10px;min-height:36px;padding:6px;width:100%;margin:3px 0;text-align:left}
+.hangar-empty{display:flex;gap:16px;align-items:center;padding:12px;border:1px solid #8eb9d738;border-radius:12px;background:#10233888;margin:10px 0 14px}.hangar-empty>img{width:84px;height:80px;object-fit:cover;border-radius:8px;opacity:.7}.hangar-empty strong{font-size:13px;color:#ecf7ff}.hangar-empty p{font-size:11px;line-height:1.6;color:#bbd2e5;margin:5px 0}
+.game-client .fleet-visual{position:relative;isolation:isolate;overflow:hidden;padding:14px 16px;border:1px solid #8bb4d647;border-radius:12px;background:linear-gradient(100deg,#091a2ce8,#091a2cca),var(--fleet-image) right center/cover;box-shadow:0 6px 20px #0003}
+.fleet-visual .fleet-route{align-items:center;gap:8px}.fleet-visual .fleet-route strong{color:#f3f8ff}.fleet-visual .fleet-route>span{font-size:10px;color:#bcd8ec}
+.fleet-course{display:flex;align-items:center;gap:16px;justify-content:space-between;font-size:17px;color:#f2f8ff;margin:15px 0 7px;letter-spacing:.02em}.fleet-course>span:nth-child(2){flex:1;color:var(--tree-light);text-align:center;font-size:22px}.fleet-travel{height:3px;background:#89b1d135;border-radius:2px}.fleet-travel>span{display:block;height:100%;background:var(--tree-light);border-radius:2px}
+.fleet-countdown{font-size:10px;font-variant-numeric:tabular-nums;color:#c7dced}.fleet-composition{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.game-client .fleet-composition>button{display:flex;align-items:center;gap:7px;min-height:44px;padding:4px 8px 4px 4px;background:#09182abb;border:1px solid #89b1d135;box-shadow:none;font-size:13px;text-align:left}.fleet-composition img{width:34px;height:34px;object-fit:cover;border-radius:5px}.fleet-composition small{display:block;font-size:9px;color:#c4d8e7}.fleet-cargo{font-size:11px;color:#cbdfed}.fleet-cargo summary{min-height:32px}.fleet-visual .fleet-actions{margin-top:8px}
+@media(max-width:580px){
+ .tree-heading{flex-wrap:wrap;gap:6px}.tree-heading h3{font-size:17px}.tree-heading label{width:100%}.tree-heading select{width:100%}.tree-explanation{font-size:10px}.tree-tier{width:170px;flex-basis:170px}.tree-canvas{gap:34px;padding:5px}.tree-node>button img{width:40px;height:48px}.tree-followers{grid-template-columns:1fr 1fr;gap:6px}.game-client .tree-follow{display:block;padding:7px}.tree-follow img{float:right;width:38px;height:40px;margin:0 0 5px 5px}.tree-follow strong{font-size:11px}.tree-follow small{clear:both;font-size:9px}.tree-legend{font-size:9px;gap:6px 10px}
+ .hangar-heading{gap:6px}.hangar-heading h3{font-size:17px}.game-client .hangar-heading button{font-size:10px;padding:6px 8px;min-height:36px}.hangar-grid{grid-template-columns:1fr 1fr;gap:8px}.game-client .hangar-art{height:110px}.hangar-count{font-size:24px;left:8px}.hangar-copy{padding:8px}.hangar-copy h4{font-size:12px}.hangar-copy dl{gap:3px}.hangar-copy dt{font-size:8px}.hangar-copy dd{font-size:11px}.hangar-copy summary{font-size:10px}.hangar-empty{gap:10px;padding:10px}.hangar-empty>img{width:65px;height:70px}
+ .game-client .fleet-visual{padding:12px}.fleet-course{font-size:15px;margin-top:10px}.fleet-countdown{font-size:10px}.game-client #account-strip{font-size:10px}#account-strip img{width:20px;height:20px}
+}
+@media(prefers-reduced-motion:reduce){.completion-orbit,.tree-packet{display:none}.newly-ready::before{animation:none;opacity:.25}}
+[data-progress-motion=still] .completion-orbit,[data-progress-motion=still] .tree-packet{display:none}[data-progress-motion=still] .newly-ready::before{animation:none;opacity:.25}
+
+/* ---------- Flottenhangar (Karl 19.10.2026): Gesamtflotte als Bildleiste, je Planet/Mond eine Karte ---------- */
+#fleet-hangar{display:grid;gap:12px}
+.hg-gesamt{border:1px solid var(--r-rand,rgba(150,190,230,.22));border-radius:12px;padding:10px 12px;background:linear-gradient(160deg,#0e2236e6,#08131fe6)}
+.hg-gesamt-kopf{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.hg-gesamt-kopf>span{display:flex;flex-direction:column;min-width:0}
+.hg-gesamt-kopf b{font-size:17px;letter-spacing:.02em}
+.hg-gesamt-kopf small{color:var(--r-blau,#8fd0ff);font-size:12px}
+.hg-planen{width:auto!important;min-height:40px;padding:6px 14px;background:var(--r-gruen,#3fae5f)!important;background-image:none!important;color:#04120a!important;border:0!important;font-weight:700;border-radius:10px}
+.hg-typen,.hg-schiffe{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px}
+.hg-chip{position:relative;display:grid;grid-template-rows:auto auto;justify-items:center;gap:1px;width:auto!important;min-height:0!important;margin:0!important;padding:6px 4px 5px!important;border:1px solid rgba(150,190,230,.18)!important;border-radius:10px!important;background:rgba(12,30,48,.85)!important;background-image:none!important;color:inherit!important;text-shadow:none!important;transition:border-color .15s,transform .15s,background-color .15s}
+.hg-chip img{width:56px;height:34px;object-fit:contain;display:block}
+.hg-chip b{font-size:15px;font-variant-numeric:tabular-nums;line-height:1.1}
+.hg-chip small{font-size:10px;line-height:1.15;color:#a9c1d2;text-align:center;overflow-wrap:anywhere;hyphens:auto}
+.hg-chip[aria-pressed="true"]{border-color:var(--r-gruen,#3fae5f)!important;background:rgba(40,110,70,.35)!important;transform:translateY(-1px)}
+.hg-chip[aria-pressed="true"]::after{content:"✓";position:absolute;top:3px;right:6px;font-size:11px;color:var(--r-gruen,#5fd27f)}
+.hg-filter-hinweis{margin:8px 0 0;font-size:12px;color:#a9c1d2}
+.hg-orte{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr))}
+.hg-ort{display:grid;gap:8px;border:1px solid var(--r-rand,rgba(150,190,230,.22));border-radius:12px;padding:10px;background:#0a1726e6;transition:border-color .2s,box-shadow .2s}
+.hg-ort.hg-mond{background:linear-gradient(160deg,#141b26e6,#0a1220e6)}
+.hg-ort.hg-aktiv{border-color:var(--r-gruen,#3fae5f);box-shadow:0 0 0 1px #3fae5f55,0 8px 24px #0008}
+.hg-ort-kopf{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:10px}
+.hg-kugel{width:44px;height:44px;object-fit:contain;border-radius:50%;display:block}
+.hg-ort-name{display:flex;flex-direction:column;min-width:0}
+.hg-ort-name strong{font-size:15px;overflow-wrap:anywhere}
+.hg-ort-name small{color:var(--r-blau,#8fd0ff);font-size:12px}
+.hg-summe{display:flex;flex-direction:column;align-items:flex-end;font-size:20px;line-height:1;font-variant-numeric:tabular-nums}
+.hg-summe small{font-size:10px;font-weight:400;color:#a9c1d2}
+.hg-leer{margin:0;font-size:13px;color:#a9c1d2}
+.hg-wahl{display:grid;gap:6px;padding:8px;border-radius:10px;background:rgba(40,110,70,.12);border:1px solid #3fae5f44}
+.hg-menge{display:grid!important;grid-template-columns:28px minmax(0,1fr) minmax(90px,1.4fr) 48px;align-items:center;gap:8px;margin:0!important;font-size:12px}
+.hg-menge img{width:28px;height:20px;object-fit:contain}
+.hg-menge span{overflow-wrap:anywhere}
+.hg-menge input[type=range]{width:100%;min-height:28px;margin:0;accent-color:var(--r-gruen,#3fae5f)}
+.hg-menge output{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.hg-wohin{margin:4px 0 0;font-size:12px;color:#cfe3ef}
+.hg-ziele{display:flex;flex-wrap:wrap;gap:6px}
+.hg-ziel{width:auto!important;min-height:34px!important;margin:0!important;padding:4px 10px!important;border-radius:999px!important;font-size:12px!important;background:rgba(143,208,255,.1)!important;background-image:none!important;border:1px solid rgba(143,208,255,.35)!important;color:#d8ecfa!important;text-shadow:none!important}
+.hg-ziel.hg-andere{border-style:dashed!important}
+.hg-fluege{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.hg-fluege li{display:grid;grid-template-columns:30px minmax(0,1fr) 64px auto auto;align-items:center;gap:6px;padding:4px 6px;border-radius:8px;background:rgba(255,255,255,.03);font-size:12px}
+.hg-fluege img{width:30px;height:20px;object-fit:contain}
+.hg-flug-text{display:flex;flex-direction:column;min-width:0}
+.hg-flug-text small{color:#a9c1d2;overflow-wrap:anywhere}
+.hg-fluege progress{width:100%;height:6px;accent-color:var(--r-blau,#8fd0ff)}
+.hg-zeit{font-variant-numeric:tabular-nums;color:#d6e6f2;white-space:nowrap}
+.hg-rueck{width:32px!important;min-width:32px!important;height:32px;min-height:32px!important;padding:0!important;margin:0!important;border-radius:50%!important;font-size:15px!important}
+.hg-ort-fuss{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+.hg-ort-fuss:empty{display:none}
+.hg-ort-fuss button{width:auto!important;min-height:40px;padding:6px 14px;margin:0!important}
+.hg-senden{background:var(--r-gruen,#3fae5f)!important;background-image:none!important;color:#04120a!important;border:0!important;font-weight:700}
+@media (max-width:480px){
+ .hg-typen,.hg-schiffe{grid-template-columns:repeat(auto-fill,minmax(68px,1fr))}
+ .hg-chip img{width:48px;height:30px}
+ .hg-menge{grid-template-columns:24px minmax(0,1fr) 44px;grid-template-areas:"bild name zahl" "regler regler regler"}
+ .hg-menge img{grid-area:bild}.hg-menge span{grid-area:name}.hg-menge output{grid-area:zahl}.hg-menge input[type=range]{grid-area:regler}
+ .hg-fluege li{grid-template-columns:26px minmax(0,1fr) auto auto;grid-template-areas:"bild text zeit rueck" "bild balken balken rueck"}
+ .hg-fluege li>img{grid-area:bild}.hg-flug-text{grid-area:text}.hg-fluege progress,.hg-fluege li>span:not([class]){grid-area:balken}.hg-zeit{grid-area:zeit}.hg-rueck{grid-area:rueck}
+}
+@media (prefers-reduced-motion:reduce){.hg-chip,.hg-ort{transition:none}.hg-chip[aria-pressed="true"]{transform:none}}
+/* Hangar: gegen globale #flotten-/header-/small-Regeln absichern (Handy-Durchgang 19.10.) */
+#fleet-hangar .hg-planen,#fleet-hangar .hg-senden{background:var(--r-gruen,#3fae5f)!important;background-image:none!important;color:#04120a!important;opacity:1!important;filter:none!important;box-shadow:none!important}
+#fleet-hangar .hg-ort-kopf{width:100%!important;max-width:none!important;margin:0!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important;justify-self:stretch}
+#fleet-hangar .hg-chip small,#fleet-hangar .hg-menge span,#fleet-hangar .hg-flug-text small{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important;word-break:break-word}
+#fleet-hangar .hg-chip img{border-radius:6px}
+
+/* ---------- Mondseite: Weltenkrümmer-Einsatz (mond.js einsatz(); Karl 19.10.2026) ---------- */
+.mond-einsatz{display:grid;gap:10px;margin:8px 0;padding:12px;border-radius:12px;border:1px solid #c0453f88;background:radial-gradient(120% 140% at 0% 0%,#3a0f12e6,#120a12e6 55%,#0a0f1ae6);box-shadow:0 0 0 1px #c0453f33,0 10px 30px #0009}
+.me-kopf{display:grid!important;grid-template-columns:72px minmax(0,1fr) auto;align-items:center;gap:12px;margin:0!important;padding:0!important;border:0!important;background:none!important;width:100%!important}
+.me-kopf img{width:72px;height:48px;object-fit:contain;filter:drop-shadow(0 0 10px #ff5a4a55)}
+.me-kopf h3{margin:0;font-size:17px;color:#ffd7cf;letter-spacing:.02em}
+.me-kopf small{display:block;color:#e6b3aa;font-size:12px;white-space:normal}
+.me-anzahl{font-size:24px;color:#ff8b7a;font-variant-numeric:tabular-nums}
+.me-ziele{display:grid;gap:8px}
+.me-ziel{display:grid;grid-template-columns:48px minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,140,120,.18)}
+.me-mond-bild{width:48px;height:48px;object-fit:contain;border-radius:50%;display:block}
+.me-text{display:grid;gap:2px;min-width:0}
+.me-text strong{font-size:14px;overflow-wrap:anywhere}
+.me-text strong small{color:#9fc6e0;font-weight:400}
+.me-text>small{color:#c9b5b0;font-size:12px;white-space:normal;overflow-wrap:anywhere}
+.me-chance{display:grid;grid-template-columns:minmax(60px,1fr) auto;align-items:center;gap:2px 8px}
+.me-chance progress{width:100%;height:8px;accent-color:#ff5a4a}
+.me-chance b{font-size:13px;color:#ffb3a6;white-space:nowrap}
+.me-chance small{grid-column:1/-1;color:#b9a6a2;font-size:11px}
+.me-los,.me-aufklaeren{width:auto!important;min-height:44px;margin:0!important;padding:6px 14px!important;border-radius:10px!important;font-weight:700;background:#c0392b!important;background-image:none!important;color:#fff!important;border:0!important;text-shadow:none!important;box-shadow:0 0 14px #ff5a4a55}
+.me-aufklaeren{background:rgba(143,208,255,.14)!important;color:#d8ecfa!important;border:1px dashed rgba(143,208,255,.45)!important;box-shadow:none;justify-self:start}
+.me-leer{margin:0;color:#e6c7c0;font-size:13px}
+@media (max-width:480px){
+ .me-kopf{grid-template-columns:56px minmax(0,1fr) auto}.me-kopf img{width:56px;height:38px}
+ .me-ziel{grid-template-columns:40px minmax(0,1fr)}.me-mond-bild{width:40px;height:40px}
+ .me-los{grid-column:1/-1;width:100%!important}
+}
+#mond .mond-einsatz .me-los{background:#c0392b!important;background-image:none!important;color:#fff!important;border:0!important;opacity:1!important;filter:none!important;box-shadow:0 0 14px #ff5a4a66!important}
+#mond .mond-einsatz .me-los:hover,#mond .mond-einsatz .me-los:focus-visible{background:#e04434!important}
+#mond .mond-einsatz .me-mond,#mond .mond-einsatz .me-mond img,#mond .mond-einsatz .me-mond canvas{width:48px!important;height:48px!important;max-width:none!important}
+#mond .mond-einsatz .me-mond{display:block;border-radius:50%;overflow:visible}
+/* Mond-Detailfeld am Handy: Bild oben, Text in voller Breite (vorher 96 + 205 px, Wörter brachen mitten durch) */
+@media (max-width:560px){#mond #mond-detail{grid-template-columns:1fr!important}#mond #mond-detail .bs-detail-bild{display:flex!important;flex-wrap:wrap;align-items:center;gap:8px}#mond #mond-detail .bs-detail-bild>img{width:96px!important;height:auto}#mond #mond-detail .mond-werftbild{flex:1 1 140px;margin:0}#mond #mond-detail .bs-fakten dd{overflow-wrap:break-word;word-break:normal;hyphens:auto}}

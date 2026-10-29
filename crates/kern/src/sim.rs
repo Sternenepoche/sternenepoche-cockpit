@@ -21,10 +21,12 @@ impl Welt {
 
     fn zeit_vorruecken(&mut self, ziel: SimZeit) {
         let dt = ziel - self.zeit;
+        self.boden_vorruecken(dt);
+        self.pausen_vorruecken(dt);
         if dt > 0 {
-            let grenze = milli(self.regeln.stabilitaet.unruhen_unter);
-            for p in &mut self.planeten {
-                if p.stabilitaet < grenze {
+            let ruht: Vec<bool> = (0..self.planeten.len()).map(|pid| self.bau_ruht_unruhen(pid)).collect();
+            for (p, ruht) in self.planeten.iter_mut().zip(ruht) {
+                if ruht {
                     if let Some(auftrag) = p.bauschleife.first_mut() {
                         if let Some(fertig) = &mut auftrag.fertig {
                             *fertig += dt;
@@ -42,22 +44,60 @@ impl Welt {
     /// Rückt die Welt um ein Entscheidungsfenster vor. Während die Agenten entscheiden,
     /// steht die Weltuhr still: gerechnet wird nur hier.
     pub fn schritt(&mut self) -> bool {
-        if self.beendet() {
+        let fenster = self.regeln.fenster().max(1);
+        self.schritt_bis((self.zeit / fenster + 1) * fenster)
+    }
+
+    /// Rückt höchstens bis zur nächsten Fenstergrenze vor (für sekundengenaue Echtzeit).
+    /// Fensterbeginn und Fensterende laufen genau einmal je Fenster; bei ausgerichteter
+    /// Zeit ist ein voller Aufruf identisch mit dem bisherigen Fensterschritt.
+    pub fn schritt_bis(&mut self, ziel: SimZeit) -> bool {
+        if self.beendet() || ziel <= self.zeit {
             return false;
         }
-        self.kolonisation_fensterabschluss();
-        let ziel = (self.zeit + self.regeln.fenster()).min(self.regeln.epochenende());
-        while self
-            .ereignisse
-            .peek()
-            .map(|e| e.zeit <= ziel)
-            .unwrap_or(false)
-        {
-            let e = self.ereignisse.pop().unwrap();
-            self.zeit_vorruecken(e.zeit);
-            self.ausfuehren(e.art);
+        self.wartende_auftraege_starten();
+        self.produktionsserien_tick();
+        self.flugtermine_tick();
+        self.monde_tick();
+        self.dyson_tick();
+        let fenster = self.regeln.fenster().max(1);
+        if self.zeit % fenster == 0 {
+            self.kolonisation_fensterabschluss();
+        }
+        let grenze = (self.zeit / fenster + 1) * fenster;
+        let ziel = ziel.min(grenze).min(self.regeln.epochenende());
+        loop {
+            let event=self.ereignisse.peek().map(|e|e.zeit);
+            let ground=self.boden_naechste_fertigstellung();
+            let flight=self.ausbau.flugtermine.values().map(|a|a.abflug).min();
+            let moon=self.mond_naechster_termin();
+            let dyson=self.dyson_naechster_termin();
+            let Some(next)=event.into_iter().chain(ground).chain(flight).chain(moon).chain(dyson).min().filter(|t|*t<=ziel)else{break;};
+            if event==Some(next){
+                // Paused missile jobs move with time while still in the heap.
+                self.zeit_vorruecken(next);
+                if self.ereignisse.peek().is_some_and(|e|e.zeit<=self.zeit){
+                    let mut e=self.ereignisse.pop().unwrap();
+                    if matches!(e.art,EreignisArt::RaketenFertig{planet,..} if self.werk_ruht(planet as usize,Gebaeude::Raketensilo)) {
+                        // Preserve the job identity and payment receipt if supply changed
+                        // at this exact event time. Paused work remains cancellable.
+                        if let Some(p)=self.ausbau.raketen_zahlung.get_mut(&e.seq){for b in &mut p.lose{b.ende+=60;}}e.zeit=self.zeit+60;self.ereignisse.push(e);
+                    }else if matches!(e.art,EreignisArt::RaketenFertig{..})&&self.ausbau.raketen_zahlung.get(&e.seq).is_some_and(|p|p.basis>0){self.silo_parallel_fertig(e);}else{self.ausfuehren(e.art);}
+                }
+            }else{self.zeit_vorruecken(next);}
+            self.wartende_auftraege_starten();
+            self.produktionsserien_tick();
+            self.flugtermine_tick();
+            self.monde_tick();
+            self.dyson_tick();
         }
         self.zeit_vorruecken(ziel);
+        self.ausbau_aufraeumen();
+        self.wartende_auftraege_starten();
+        self.produktionsserien_tick();
+        self.flugtermine_tick();
+        self.monde_tick();
+        self.dyson_tick();
         if self.aufklaerungsregeln() {
             self.aufklaerung.abschirmung.retain(|id,_|self.flotten.contains_key(id));
             self.aufklaerung.sondenziele.retain(|id,_|self.flotten.contains_key(id));
@@ -65,13 +105,16 @@ impl Welt {
         if self.beendet() {
             self.punkte_neu();
         }
-        self.kommunikation_tick();
-        self.fenster_vorbereiten();
+        if ziel == grenze || self.beendet() {
+            self.kommunikation_tick();
+            self.fenster_vorbereiten();
+        }
         true
     }
 
     fn ausfuehren(&mut self, art: EreignisArt) {
         match art {
+            EreignisArt::ExpeditionSchritt {flotte}=>self.expedition_schritt(flotte),
             EreignisArt::SensorKontakt { flotte } => self.sensor_kontakt(flotte),
             EreignisArt::InterneLieferung { angebot } => self.intern_liefern(angebot),
             EreignisArt::Tick => {
@@ -82,9 +125,9 @@ impl Welt {
                 self.tageswechsel();
                 self.plane(self.zeit + TAG, EreignisArt::Tag);
             }
-            EreignisArt::BauFertig { planet } => {if self.spieler_aktiv(self.planeten[planet as usize].besitzer){self.bau_fertig(planet as usize)}},
+            EreignisArt::BauFertig { planet } => {if self.planet_aktiv(planet as usize){self.bau_fertig(planet as usize)}},
             EreignisArt::FertigungFertig { planet, schleife } => {
-                if self.spieler_aktiv(self.planeten[planet as usize].besitzer){self.fertigung_fertig(planet as usize, schleife as usize)}
+                if self.planet_aktiv(planet as usize){self.fertigung_fertig(planet as usize, schleife as usize)}
             }
             EreignisArt::FlotteAnkunft { flotte } => self.flotte_ankunft(flotte),
             EreignisArt::FlotteRueckkehr { flotte } => self.flotte_rueckkehr(flotte),
@@ -104,7 +147,8 @@ impl Welt {
                 besitzer,
                 art,
                 anzahl,
-            } => {if self.spieler_aktiv(besitzer){self.raketen_fertig(planet as usize, besitzer, art, anzahl)}},
+            } => {if self.spieler_aktiv(besitzer){if self.werk_ruht(planet as usize,Gebaeude::Raketensilo){self.plane(self.zeit+60,EreignisArt::RaketenFertig{planet,besitzer,art,anzahl});}else{self.raketen_fertig(planet as usize, besitzer, art, anzahl)}}},
+            EreignisArt::TaktischeRakete {salve} => self.taktisch_ankunft(salve),
             EreignisArt::RaketenAnkunft {
                 von,
                 ziel,
@@ -203,7 +247,7 @@ impl Welt {
     /// SHA-256 über den gesamten Zustand. Zwei Läufe mit gleichem Startwert und
     /// gleichem Aktionsprotokoll liefern denselben Hash.
     pub fn hash(&self) -> String {
-        crate::snapshot_layout::with_layout(!self.aufklaerung.neues_layout, || self.hash_intern())
+        crate::snapshot_layout::with_forschungen(self.forschungszahl(),||crate::snapshot_layout::with_fleets(self.flottenlayout(),||crate::snapshot_layout::with_layout(!self.aufklaerung.neues_layout, || self.hash_intern())))
     }
     fn hash_intern(&self) -> String {
         let mut kopie = self.clone();
@@ -212,6 +256,8 @@ impl Welt {
         let mut h = Sha256::new();
         h.update(bincode::serialize(&kopie).expect("Zustand serialisierbar"));
         h.update(bincode::serialize(&ereignisse).expect("Ereignisse serialisierbar"));
+        if self.ausbau.version>0 {h.update(b"ausbau-v1");h.update(serde_json::to_vec(&self.ausbau).expect("Ausbau"));}
+        if !self.regeln.flottendoktrin.is_empty(){h.update(serde_json::to_vec(&self.regeln.flottendoktrin).expect("Flottendoktrin"));}
         if self.kolonisation.aktiv {
             if self.kolonisationsregeln_v2() {
                 h.update(b"kolonisation-v2");
@@ -242,11 +288,48 @@ impl Welt {
             h.update(b"kommunikation-v1");
             h.update(serde_json::to_vec(&self.kommunikation).expect("Kommunikation"));
         }
+        if self.monde.aktiv {
+            h.update(b"monde-v1");
+            h.update(serde_json::to_vec(&(&self.regeln.monde, &self.monde)).expect("Mondzustand"));
+        }
         h.finalize().iter().map(|b| format!("{b:02x}")).collect()
     }
 
+    fn flottenlayout(&self)->u8 {
+        // STERNE14 (35 Schiffe) nur für Welten mit Terraformer im Regelwerk; alle anderen Mondwelten bleiben STERNE13.
+        if self.monde.aktiv{return if self.terraformer_welt(){crate::snapshot_layout::AKTUELL}else{crate::snapshot_layout::MONDE};}
+        if self.ausbau.version>0{return 3;}
+        if self.regeln.flottendoktrin.contains_key(&Einheit::Handelsfrachter){2}
+        else if !self.regeln.flottendoktrin.is_empty(){1}else{0}
+    }
     /// Vollständiger Schnappschuss als Bytes.
     pub fn zu_bytes(&self) -> Vec<u8> {
+        // Technik v1 speichert 20 Forschungen im Binärteil, alle anderen Welten wie bisher 19 (bzw. 17 im Altlayout).
+        crate::snapshot_layout::with_forschungen(self.forschungszahl(), || self.zu_bytes_huelle())
+    }
+    fn zu_bytes_huelle(&self) -> Vec<u8> {
+        if self.monde.aktiv {
+            // STERNE13: Mondgeneration mit 34 Schiffen / 43 Einheiten; STERNE14: dieselbe Hülle mit Terraformer
+            // (35 Schiffe / 44 Einheiten). Erweiterungen als JSON.
+            let v=self.flottenlayout();
+            let base=crate::snapshot_layout::with_fleets(v,||self.zu_bytes_v9());
+            let mut out=if v==crate::snapshot_layout::AKTUELL{b"STERNE14".to_vec()}else{b"STERNE13".to_vec()};out.extend_from_slice(&(base.len() as u64).to_le_bytes());out.extend(base);
+            out.extend(crate::snapshot_layout::with_fleets(v,||serde_json::to_vec(&(&self.regeln.flottendoktrin,&self.ausbau,&self.regeln.monde,&self.monde)).expect("V13 extension")));return out;
+        }
+        if self.ausbau.version>0 {
+            let base=crate::snapshot_layout::with_fleets(3,||self.zu_bytes_v9());
+            let mut out=b"STERNE12".to_vec();out.extend_from_slice(&(base.len() as u64).to_le_bytes());out.extend(base);
+            out.extend(crate::snapshot_layout::with_fleets(3,||serde_json::to_vec(&(&self.regeln.flottendoktrin,&self.ausbau)).expect("V12 extension")));return out;
+        }
+
+        if !self.regeln.flottendoktrin.is_empty(){
+            let base=crate::snapshot_layout::with_fleets(self.flottenlayout(),||self.zu_bytes_v9());
+            let mut out=if self.flottenlayout()==2{b"STERNE11".to_vec()}else{b"STERNE10".to_vec()};out.extend_from_slice(&(base.len()as u64).to_le_bytes());out.extend(base);
+            out.extend(serde_json::to_vec(&self.regeln.flottendoktrin).expect("Flottendoktrin"));return out;
+        }
+        self.zu_bytes_v9()
+    }
+    fn zu_bytes_v9(&self) -> Vec<u8> {
         let base=self.zu_bytes_v8();
         if self.kommunikation.ereignisse_gesamt()==0 && self.kommunikation.systemkontakte.is_empty() && self.kommunikation.allianz_tags.is_empty() {return base;}
         let mut out=b"STERNEP9".to_vec();
@@ -315,6 +398,41 @@ impl Welt {
     }
 
     pub fn aus_bytes(b: &[u8]) -> Result<Welt, String> {
+        if b.starts_with(b"STERNE13") || b.starts_with(b"STERNE14") {
+            let len=u64::from_le_bytes(b.get(8..16).ok_or("V13 Kopf fehlt")?.try_into().unwrap()) as usize;
+            let end=16usize.checked_add(len).filter(|n|*n<=b.len()).ok_or("V13 Länge ungültig")?;
+            if [b"STERNE14",b"STERNE13",b"STERNE12",b"STERNE11",b"STERNE10"].iter().any(|h|b[16..end].starts_with(*h)){return Err("Verschachtelter Flottensnapshot".into());}
+            let v=if b.starts_with(b"STERNE14"){crate::snapshot_layout::AKTUELL}else{crate::snapshot_layout::MONDE};
+            type Ext=(std::collections::BTreeMap<Einheit,crate::flottenausbau::FlottenDoktrin>,crate::ausbau::Ausbau,Option<std::sync::Arc<crate::monde::MondRegeln>>,crate::monde::Mondzustand);
+            // Erweiterung zuerst: `ausbau.technik` legt die Länge des Forschungsfelds im Binärteil fest.
+            let (doctrine,expansion,regeln,monde):Ext=serde_json::from_slice(&b[end..]).map_err(|e|format!("V13 Erweiterung: {e}"))?;
+            let forschungen=if expansion.technik.is_some(){FORSCHUNGEN}else{crate::snapshot_layout::FORSCHUNGEN_V6};
+            let mut w=crate::snapshot_layout::with_forschungen(forschungen,||crate::snapshot_layout::with_fleets(v,||Self::aus_bytes(&b[16..end])))?;
+            let r=std::sync::Arc::make_mut(&mut w.regeln);r.flottendoktrin=doctrine;r.monde=regeln;r.ablauf=expansion.ablauf;r.technik=expansion.technik.clone();
+            w.ausbau=expansion;w.monde=monde;
+            // Die Hülle muss zum Regelwerk passen: STERNE14 genau dann, wenn der Terraformer zum Regelwerk gehört.
+            if (v==crate::snapshot_layout::AKTUELL)!=w.terraformer_welt(){return Err("Snapshot-Hülle passt nicht zum Terraformer im Regelwerk".into());}
+            w.personen_validieren()?;w.monde_validieren()?;w.dyson_nach_laden()?;w.terraform_validieren()?;return Ok(w);
+        }
+        if b.starts_with(b"STERNE12") {
+            let len=u64::from_le_bytes(b.get(8..16).ok_or("V12 Kopf fehlt")?.try_into().unwrap()) as usize;
+            let end=16usize.checked_add(len).filter(|n|*n<=b.len()).ok_or("V12 Länge ungültig")?;
+            if [b"STERNE14",b"STERNE13",b"STERNE12",b"STERNE11",b"STERNE10"].iter().any(|h|b[16..end].starts_with(*h)){return Err("Verschachtelter Flottensnapshot".into());}
+            let (doctrine,expansion):(_,crate::ausbau::Ausbau)=serde_json::from_slice(&b[end..]).map_err(|e|format!("V12 Erweiterung: {e}"))?;
+            let forschungen=if expansion.technik.is_some(){FORSCHUNGEN}else{crate::snapshot_layout::FORSCHUNGEN_V6};
+            let mut w=crate::snapshot_layout::with_forschungen(forschungen,||crate::snapshot_layout::with_fleets(3,||Self::aus_bytes(&b[16..end])))?;
+            let r=std::sync::Arc::make_mut(&mut w.regeln);r.flottendoktrin=doctrine;r.ablauf=expansion.ablauf;r.technik=expansion.technik.clone();w.ausbau=expansion;
+            w.personen_validieren()?;w.dyson_nach_laden()?;return Ok(w);
+        }
+
+        if b.starts_with(b"STERNE10") || b.starts_with(b"STERNE11") {
+            let len=u64::from_le_bytes(b.get(8..16).ok_or("Snapshotkopf fehlt")?.try_into().unwrap())as usize;
+            let end=16usize.checked_add(len).filter(|n|*n<=b.len()).ok_or("Snapshotlänge ungültig")?;
+            if b[16..end].starts_with(b"STERNE10")||b[16..end].starts_with(b"STERNE11"){return Err("Verschachtelter Flottensnapshot".into());}
+            let mut w=crate::snapshot_layout::with_fleets(if b.starts_with(b"STERNE11"){2}else{1},||Self::aus_bytes(&b[16..end]))?;
+            std::sync::Arc::make_mut(&mut w.regeln).flottendoktrin=serde_json::from_slice(&b[end..]).map_err(|e|e.to_string())?;
+            return Ok(w);
+        }
         if b.starts_with(b"STERNEP9") {
             let len=u64::from_le_bytes(b.get(8..16).ok_or("Snapshotkopf fehlt")?.try_into().unwrap()) as usize;
             let end=16usize.checked_add(len).filter(|n|*n<=b.len()).ok_or("Snapshotlänge ungültig")?;

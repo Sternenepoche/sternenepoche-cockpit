@@ -27,10 +27,6 @@ Auf Windows, Linux (Ubuntu 22.04) und macOS (Apple Silicon, Paket für Apple Sil
 
 Ein Tag `cockpit-v<version>-<JJJJMMTT>` veröffentlicht die geprüften Pakete als Release.
 
-## Quellen lokal bauen
-
-Vor dem ersten Bau `python harness/paket/assets_wiederherstellen.py` ausführen. Gemeinsame Grafikdateien werden aus dem festgelegten öffentlichen Basispaket 0.2.2 wiederhergestellt; Paket und jede Grafik werden per SHA-256 geprüft. `asset-recovery.json` hält Herkunft, Position und Prüfsumme fest. Die CI erledigt diesen Schritt automatisch. Neue Grafikdateien und sämtliche Quelltexte stehen direkt im Repository.
-
 ## Herkunft
 
 Der Inhalt wird aus dem Sternenepoche-Projekt exportiert (`harness/paket/quelle_exportieren.py`): nur die Dateien,

@@ -22,6 +22,13 @@ pub(crate) fn setup(db: &Connection) -> Result<(), String> {
         recipients_json TEXT NOT NULL,reply_to INTEGER,automatic INTEGER NOT NULL,
         PRIMARY KEY(world_id,message_id));
       CREATE INDEX IF NOT EXISTS communication_thread ON communication_messages(world_id,reply_to,message_id);
+      CREATE TABLE IF NOT EXISTS inbox_reads(world_id TEXT NOT NULL,account INTEGER NOT NULL,report_id TEXT NOT NULL,
+        read_at INTEGER NOT NULL,PRIMARY KEY(world_id,account,report_id));
+      CREATE TABLE IF NOT EXISTS report_times(world_id TEXT NOT NULL,account INTEGER NOT NULL,report_id TEXT NOT NULL,
+        received_at INTEGER NOT NULL,PRIMARY KEY(world_id,account,report_id));
+      CREATE TABLE IF NOT EXISTS simulation_clock(id INTEGER PRIMARY KEY,world_id TEXT NOT NULL,
+        sim_from INTEGER NOT NULL,sim_to INTEGER NOT NULL,wall_end INTEGER NOT NULL,tempo INTEGER NOT NULL);
+      CREATE INDEX IF NOT EXISTS simulation_clock_lookup ON simulation_clock(world_id,sim_to);
       CREATE TABLE IF NOT EXISTS research_epochs(
         world_id TEXT PRIMARY KEY,seed TEXT NOT NULL,rules_hash TEXT NOT NULL,simulation_seconds INTEGER NOT NULL,
         finished INTEGER NOT NULL,summary_json TEXT NOT NULL);") .map_err(|e|e.to_string())
@@ -30,6 +37,45 @@ pub(crate) fn setup(db: &Connection) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    /// Ein gelesener Spionagebericht bleibt gelesen, auch wenn Spielzeit vergeht (vorher änderte die Live-Sternkarte
+    /// im Bericht die Kennung jede Spielstunde); Erkundungen freier Plätze haben eine eigene feste Kennung.
+    #[test]
+    fn berichtskennung_bleibt_ueber_spielzeit_gleich() {
+        let root=PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../laeufe/player-help-2026-10-12").join(token());
+        let mut g=Game::open(&root,712).unwrap();g.runtime.bots_enabled=false;
+        let auth=g.register(&json!({"name":"KennungTester"}),password_hash("kennung-test-private-2026").unwrap()).unwrap();
+        let a=g.authenticate(auth["token"].as_str().unwrap()).unwrap();g.claim(&a,&json!({"mode":"mensch","volk":"aurelianer"})).unwrap();
+        let a=g.account_by_name("KennungTester").unwrap();let sid=a.sid.unwrap();
+        let ziel=g.world.planeten[g.world.spieler[0].heimat as usize].koord;
+        g.world.spieler[sid as usize].berichte.push(kern::welt::Spionagebericht{zeit:g.world.zeit,ziel,besitzer:0,bestand:vec![0;kern::GUETER],
+            schiffe:None,verteidigung:None,gebaeude:None,forschung:None});
+        let id=|g:&Game|g.view(&a,Rolle::Alle).unwrap()["berichte"].as_array().unwrap().iter()
+            .find(|b|b["ziel"]==ziel.to_string().as_str()).unwrap()["_postfach_id"].as_str().unwrap().to_string();
+        let vorher=id(&g);
+        g.world.zeit+=5*kern::STUNDE;
+        assert_eq!(id(&g),vorher,"Kennung darf sich mit der Zeit nicht ändern");
+        let wid=g.runtime.world_id.clone();
+        g.inbox_read(&a,&json!({"world_id":wid,"bericht":vorher})).unwrap();
+    }
+    #[test]
+    fn inbox_read_is_private_durable_and_available_while_paused() {
+        let root=PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../laeufe/player-help-2026-10-12").join(token());
+        let mut g=Game::open(&root,712).unwrap();g.runtime.bots_enabled=false;
+        let auth=g.register(&json!({"name":"InboxTester"}),password_hash("inbox-test-private-2026").unwrap()).unwrap();
+        let a=g.authenticate(auth["token"].as_str().unwrap()).unwrap();g.claim(&a,&json!({"mode":"mensch","volk":"aurelianer"})).unwrap();
+        let a=g.account_by_name("InboxTester").unwrap();let sid=a.sid.unwrap();
+        g.transaction(|g|{g.world.vorfall(sid,"test","Persönlicher Testbericht".into());
+            g.world.brief_senden(0,"privat",&a.name,"Testpost","Private Testnachricht",None).map_err(|e|err(400,&e))?;
+            g.runtime.paused=true;Ok(json!({"ok":true}))}).unwrap();
+        let v=g.view(&a,Rolle::Alle).unwrap();let id=v["ereignisse"][0]["_postfach_id"].as_str().unwrap().to_string();let wid=g.runtime.world_id.clone();
+        assert!(g.inbox_read(&a,&json!({"world_id":wid,"bericht":"0".repeat(64)})).is_err());
+        g.inbox_read(&a,&json!({"world_id":wid,"bericht":id})).unwrap();
+        let letter=v["kommunikation"]["briefkasten"].as_array().unwrap().iter().find(|n|n["betreff"]=="Testpost").unwrap()["id"].as_u64().unwrap();
+        g.inbox_read(&a,&json!({"world_id":wid,"brief":letter})).unwrap();drop(g);
+        let reopened=Game::open(&root,1).unwrap();assert!(reopened.runtime.paused);
+        let view=reopened.view(&a,Rolle::Alle).unwrap();assert!(view["postfach_gelesen"].as_array().unwrap().contains(&json!(id)));
+        assert!(view["kommunikation"]["briefkasten"].as_array().unwrap().iter().find(|n|n["id"]==letter).unwrap()["gelesen"]==true);
+    }
     #[test]
     fn command_idempotency_private_views_atomic_archive_and_restart() {
         let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))

@@ -1,0 +1,2065 @@
+{
+  "version": 1,
+  "aktionen": {
+    "doktrin": {
+      "bereich": "rat",
+      "zweck": "Der Stratege setzt die verbindliche Ratslinie (text, höchstens 2400 Zeichen, erscheint in lage.doktrin) und verteilt das künftige Einkommen auf die Töpfe wirtschaft, militaer, forschung und reserve. Die Anteile wirken nur auf neues Einkommen (je Spielstunde Wert der positiven Produktion plus Steuer); vorhandene Guthaben in lage.toepfe werden nicht umgebucht, ein leerer Topf füllt sich also erst über die folgenden Stunden. Das Schema verlangt alle vier Anteile: wer nur den Text ändern will, schickt die aktuellen Werte aus lage.toepfe.<topf>.anteil unverändert mit.",
+      "ids_aus": [
+        "anteile: aktuelle Werte lage.toepfe.<topf>.anteil, Guthaben lage.toepfe.<topf>.guthaben (Werteinheiten)",
+        "Bedarf: Pinwand-Karten anderer Rollen (art anfrage) und Ablehnungen mit „Topf … reicht nicht“ in lage.ereignisse"
+      ],
+      "vorher": [
+        "lage.toepfe lesen",
+        "pinwand?rolle=stratege auf Budgetanfragen prüfen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "die Anteile der Töpfe müssen zusammen 100 ergeben, sind aber …",
+          "abhilfe": "Ganze Zahlen für wirtschaft, militaer, forschung und reserve so wählen, dass die Summe genau 100 ist."
+        },
+        {
+          "text": "doktrin gehört nicht zur Rolle …, zuständig: stratege",
+          "abhilfe": "Andere Rollen bitten den Strategen per Pinwand-Karte (art anfrage) oder meldung um eine Umverteilung."
+        },
+        {
+          "text": "Aktion nicht lesbar: …",
+          "abhilfe": "Nur die vier Topfnamen als Schlüssel, Werte als ganze Zahlen 0–100 ohne Prozentzeichen; text als Zeichenkette mitsenden."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "topf_umbuchen": {
+      "bereich": "rat",
+      "zweck": "Bucht vorhandenes Guthaben sofort von einem Topf in einen anderen um (Werteinheiten wie lage.toepfe.*.guthaben). Das Mittel, wenn eine Rolle an „Topf … reicht nicht“ scheitert: der Fehlbetrag steht in der Ablehnung und als Vorlage in der Agenda des Strategen. doktrin wirkt dagegen erst auf künftiges Stundeneinkommen.",
+      "ids_aus": [
+        "von, nach: wirtschaft, militaer, forschung oder reserve – Guthaben in lage.toepfe.<topf>.guthaben",
+        "menge: Fehlbetrag aus der Ablehnung („X Werteinheiten nötig, Y vorhanden“) bzw. der Agenda-Vorlage topf_knapp"
+      ],
+      "vorher": [
+        "agenda {rolle:\"stratege\"} – Punkt topf_knapp mit fertiger Vorlage",
+        "lage teile=[\"toepfe\"]"
+      ],
+      "fallen": [
+        {
+          "text": "Topf … hat nur … Werteinheiten (lage.toepfe.….guthaben)",
+          "abhilfe": "Kleinere Menge oder aus einem anderen Topf umbuchen."
+        },
+        {
+          "text": "von und nach müssen verschiedene Töpfe sein",
+          "abhilfe": "Zwei verschiedene Töpfe wählen."
+        },
+        {
+          "text": "menge muss über 0 liegen",
+          "abhilfe": "Positive Menge angeben."
+        },
+        {
+          "text": "topf_umbuchen gehört nicht zur Rolle …, zuständig: stratege",
+          "abhilfe": "Andere Rollen stellen eine Pinwand-Anfrage an den Strategen."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "stufenaufstieg": {
+      "bereich": "rat",
+      "zweck": "Hebt das Reich auf die nächste Zivilisationsstufe (II Industrie bis V Imperium) und schaltet neue Gebäude, Einheiten und Forschungen frei. Der Aufstieg geschieht nicht von selbst: sind alle Bedingungen erfüllt, weckt der Kern Stratege und Verwalter („Stufenaufstieg möglich“); die Kosten zahlt allein die Heimatwelt aus ihrem Bestand, ohne Topf. Ab Stufe III endet ein noch laufender Anfängerschutz.",
+      "ids_aus": [
+        "Bedingungen und Kosten: lage.naechste_stufe.{name, bedingungen[].{text, erfuellt}, kosten, hinweise}",
+        "Bestand der Heimatwelt: lage.planeten[] mit heimat=true, Feld bestand"
+      ],
+      "vorher": [
+        "lage.naechste_stufe: alle bedingungen[].erfuellt=true",
+        "Bestand der Heimatwelt gegen lage.naechste_stufe.kosten prüfen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Bedingungen offen: …",
+          "abhilfe": "Offene Punkte aus lage.naechste_stufe.bedingungen (erfuellt=false) und .hinweise abarbeiten; Bauten und Forschung per Pinwand beim Verwalter beauftragen."
+        },
+        {
+          "text": "auf … fehlen …",
+          "abhilfe": "Fehlende Güter auf die Heimatwelt bringen (Transport von Kolonien, markt_order, soforthandel); bezahlt wird nur dort."
+        },
+        {
+          "text": "Bedingungen erst seit … von … Stunden ohne Unterbrechung erfüllt",
+          "abhilfe": "Nur in Welten mit Haltezeit: lage.naechste_stufe.erfuellt_seit_stunden bis haltezeit_stunden abwarten."
+        },
+        {
+          "text": "Die höchste Zivilisationsstufe ist erreicht",
+          "abhilfe": "Nichts zu tun; Stufe V ist die letzte."
+        },
+        {
+          "text": "stufenaufstieg gehört nicht zur Rolle …, zuständig: stratege, verwalter",
+          "abhilfe": "Feldherr und Diplomat melden die Erfüllung per meldung an den Strategen."
+        }
+      ],
+      "unumkehrbar": true
+    },
+    "meldung": {
+      "bereich": "rat",
+      "zweck": "Kurze Nachricht einer Rolle an den eigenen Rat (höchstens 400 Zeichen, Längeres wird abgeschnitten); sie steht in lage.meldungen (die letzten 10) und weckt den Strategen, sofern sie nicht von ihm selbst kommt. Sie geht nie an fremde Spieler – dafür brief_senden oder nachricht. Für Aufträge mit Status, Frist und Beleg ist die Rats-Pinwand (pinwand_schreiben) das bessere Mittel.",
+      "ids_aus": [
+        "keine Kennungen; Bezüge (Koordinaten, Flotten, Vertragsnummern) als Klartext aus der Lage zitieren"
+      ],
+      "vorher": [
+        "prüfen, ob eine Pinwand-Karte an eine bestimmte Rolle passender ist"
+      ],
+      "fallen": [
+        {
+          "text": "Aktion nicht lesbar: … missing field `text` …",
+          "abhilfe": "Feld text als nicht leere Zeichenkette mitsenden."
+        },
+        {
+          "text": "Reich besiegt; bis zur nächsten Epoche nur noch zuschauen",
+          "abhilfe": "Keine Aktionen mehr möglich; nur noch lesen."
+        },
+        {
+          "text": "Die Epoche ist beendet; keine weiteren Spielaktionen",
+          "abhilfe": "Keine Aktionen mehr senden."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "ausbilden": {
+      "bereich": "verwaltung",
+      "zweck": "Bildet freie unqualifizierte Bewohner eines Volks auf einem eigenen Planeten dauerhaft zu Fachkräften (qualifikation 1) oder Forschern (qualifikation 2) aus; Abschluss nach 24 bzw. 48 Spielstunden bei 100 % Akademieleistung. Je Akademiestufe gibt es 20 gleichzeitige Plätze; bezahlt wird mit Konsumgütern (Forscher zusätzlich Elektronik) aus dem Planetenbestand, ohne Topf, vor Stufe III kostenlos. Sinnvoll, wenn lage.planeten[].fachkraefte.bedarf oder .forscher.bedarf über dem Verfügbaren liegt und die Grundausbildung (lage.planeten[].grundausbildung) nicht reicht.",
+      "ids_aus": [
+        "planet: lage.planeten[].koord mit gebaeude.akademie > 0 (für Forscher auch gebaeude.labor > 0)",
+        "volk: Reihenfolge der Zeilen in lage.planeten[].personengruppen.gruppen = aurelianer, krath, veyari, syntheten; Spalte 0 = freie unqualifizierte Bewohner",
+        "Plätze und laufende Kurse: lage.planeten[].akademie, lage.ausbildungen[]"
+      ],
+      "vorher": [
+        "lage?planet=K: akademie, personengruppen, fachkraefte, forscher",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Nicht genügend freie unqualifizierte Bewohner",
+          "abhilfe": "anzahl auf gruppen[volk][0] minus laufende Ausbildungen dieses Volks senken oder ein anderes Volk wählen."
+        },
+        {
+          "text": "Zu wenige intakte Akademieplätze (20 je Stufe)",
+          "abhilfe": "Laufende Kurse in lage.ausbildungen abwarten, die Akademie ausbauen oder zuerst reparieren."
+        },
+        {
+          "text": "Forscherausbildung benötigt ein Labor",
+          "abhilfe": "Erst ein Labor auf diesem Planeten bauen oder qualifikation 1 wählen."
+        },
+        {
+          "text": "Qualifikation 1=Fachkraft/2=Forscher, 1–1000 Personen",
+          "abhilfe": "qualifikation 1 oder 2 und anzahl 1 bis 1000 senden."
+        },
+        {
+          "text": "auf … fehlen …",
+          "abhilfe": "Konsumgüter bzw. Elektronik auf den Planeten liefern oder eine kleinere anzahl wählen."
+        },
+        {
+          "text": "ausbilden gehört nicht zur Rolle …, zuständig: verwalter",
+          "abhilfe": "Den Verwalter per Pinwand beauftragen."
+        }
+      ],
+      "unumkehrbar": true
+    },
+    "schiffangebot": {
+      "bereich": "handel",
+      "zweck": "Bietet einem fremden Spieler eigene Schiffe samt gesamter Ladung, Personen und Bodentruppen an – als Geschenk (preis 0) oder gegen Credits bis 1 Milliarde; erst nach seiner Annahme fliegt die Flotte als Transport los, bei Zustellung gehören Schiffe und Fracht ihm und der Preis wird an dich ausgezahlt. Das ist der Weg, einem bestimmten Spieler Rohstoffe zu verkaufen; Rohstoffe ohne Schiffsübergabe verschenkt man per flotte_senden mission transport an seinen Planeten (Verwalter/Feldherr), anonym handelt man über markt_order. Ein Angebot gilt einen Spieltag, höchstens 20 sind gleichzeitig offen.",
+      "ids_aus": [
+        "flug: vollständiger Auftrag {typ: flotte_senden, mission: transport, start, ziel, schiffe, ladung, geschwindigkeit}",
+        "flug.start: eigener Planet lage.planeten[].koord, Schiffe aus lage.planeten[].schiffe, Ladung aus .bestand",
+        "flug.ziel: bewohnter Planet des Empfängers (lage.erkundet[], werkzeug galaxie; Besitzer ist nicht du)",
+        "personen.gruppen: 4×3 Zahlen wie lage.planeten[].personengruppen.gruppen des Startplaneten; truppen: 12 Zahlen in der Reihenfolge der Bodentypen"
+      ],
+      "vorher": [
+        "werkzeug missionsplan {aktion: <flug>}",
+        "werkzeug flugzeit",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Schiffsübergabe benötigt einen Transportflug",
+          "abhilfe": "Im flug typ flotte_senden und mission transport setzen."
+        },
+        {
+          "text": "Am Ziel liegt kein bewohnter Planet",
+          "abhilfe": "Koordinate eines besiedelten fremden Planeten verwenden."
+        },
+        {
+          "text": "Eigene Schiffe mit Stationieren verlegen",
+          "abhilfe": "Für eigene Ziele flotte_senden mission stationieren verwenden."
+        },
+        {
+          "text": "Empfänger ist nicht mehr aktiv",
+          "abhilfe": "Anderen Empfänger wählen."
+        },
+        {
+          "text": "Höchstens 20 offene Schiffsangebote",
+          "abhilfe": "Alte eigene Angebote mit schiffangebot_antwort annehmen=false zurückziehen."
+        },
+        {
+          "text": "Preis: 0 bis 1 Milliarde Credits; 0 bedeutet Geschenk",
+          "abhilfe": "preis als Zahl von 0 bis 1000000000 senden."
+        },
+        {
+          "text": "schiffangebot gehört nicht zur Rolle …, zuständig: diplomat, feldherr",
+          "abhilfe": "Diplomat oder Feldherr stellt das Angebot; der Verwalter bittet per Pinwand darum."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "schiffangebot_antwort": {
+      "bereich": "handel",
+      "zweck": "Nimmt ein eingegangenes Schiffsangebot an (annehmen true: der Preis wird sofort von den Reichs-Credits abgebucht und bis zur Zustellung hinterlegt, die Flotte startet beim Anbieter) oder beendet ein Angebot (annehmen false; so zieht auch der Anbieter sein eigenes offenes Angebot zurück). Scheitert die Zustellung (Rückruf, Besitzerwechsel, Blockade), erhält der Käufer die Credits zurück.",
+      "ids_aus": [
+        "angebot: lage.schiffangebote[].id mit status 'offen'; annehmen nur bei eingang=true, Ablauf lage.schiffangebote[].ablauf (Spielsekunden)",
+        "Inhalt prüfen: lage.schiffangebote[].{flug.schiffe, flug.ladung, personen, truppen, preis, von}"
+      ],
+      "vorher": [
+        "lage.credits ≥ preis",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Kein eigenes Schiffsangebot",
+          "abhilfe": "Nur Angebote von dir oder an dich aus lage.schiffangebote verwenden."
+        },
+        {
+          "text": "Dieses Angebot ist nicht mehr offen",
+          "abhilfe": "Status in lage.schiffangebote prüfen; nur status 'offen' beantworten."
+        },
+        {
+          "text": "Nur der Empfänger kann das Angebot annehmen",
+          "abhilfe": "Als Anbieter nur mit annehmen=false zurückziehen."
+        },
+        {
+          "text": "Angebot abgelaufen",
+          "abhilfe": "Den Anbieter per Brief um ein neues Angebot bitten."
+        },
+        {
+          "text": "Empfänger am Ziel hat gewechselt; ein neues Angebot ist nötig",
+          "abhilfe": "Neues Angebot mit aktuellem Zielplaneten anfordern."
+        },
+        {
+          "text": "Nicht genügend Credits für dieses Schiffsangebot",
+          "abhilfe": "Credits beschaffen (Steuer, markt_order Verkauf) oder ablehnen."
+        }
+      ],
+      "unumkehrbar": true
+    },
+    "plan_uebernehmen": {
+      "bereich": "planung",
+      "zweck": "Führt bis zu 32 Wirtschaftsschritte (bauen, reparieren, abreissen, forschen, steuersatz, prioritaeten, stufenaufstieg, fertigen, raketen_bauen) sofort und atomar aus: alle oder keiner. Die revision stammt aus werkzeug ablaufplan und verfällt, sobald sich der eigene Zustand ändert; jeder Schritt durchläuft dieselben Rollen- und Topfprüfungen wie einzeln, der Stratege kann damit also nur stufenaufstieg ausführen. Der ablaufplan simuliert die Zukunft, die Übernahme reiht aber nur jetzt ein – Bauaufträge starten danach wie gewohnt, sobald sie bezahlbar sind.",
+      "ids_aus": [
+        "revision: Feld revision der Antwort von werkzeug ablaufplan {plan: {schritte, horizont_stunden, rolle}}",
+        "schritte: genau die Aktionsobjekte, die der ablaufplan geprüft hat"
+      ],
+      "vorher": [
+        "werkzeug ablaufplan mit genau diesen schritten unmittelbar davor",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Plan veraltet oder bereits übernommen; neu berechnen",
+          "abhilfe": "ablaufplan direkt vor der Übernahme neu rechnen und dessen revision nutzen; keine andere Aktion dazwischen senden."
+        },
+        {
+          "text": "Schritt …: …; nichts übernommen",
+          "abhilfe": "Den genannten Schritt nach dem angehängten Grund korrigieren und neu planen."
+        },
+        {
+          "text": "Dieser Befehl gehört nicht zur Wirtschaftsplanung",
+          "abhilfe": "Nur die zehn Wirtschaftsbefehle verwenden; Flotten, Handel und Diplomatie einzeln senden."
+        },
+        {
+          "text": "1 bis 32 sofort ausführbare Schritte erforderlich",
+          "abhilfe": "schritte mit 1 bis 32 Einträgen senden, sonst aufteilen."
+        },
+        {
+          "text": "Planschritt: …",
+          "abhilfe": "Schrittobjekt passt nicht zum Aktionsschema; Feldnamen und Gebäude-/Forschungsnamen prüfen."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "bauen": {
+      "bereich": "wirtschaft",
+      "zweck": "Reiht die nächste Stufe eines Gebäudes in die Bauschleife eines eigenen Planeten ein (höchstens 5 Aufträge; jeder Auftrag belegt schon ein Feld). In neuen Welten wird beim Einreihen nicht bezahlt: der vorderste Auftrag startet automatisch, sobald Bestand des Planeten und Topf wirtschaft (Verwalter) reichen, sonst wartet er mit Grund in der Warteschlangenansicht. Bei Unruhen (Stabilität unter 30) ruht der Bau, ausgenommen Verwaltungszentrum, Konsumgüterwerk und Wohnblock.",
+      "ids_aus": [
+        "planet: lage.planeten[].koord",
+        "gebaeude, nächste Stufe, kosten, fehlt, braucht: lage.planeten[].baubar[] (voll mit lage?planet=K)",
+        "Bauschleife: lage.planeten[].bauschleife[]; Wartegrund: lage.forschung.warteschlangen[] mit art 'bau', jobs[].grund"
+      ],
+      "vorher": [
+        "werkzeug kosten {gebaeude, planet}",
+        "werkzeug wirtschaftsdiagnose {planet} oder kostenplan",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "… braucht … Stufe … auf …",
+          "abhilfe": "Zuerst das genannte Voraussetzungsgebäude auf diesem Planeten auf die Stufe bringen."
+        },
+        {
+          "text": "… gibt es erst ab Zivilisationsstufe …",
+          "abhilfe": "Stufenaufstieg vorbereiten (lage.naechste_stufe) oder ein anderes Gebäude wählen."
+        },
+        {
+          "text": "Bauschleife auf … ist voll (5 Aufträge)",
+          "abhilfe": "Fertigstellung abwarten oder wartende Aufträge mit warteschlange_aendern löschen."
+        },
+        {
+          "text": "auf … sind alle … Felder belegt",
+          "abhilfe": "Überflüssiges mit abreissen entfernen oder Felder schaffen (Terraforming, Orbitalring); eingereihte Aufträge zählen mit."
+        },
+        {
+          "text": "Beschädigtes Gebäude vor weiterem Ausbau reparieren",
+          "abhilfe": "Erst reparieren (lage.planeten[].reparaturkosten), dann ausbauen."
+        },
+        {
+          "text": "Großprojekt … ist einmal pro Planet möglich",
+          "abhilfe": "Orbitalring, Forschungsarchiv und Versorgungsnetz nur einmal je Planet; anderen Planeten wählen."
+        },
+        {
+          "text": "Wartet: … Budget wirtschaft: … Werteinheiten fehlen (keine Ablehnung, Wartegrund in warteschlangen[].jobs[].grund)",
+          "abhilfe": "Den Strategen per Pinwand um mehr Anteil für wirtschaft (doktrin) bitten oder fehlende Güter liefern; der Auftrag startet dann von selbst."
+        },
+        {
+          "text": "bauen gehört nicht zur Rolle …, zuständig: verwalter",
+          "abhilfe": "Den Verwalter per Pinwand beauftragen."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "reparieren": {
+      "bereich": "wirtschaft",
+      "zweck": "Setzt ein beschädigtes Gebäude (Integrität unter 100 %) instand; bezahlt wird sofort aus dem Planetenbestand und dem Topf wirtschaft, die Reparatur dauert mindestens 15 Minuten. Sie braucht die einzige Baustelle des Planeten: die Bauschleife muss leer sein, und solange repariert wird, startet kein Bau. Beschädigte Gebäude lassen sich vorher nicht weiter ausbauen.",
+      "ids_aus": [
+        "planet: lage.planeten[].koord",
+        "gebaeude: Schlüssel mit Wert unter 100 in lage.planeten[].gebaeude_integritaet_prozent bzw. lage.planeten[].reparaturkosten",
+        "laufende Reparaturen: lage.planeten[].reparaturen[]"
+      ],
+      "vorher": [
+        "werkzeug kosten {gebaeude, planet} (Feld reparatur)",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Planetare Baustelle bereits durch Bau oder Reparatur belegt",
+          "abhilfe": "Laufenden Bau abwarten und wartende Aufträge mit schleife_leeren entfernen; danach reparieren und neu einreihen."
+        },
+        {
+          "text": "Kein beschädigtes Gebäude dieses Typs",
+          "abhilfe": "Nur Gebäude mit Integrität unter 100 % wählen."
+        },
+        {
+          "text": "Gebäude bereits in Bau oder Reparatur",
+          "abhilfe": "Fertigstellung abwarten."
+        },
+        {
+          "text": "Topf wirtschaft reicht nicht: … Werteinheiten nötig, … vorhanden",
+          "abhilfe": "Den Strategen per Pinwand um mehr wirtschaft-Anteil bitten; die Doktrin füllt den Topf erst mit den nächsten Einkommen."
+        },
+        {
+          "text": "auf … fehlen …",
+          "abhilfe": "Fehlende Güter auf den Planeten liefern."
+        },
+        {
+          "text": "Unter Bombardierung oder Belagerung sind keine Reparaturen möglich",
+          "abhilfe": "Erst die Bedrohung beenden (Feldherr)."
+        },
+        {
+          "text": "Verwüstet: Solange der Planet besetzt ist, sind keine Reparaturen möglich",
+          "abhilfe": "Besetzung beenden lassen (Feldherr), dann reparieren."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "abreissen": {
+      "bereich": "wirtschaft",
+      "zweck": "Reißt ein Gebäude um eine Stufe ab, ohne jede Erstattung; jede Gebäudestufe belegt ein Feld, das dadurch frei wird. Sinnvoll nur bei vollen Feldern oder einem überflüssigen Verbraucher – der Wiederaufbau kostet voll.",
+      "ids_aus": [
+        "planet: lage.planeten[].koord",
+        "gebaeude: Schlüssel mit Stufe > 0 in lage.planeten[].gebaeude; Felder lage.planeten[].felder.{belegt, gesamt}"
+      ],
+      "vorher": [
+        "werkzeug wirtschaftsdiagnose {planet}",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "… steht nicht auf …",
+          "abhilfe": "Nur Gebäude mit Stufe > 0 auf diesem Planeten wählen."
+        },
+        {
+          "text": "… ist in der Bauschleife, Abriss nicht möglich",
+          "abhilfe": "Den Auftrag erst mit warteschlange_aendern löschen."
+        },
+        {
+          "text": "… wird von … in der Bauschleife gebraucht, Abriss nicht möglich",
+          "abhilfe": "Den abhängigen Auftrag zuerst fertigstellen oder löschen."
+        },
+        {
+          "text": "Fertigungsplätze sind belegt; zuerst betroffene Aufträge fertigstellen oder abbrechen",
+          "abhilfe": "Werft-, Silo- oder Kasernenaufträge abwarten oder abbrechen."
+        },
+        {
+          "text": "Silo enthält fertige oder im Bau befindliche Raketen; Abriss würde Kapazität unterschreiten",
+          "abhilfe": "Raketen erst verbrauchen oder Aufträge abbrechen (Feldherr)."
+        },
+        {
+          "text": "Orbitalring kann nicht abgerissen werden: zusätzliche Felder sind belegt",
+          "abhilfe": "Zuerst andere Gebäude abreißen."
+        }
+      ],
+      "unumkehrbar": true
+    },
+    "planet_aufgeben": {
+      "bereich": "verwaltung",
+      "zweck": "Gibt eine eigene Kolonie endgültig auf (nie die Heimatwelt): Gebäude, Bestände, Verteidigung, stationierte Schiffe, Bevölkerung, Marktorders und interne Angebote des Planeten gehen verloren, ein Kolonieplatz wird frei. Nur der Stratege; bestaetigung muss dieselbe Koordinate wie planet sein. Vorher Schiffe abziehen und Bestände wegtransportieren lassen.",
+      "ids_aus": [
+        "planet und bestaetigung: dieselbe Koordinate aus lage.planeten[].koord (heimat=false)",
+        "Kapazität: lage.planetenkapazitaet"
+      ],
+      "vorher": [
+        "werkzeug {typ: planet_aufgeben, planet} zeigt moeglich, grund und verluste (REST-Werkzeug, nicht im Abfrageschema)",
+        "Pinwand-Auftrag an Verwalter/Feldherr: Schiffe stationieren, Güter abtransportieren",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Zum Aufgeben die Koordinaten des Planeten bestätigen",
+          "abhilfe": "bestaetigung exakt gleich planet setzen."
+        },
+        {
+          "text": "Die Heimatwelt kann nicht aufgegeben werden",
+          "abhilfe": "Nur Kolonien wählen."
+        },
+        {
+          "text": "Während einer Blockade oder laufenden Besetzung kann die Kolonie nicht aufgegeben werden",
+          "abhilfe": "Blockade oder Besetzung erst beenden lassen."
+        },
+        {
+          "text": "Mond … hat noch Schiffe oder Flotten unterwegs; zuerst abziehen",
+          "abhilfe": "Schiffe vom Mond abziehen und Flotten heimkehren lassen."
+        },
+        {
+          "text": "… ist kein eigener Planet",
+          "abhilfe": "Koordinate aus lage.planeten[].koord nehmen."
+        },
+        {
+          "text": "planet_aufgeben gehört nicht zur Rolle …, zuständig: stratege",
+          "abhilfe": "Den Strategen per Pinwand bitten."
+        }
+      ],
+      "unumkehrbar": true
+    },
+    "produktionsserie": {
+      "bereich": "wirtschaft",
+      "zweck": "Hält auf einem Planeten den Vorrat eines Produkts automatisch auf ziel (0 = aus, höchstens 10000): der Kern bestellt fehlende Stücke mit den normalen Prüfungen und aus dem Topf der setzenden Rolle nach, sobald Fertigungsplätze frei sind. Der Verwalter darf einheit (nur zivile: Transporter, Frachter, Bergbauschiff, Recycler, Kolonieschiffe, Solarsonde, Terraformer) und bauteil (antriebskern, habitatmodul) setzen, rakete und boden nur der Feldherr. Eine Serie für eine Einheit, die die Rolle nicht bestellen darf, wird angenommen, produziert aber nie (Status „Wartet: …“).",
+      "ids_aus": [
+        "planet: lage.planeten[].koord; bestehende Serien und Status: lage.planeten[].produktionsserien",
+        "produkt: Einheitenname (lage.einheiten_kosten[].einheit), Bauteil antriebskern/habitatmodul, Raketenart oder Bodentyp (infanterie, panzer, drohnen, …)"
+      ],
+      "vorher": [
+        "werkzeug kosten {einheit, planet}",
+        "handeln probe=true, danach Status in lage.planeten[].produktionsserien prüfen"
+      ],
+      "fallen": [
+        {
+          "text": "Vorratsziel muss zwischen 0 (aus) und 10000 liegen",
+          "abhilfe": "ziel als ganze Zahl 0–10000 senden."
+        },
+        {
+          "text": "Unbekannte Einheit",
+          "abhilfe": "Einheitennamen exakt aus lage.einheiten_kosten übernehmen."
+        },
+        {
+          "text": "Einheit nicht verfügbar",
+          "abhilfe": "Die Einheit gibt es in dieser Partie nicht; andere wählen."
+        },
+        {
+          "text": "Kein Bauteil",
+          "abhilfe": "Bei art bauteil nur antriebskern oder habitatmodul."
+        },
+        {
+          "text": "Raketenserien bestellt der Feldherr",
+          "abhilfe": "Feldherr per Pinwand beauftragen."
+        },
+        {
+          "text": "Bodentruppen bestellt der Feldherr",
+          "abhilfe": "Feldherr per Pinwand beauftragen."
+        },
+        {
+          "text": "Wartet: … bestellt der Feldherr, nicht der Verwalter (Serienstatus)",
+          "abhilfe": "Militärische Einheiten als Feldherr setzen; die Verwalter-Serie mit ziel 0 ausschalten."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "produktion_setzen": {
+      "bereich": "wirtschaft",
+      "zweck": "Regelt den Ausstoß eines Produktionsgebäudes (Minen, Kraftwerke, Gießerei, Elektronik-, Konsumgüterwerk, Xenoextraktor, Werft, Orbitalwerft, Kaserne, Raketensilo, Labor, Akademie) in 10-%-Schritten von 0 bis 120 %. 0 legt das Werk still, über 100 % steigt der Grundbedarf doppelt (110 % braucht 120 %, 120 % braucht 140 %); bei Werften, Silo und Akademie verschieben sich laufende Aufträge entsprechend. Nützlich gegen Energie- oder Personalmangel und um Werke bei vollem Lager zu drosseln.",
+      "ids_aus": [
+        "planet: lage.planeten[].koord",
+        "gebaeude: Stufe > 0 in lage.planeten[].gebaeude; Werksbilanz lage.planeten[].industrie (lage?planet=K)"
+      ],
+      "vorher": [
+        "werkzeug wirtschaftsdiagnose {planet}",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Produktionsgebäude und ganze 10-%-Schritte zwischen 0 und 120 wählen",
+          "abhilfe": "prozent als 0, 10, …, 120 und nur ein Produktionsgebäude senden."
+        },
+        {
+          "text": "Das Gebäude steht auf diesem Planeten noch nicht",
+          "abhilfe": "Nur gebaute Gebäude regeln."
+        },
+        {
+          "text": "… ist kein eigener Planet",
+          "abhilfe": "Koordinate aus lage.planeten[].koord nehmen."
+        },
+        {
+          "text": "produktion_setzen gehört nicht zur Rolle …, zuständig: verwalter",
+          "abhilfe": "Den Verwalter per Pinwand bitten."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "auftrag_pause": {
+      "bereich": "verwaltung",
+      "zweck": "Pausiert die Bauschleife (bau), die Werft (werft) oder die Bauteilefertigung (bauteile) eines Planeten oder die reichsweite Forschung (forschung) bzw. setzt sie fort (pausiert false). Fortschritt und bezahlte Rohstoffe bleiben erhalten; ist die Schlange leer, löst sich die Pause von selbst. Der Feldherr darf nur werft und bauteile pausieren.",
+      "ids_aus": [
+        "planet: lage.planeten[].koord (für forschung ein beliebiger eigener Planet)",
+        "Pausenstatus: lage.planeten[].bauschleife[].manuell_pausiert, lage.forschung.aktiv.manuell_pausiert, lage.forschung.warteschlangen[].jobs[].manuell_pausiert"
+      ],
+      "vorher": [
+        "lage.forschung.warteschlangen[] prüfen, ob ein Auftrag existiert",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Kein laufender oder wartender Auftrag",
+          "abhilfe": "Pausieren geht nur bei vorhandenem Auftrag in dieser Schlange."
+        },
+        {
+          "text": "Bau und Forschung verwaltet der Verwalter",
+          "abhilfe": "Als Feldherr nur werft oder bauteile; sonst Verwalter beauftragen."
+        },
+        {
+          "text": "Unbekannte Auftragsart",
+          "abhilfe": "art nur bau, forschung, werft oder bauteile."
+        },
+        {
+          "text": "Pausen gibt es erst in Partien ab Generation 12",
+          "abhilfe": "In dieser Welt nicht verfügbar."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "planet_benennen": {
+      "bereich": "verwaltung",
+      "zweck": "Gibt einem eigenen Planeten einen Namen (höchstens 24 Zeichen: Buchstaben einschließlich ä ö ü ß, Ziffern, Leerzeichen, - ' .); ein leerer Name stellt den Standardnamen wieder her. Rein kosmetisch, sichtbar nur für dich und Verbündete; erscheint als lage.planeten[].name.",
+      "ids_aus": [
+        "planet: lage.planeten[].koord"
+      ],
+      "vorher": [
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Planetenname höchstens 24 Zeichen",
+          "abhilfe": "Kürzeren Namen wählen."
+        },
+        {
+          "text": "Zeichen „…“ ist im Planetennamen nicht erlaubt (Buchstaben, Ziffern, Leerzeichen, - ' .)",
+          "abhilfe": "Sonderzeichen und Emojis entfernen."
+        },
+        {
+          "text": "Planetenname braucht mindestens einen Buchstaben oder eine Ziffer",
+          "abhilfe": "Mindestens einen Buchstaben verwenden oder leer senden."
+        },
+        {
+          "text": "… ist kein eigener Planet",
+          "abhilfe": "Koordinate aus lage.planeten[].koord nehmen."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "soforthandel": {
+      "bereich": "handel",
+      "zweck": "Tauscht sofort auf einem eigenen Planeten Erz, Kristall, Deuterium, Nahrung oder Credits gegen eines dieser Güter zu festen Kursen (Erz 1, Kristall 1,5, Deuterium 3, Nahrung 0,5, Credits 1) abzüglich 2 % Gebühr – ohne Markt, ohne Gegenspieler, ohne Lieferzeit. Der Verwalter zahlt den Wert des Angebots zusätzlich aus dem Topf wirtschaft; das Ziellager braucht Platz. Teurer als ein guter Marktpreis, aber sofort und sicher, etwa um einen wartenden Bauauftrag freizumachen.",
+      "ids_aus": [
+        "planet: lage.planeten[].koord; Bestände lage.planeten[].bestand, Lagergrenzen .lager",
+        "angebot: Schlüssel erz, kristall, deuterium, nahrung oder credits (Credits aus lage.credits); ziel: einer dieser Schlüssel, aber nicht im angebot"
+      ],
+      "vorher": [
+        "werkzeug {typ: soforthandel, planet, angebot, ziel} zeigt erhalt und Kurse (REST-Werkzeug, nicht im Abfrageschema)",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Nicht genug … für das Angebot",
+          "abhilfe": "Menge auf den Bestand des Planeten (bzw. lage.credits) senken."
+        },
+        {
+          "text": "Angebot und Ziel müssen verschieden sein",
+          "abhilfe": "Zielgut aus dem angebot entfernen."
+        },
+        {
+          "text": "Das Angebot muss nach 2 % Gebühr mindestens eine Zieleinheit ergeben",
+          "abhilfe": "Größeres Angebot senden."
+        },
+        {
+          "text": "Im Ziellager ist nicht genug Platz; Angebot verkleinern oder Lager ausbauen",
+          "abhilfe": "Angebot verkleinern oder Lager bauen."
+        },
+        {
+          "text": "Topf wirtschaft reicht nicht: … Werteinheiten nötig, … vorhanden",
+          "abhilfe": "Den Strategen per Pinwand um mehr wirtschaft-Anteil bitten oder kleiner tauschen."
+        },
+        {
+          "text": "Wirtschaftsbudget reicht nicht für den Tausch",
+          "abhilfe": "Bei Credits im Angebot zählen diese zusätzlich zum Topf wirtschaft; kleiner tauschen."
+        },
+        {
+          "text": "Unbekanntes Handelsgut",
+          "abhilfe": "Nur erz, kristall, deuterium, nahrung, credits verwenden."
+        }
+      ],
+      "unumkehrbar": true
+    },
+    "schleife_leeren": {
+      "bereich": "verwaltung",
+      "zweck": "Entfernt alle noch nicht begonnenen Aufträge aus der Bauschleife eines Planeten; der laufende Auftrag bleibt. Wartende Aufträge sind noch unbezahlt, es geht also nichts verloren – nützlich vor einer Reparatur oder für eine neue Bauplanung. Einzelne Aufträge löscht oder verschiebt man gezielt mit warteschlange_aendern.",
+      "ids_aus": [
+        "planet: lage.planeten[].koord; Inhalt lage.planeten[].bauschleife[] (wartet=true = unbegonnen)"
+      ],
+      "vorher": [
+        "lage.planeten[].bauschleife ansehen"
+      ],
+      "fallen": [
+        {
+          "text": "… ist kein eigener Planet",
+          "abhilfe": "Koordinate aus lage.planeten[].koord nehmen."
+        },
+        {
+          "text": "schleife_leeren gehört nicht zur Rolle …, zuständig: verwalter",
+          "abhilfe": "Den Verwalter per Pinwand bitten."
+        },
+        {
+          "text": "Aktion nicht lesbar: …",
+          "abhilfe": "planet als Zeichenkette Sektor:System:Position senden, etwa 1:27:6."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "warteschlange_aendern": {
+      "bereich": "verwaltung",
+      "zweck": "Verschiebt einen wartenden Auftrag einer Warteschlange (bau, forschung, werft, bauteile) an eine andere Position (loeschen false, ziel = neue Position) oder entfernt einen Auftrag (loeschen true, ziel null). Der laufende Auftrag bleibt vorn und lässt sich nicht verschieben; beim Löschen werden bezahlte Rohstoffe vor 75 % Fortschritt voll erstattet, danach nicht. Die kennung schützt vor veralteter Sicht und muss zur aktuellen Schlange passen.",
+      "ids_aus": [
+        "kennung, art, planet: lage.forschung.warteschlangen[] (Felder kennung mit 64 Zeichen, art, planet)",
+        "index: Position in lage.forschung.warteschlangen[].jobs[] (0 = vorn; bei forschung ist 0 der laufende Auftrag, falls aktiv=true)",
+        "ziel: neue Position innerhalb derselben jobs-Liste"
+      ],
+      "vorher": [
+        "lage (z. B. lage?teile=forschung) frisch lesen und kennung unverändert übernehmen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Die Warteschlange hat sich inzwischen geändert – bitte in der aktualisierten Liste noch einmal tippen.",
+          "abhilfe": "Lage neu lesen und die aktuelle kennung samt index verwenden."
+        },
+        {
+          "text": "Auftrag existiert nicht mehr",
+          "abhilfe": "index aus der aktuellen jobs-Liste nehmen."
+        },
+        {
+          "text": "Zielposition fehlt",
+          "abhilfe": "Beim Verschieben ziel als gültigen Index angeben."
+        },
+        {
+          "text": "Laufender Auftrag bleibt an erster Stelle; nur wartende Aufträge verschieben",
+          "abhilfe": "Nur Aufträge mit aktiv=false verschieben, nicht auf Position 0 eines laufenden Auftrags."
+        },
+        {
+          "text": "Bau und Forschung verwaltet der Verwalter",
+          "abhilfe": "Als Feldherr nur werft und bauteile ändern."
+        },
+        {
+          "text": "Unbekannte Warteschlange",
+          "abhilfe": "art nur bau, forschung, werft oder bauteile."
+        }
+      ],
+      "unumkehrbar": true
+    },
+    "forschen": {
+      "bereich": "forschung",
+      "zweck": "Reiht eine Forschung in die reichsweite Forschungsschlange ein (eine laufende plus höchstens 3 wartende); sie startet automatisch, sobald die vorherige fertig ist und Labor, Zivilisationsstufe, Bestand des Forschungsplaneten und Topf forschung reichen. planet bestimmt, wo bezahlt wird und welches Labor zählt (null = Heimatwelt).",
+      "ids_aus": [
+        "forschung: lage.forschung.moeglich[].forschung (nächste erlaubte Stufen), aktuelle Stufen lage.forschung.stufen",
+        "planet: lage.planeten[].koord mit ausreichendem gebaeude.labor, oder null",
+        "Schlange und Wartegründe: lage.forschung.{aktiv, schlange, warteschlangen[] mit art 'forschung'}"
+      ],
+      "vorher": [
+        "werkzeug kosten {forschung, planet}",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Forschungsschlange ist voll",
+          "abhilfe": "Fertigstellung abwarten oder Einträge mit warteschlange_aendern löschen."
+        },
+        {
+          "text": "… braucht Labor Stufe … auf …",
+          "abhilfe": "Labor auf diesem Planeten ausbauen oder einen Planeten mit größerem Labor angeben."
+        },
+        {
+          "text": "… gibt es erst ab Zivilisationsstufe …",
+          "abhilfe": "Stufenaufstieg vorbereiten."
+        },
+        {
+          "text": "Höchste Forschungsstufe bereits erreicht oder eingeplant",
+          "abhilfe": "Andere Forschung wählen."
+        },
+        {
+          "text": "Überwachung und Abschirmtechnik benötigen Spionagetechnik Stufe 1",
+          "abhilfe": "Erst spionagetechnik forschen."
+        },
+        {
+          "text": "Überwachungstechnik benötigt einen eigenen Geheimdienst",
+          "abhilfe": "Erst einen Geheimdienst bauen."
+        },
+        {
+          "text": "Wartet: … Budget forschung: … Werteinheiten fehlen (keine Ablehnung, Wartegrund in warteschlangen[].jobs[].grund)",
+          "abhilfe": "Den Strategen per Pinwand um mehr forschung-Anteil bitten oder Güter auf den Forschungsplaneten liefern."
+        },
+        {
+          "text": "forschen gehört nicht zur Rolle …, zuständig: verwalter",
+          "abhilfe": "Den Verwalter per Pinwand beauftragen."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "steuersatz": {
+      "bereich": "verwaltung",
+      "zweck": "Setzt den reichsweiten Steuersatz (0–50 %, Start 10 %). Steuer bringt je Einwohner und Stunde Credits und zählt zum Einkommen, das die Doktrin auf die Töpfe verteilt; über 15 % sinkt das Stabilitätsziel jedes Planeten um 1 Punkt je Prozentpunkt, und unter 30 Stabilität ruhen Bauaufträge (Unruhen).",
+      "ids_aus": [
+        "aktueller Satz: lage.steuersatz; Stabilität lage.planeten[].{stabilitaet, stabilitaet_ziel}"
+      ],
+      "vorher": [
+        "lage.planeten[].stabilitaet_ziel aller Planeten prüfen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "der Steuersatz liegt zwischen 0 und 50 Prozent",
+          "abhilfe": "prozent als ganze Zahl 0–50 senden."
+        },
+        {
+          "text": "steuersatz gehört nicht zur Rolle …, zuständig: verwalter",
+          "abhilfe": "Den Verwalter per Pinwand bitten."
+        },
+        {
+          "text": "Aktion nicht lesbar: …",
+          "abhilfe": "prozent als ganze Zahl ohne Prozentzeichen senden."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "prioritaeten": {
+      "bereich": "verwaltung",
+      "zweck": "Legt fest, in welcher Reihenfolge die Gebäude eines Planeten Arbeitskräfte erhalten, wenn nicht alle besetzt werden können: genannte Gebäude zuerst, doppelte Einträge zählen einmal, danach Versorgung und der Rest. Hilft, wenn lage.planeten[].arbeit.bedarf über .verfuegbar liegt (etwa Farm und Kraftwerk vor Minen).",
+      "ids_aus": [
+        "planet: lage.planeten[].koord; aktuelle Reihenfolge lage.planeten[].prioritaeten",
+        "reihenfolge: Gebäudenamen aus lage.planeten[].gebaeude"
+      ],
+      "vorher": [
+        "werkzeug wirtschaftsdiagnose {planet}",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "… ist kein eigener Planet",
+          "abhilfe": "Koordinate aus lage.planeten[].koord nehmen."
+        },
+        {
+          "text": "Aktion nicht lesbar: unknown variant …",
+          "abhilfe": "Gebäudenamen exakt wie in lage.planeten[].gebaeude schreiben."
+        },
+        {
+          "text": "prioritaeten gehört nicht zur Rolle …, zuständig: verwalter",
+          "abhilfe": "Den Verwalter per Pinwand bitten."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "markt_order": {
+      "bereich": "handel",
+      "zweck": "Stellt eine Kauf- oder Verkaufsorder ins gemeinsame Orderbuch aller Spieler (preis = Credits je Einheit); passende Gegenorders werden sofort zum Preis der im Buch stehenden Order ausgeführt, der Rest bleibt stehen. Gekaufte Ware bringt eine neutrale, nicht abfangbare Handelsflotte; die Gebühr (Grundsatz 2 % mal Volksfaktor, mit Handelsabkommen zum Gegenüber halbiert) wird vernichtet, beim Kauf werden Wert plus Höchstgebühr von den Credits und aus dem Topf wirtschaft hinterlegt. Die Gegenseite ist anonym – an einen bestimmten Spieler liefert man per schiffangebot oder Transport, an Allianzmitglieder per intern_anbieten.",
+      "ids_aus": [
+        "planet: lage.planeten[].koord mit gebaeude.markt > 0",
+        "Preise: lage.markt.preise.<gut>.{verkauf_ab, kauf_bis}; eigene Orders lage.markt.orders[]",
+        "gut: Gutname wie in lage.planeten[].bestand"
+      ],
+      "vorher": [
+        "werkzeug marktplan {aktion: <diese Aktion>} (Teilfüllungen, Lieferungen, Credits vorher/nachher)",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "auf … steht kein Markt",
+          "abhilfe": "Einen Planeten mit Markt angeben oder einen Markt bauen."
+        },
+        {
+          "text": "menge muss mindestens 1 sein und preis über 0",
+          "abhilfe": "menge ≥ 1 und preis > 0 senden."
+        },
+        {
+          "text": "auf … sind höchstens … offene Orders erlaubt",
+          "abhilfe": "Alte Orders mit markt_storno entfernen oder Markt ausbauen; interne Allianzangebote zählen mit."
+        },
+        {
+          "text": "Für die Order fehlen Credits: … nötig einschließlich Gebühr",
+          "abhilfe": "Menge oder Preis senken bzw. Credits beschaffen."
+        },
+        {
+          "text": "Topf wirtschaft reicht nicht für die Order (… Werteinheiten)",
+          "abhilfe": "Kleinere Order oder den Strategen per Pinwand um mehr wirtschaft-Anteil bitten."
+        },
+        {
+          "text": "Auf … liegen nur … …",
+          "abhilfe": "Beim Verkauf höchstens den Bestand des Planeten anbieten."
+        },
+        {
+          "text": "Orderwert ist für die Festkommarechnung zu groß",
+          "abhilfe": "Menge oder Preis verkleinern."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "markt_storno": {
+      "bereich": "handel",
+      "zweck": "Zieht eine eigene offene Order zurück: Kauforders erstatten die hinterlegten Credits samt Rollenbudget, Verkaufsorders legen die Ware zurück auf den Planeten. Bereits ausgeführte Teile bleiben ausgeführt.",
+      "ids_aus": [
+        "order: lage.markt.orders[].order"
+      ],
+      "vorher": [
+        "lage.markt.orders lesen"
+      ],
+      "fallen": [
+        {
+          "text": "Order … gibt es nicht oder sie gehört dir nicht",
+          "abhilfe": "Nummer aus lage.markt.orders[].order nehmen; vollständig gefüllte Orders sind verschwunden."
+        },
+        {
+          "text": "markt_storno gehört nicht zur Rolle …, zuständig: verwalter",
+          "abhilfe": "Den Verwalter per Pinwand bitten."
+        },
+        {
+          "text": "Aktion nicht lesbar: …",
+          "abhilfe": "order als ganze Zahl senden."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "brief_senden": {
+      "bereich": "diplomatie",
+      "zweck": "Schreibt einen Brief mit Betreff (höchstens 120 Zeichen) und Text (1–1200 Zeichen): kanal privat an einen Spieler (an = Name), allianz an alle Mitglieder der eigenen Allianz (an leer), diplomatie von der eigenen Allianzleitung an die Leitung einer anderen Allianz (an = Allianzname). Antworten: antwort_auf = id des Ursprungsbriefs, gleicher kanal und beim privaten Brief an = dessen Absender; eine private Antwort erfüllt die Antwortpflicht aus kommunikation.antworten_offen. Briefe binden nicht – Pakte entstehen nur über vertrag_anbieten, diplomatie_anfrage oder allianz_anfrage; alle Briefe zählen zum Tageslimit von 20 Nachrichten.",
+      "ids_aus": [
+        "an (privat): kommunikation.kontakte[].spieler oder kommunikation.briefkasten[].von",
+        "an (diplomatie): kommunikation.allianzen[].name (Name, nicht Kürzel); an (allianz): leere Zeichenkette",
+        "antwort_auf: kommunikation.briefkasten[].id (dessen kanal übernehmen) bzw. Ids aus kommunikation.antworten_offen; sonst null"
+      ],
+      "vorher": [
+        "kommunikation.briefkasten und kommunikation.antworten_offen lesen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Text braucht 1 bis 1200 Zeichen",
+          "abhilfe": "Text kürzen oder nicht leer senden."
+        },
+        {
+          "text": "Betreff höchstens 120 Zeichen",
+          "abhilfe": "Betreff kürzen."
+        },
+        {
+          "text": "Nachrichten-Tageslimit erreicht",
+          "abhilfe": "Bis zum nächsten Spieltag warten; Wichtiges bündeln."
+        },
+        {
+          "text": "Spieler '…' gibt es nicht",
+          "abhilfe": "Namen exakt aus kommunikation.kontakte übernehmen; ausgeschiedene Spieler sind nicht erreichbar."
+        },
+        {
+          "text": "Allianzchat erlaubt keine externen Empfänger",
+          "abhilfe": "Bei kanal allianz an als leere Zeichenkette senden."
+        },
+        {
+          "text": "Nur die obersten vier Mitglieder dürfen Allianzpost senden",
+          "abhilfe": "kanal diplomatie nur als Rang 1–4; sonst privat an die fremde Leitung schreiben."
+        },
+        {
+          "text": "Antwort muss im ursprünglichen Kommunikationsraum bleiben",
+          "abhilfe": "Gleichen kanal wie der Ursprungsbrief nutzen und privat an dessen Absender antworten."
+        },
+        {
+          "text": "Ursprungsbrief nicht zugänglich",
+          "abhilfe": "antwort_auf nur mit sichtbaren Ids aus kommunikation.briefkasten setzen, sonst null."
+        }
+      ],
+      "unumkehrbar": true
+    },
+    "brief_lesen": {
+      "bereich": "diplomatie",
+      "zweck": "Markiert einen sichtbaren Brief als gelesen; der Inhalt steht bereits in kommunikation.briefkasten bzw. lage.nachrichten, ältere Briefe liefert werkzeug briefarchiv. Lesen gilt nicht als Antwort – dafür brief_senden mit antwort_auf.",
+      "ids_aus": [
+        "brief: kommunikation.briefkasten[].id mit gelesen=false oder lage.nachrichten[].id mit neu=true"
+      ],
+      "vorher": [
+        "kommunikation.briefkasten lesen"
+      ],
+      "fallen": [
+        {
+          "text": "Brief nicht zugänglich",
+          "abhilfe": "Nur Ids aus dem eigenen Briefkasten verwenden."
+        },
+        {
+          "text": "brief_lesen gehört nicht zur Rolle …, zuständig: diplomat",
+          "abhilfe": "Andere Rollen lesen ohne Markierung in der Lage mit."
+        },
+        {
+          "text": "Aktion nicht lesbar: …",
+          "abhilfe": "brief als ganze Zahl senden."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "allianz_anfrage": {
+      "bereich": "allianz",
+      "zweck": "Verhandlung zwischen zwei Allianzen durch die Leitung (Ränge 1–4): art nichtangriffspakt, verteidigungsbuendnis, handelsabkommen, krieg oder frieden; zugleich geht ein Diplomatiebrief an die fremde Leitung, die mit diplomatie_entscheiden antwortet. Ein angenommenes Allianz-Verteidigungsbündnis macht alle Mitglieder beider Allianzen zu Verbündeten (Angriffe gesperrt), ein Allianz-Handelsabkommen halbiert die Marktgebühr untereinander, ein Allianz-NAP sperrt keine Angriffe, wird aber durch einen Angriff öffentlich gebrochen. krieg gilt sofort und unwiderruflich (status erklaert, bricht bestehende Allianzschutzpakte, ändert sonst nur die Beziehung auf feindlich), frieden beendet nach Annahme den Allianzkrieg.",
+      "ids_aus": [
+        "allianz: kommunikation.allianzen[].name (Name, nicht Kürzel; nicht die eigene)",
+        "bestehende Pakte und Angebote: kommunikation.allianzanfragen[]"
+      ],
+      "vorher": [
+        "kommunikation.allianzanfragen auf bestehende Vereinbarungen prüfen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Du bist in keiner Allianz",
+          "abhilfe": "Erst gründen oder beitreten; als Einzelreich diplomatie_anfrage nutzen."
+        },
+        {
+          "text": "Nur die obersten vier Mitglieder dürfen verhandeln",
+          "abhilfe": "Die Allianzleitung per Allianzbrief bitten."
+        },
+        {
+          "text": "Andere aktive Allianz angeben",
+          "abhilfe": "Namen exakt aus kommunikation.allianzen nehmen, nicht die eigene."
+        },
+        {
+          "text": "Unbekannte Vertragsart",
+          "abhilfe": "art nur nichtangriffspakt, verteidigungsbuendnis, handelsabkommen, krieg oder frieden."
+        },
+        {
+          "text": "Vereinbarung oder Angebot besteht bereits",
+          "abhilfe": "Antwort abwarten oder bestehenden Pakt mit allianz_pakt_kuendigen beenden."
+        },
+        {
+          "text": "Text braucht 1 bis 1200 Zeichen",
+          "abhilfe": "Begründung als nicht leeren Text mitsenden."
+        },
+        {
+          "text": "Nachrichten-Tageslimit erreicht",
+          "abhilfe": "Bis zum nächsten Spieltag warten."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "allianz_pakt_kuendigen": {
+      "bereich": "allianz",
+      "zweck": "Kündigt einen angenommenen Pakt zwischen zwei Allianzen: Nichtangriffspakt und Verteidigungsbündnis gelten noch 48 Stunden (status 'gekündigt, endet …'), ein Handelsabkommen endet sofort. Jede Leitung (Ränge 1–4) beider Seiten darf kündigen.",
+      "ids_aus": [
+        "anfrage: kommunikation.allianzanfragen[].id mit status 'angenommen' und art nichtangriffspakt, verteidigungsbuendnis oder handelsabkommen"
+      ],
+      "vorher": [
+        "kommunikation.allianzanfragen lesen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Allianzpakt fehlt",
+          "abhilfe": "Id aus kommunikation.allianzanfragen nehmen (keine Einzelspieler-Anfrage)."
+        },
+        {
+          "text": "Kein Leitungsrecht",
+          "abhilfe": "Nur Ränge 1–4 einer der beiden Allianzen dürfen kündigen."
+        },
+        {
+          "text": "Kein aktiver Pakt",
+          "abhilfe": "Nur status 'angenommen' kündigen; Krieg und Frieden sind keine Pakte."
+        }
+      ],
+      "unumkehrbar": true
+    },
+    "diplomatie_anfrage": {
+      "bereich": "diplomatie",
+      "zweck": "Formelle Anfrage an einen einzelnen Spieler mit Brief und Eintrag in kommunikation.anfragen: nichtangriffspakt, verteidigungsbuendnis und handelsabkommen legen dabei einen echten Engine-Vertrag ohne Kaution an (wie vertrag_anbieten mit kaution 0, sichtbar in lage.vertraege), allianz lädt in die eigene Allianz ein (nur Leitung), frieden schlägt das Ende eines erklärten Kriegs vor. krieg wird sofort und öffentlich erklärt, bricht bestehende Pakte mit diesem Spieler samt Kaution und wirft dich aus der Allianz, wenn er dein Allianzmitglied ist; Krieg und Frieden ändern sonst nur die angezeigte Beziehung, keine Kampfregel. Für einen Pakt mit Kaution (teurer zu brechen) oder einen Tribut stattdessen vertrag_anbieten verwenden.",
+      "ids_aus": [
+        "partner: kommunikation.kontakte[].spieler (Spielername)",
+        "laufende Anfragen: kommunikation.anfragen[] (von = du); bestehende Verträge lage.vertraege[]"
+      ],
+      "vorher": [
+        "lage.vertraege und kommunikation.anfragen auf Doppelungen prüfen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Gleiche Anfrage ist bereits offen",
+          "abhilfe": "Antwort abwarten oder per Brief nachfassen."
+        },
+        {
+          "text": "zwischen euch gibt es schon einen Vertrag … oder ein offenes Angebot",
+          "abhilfe": "Status in lage.vertraege prüfen; bestehendes Angebot nicht doppeln."
+        },
+        {
+          "text": "… hat schon 3 Verteidigungsbündnisse, mehr sind nicht erlaubt",
+          "abhilfe": "Ein Bündnis kündigen oder einen NAP anbieten."
+        },
+        {
+          "text": "Anderen aktiven Partner angeben",
+          "abhilfe": "Fremden, aktiven Spieler wählen."
+        },
+        {
+          "text": "Unbekannte Anfrageart",
+          "abhilfe": "art nur nichtangriffspakt, verteidigungsbuendnis, handelsabkommen, allianz, krieg oder frieden."
+        },
+        {
+          "text": "Nur die obersten vier Mitglieder dürfen einladen",
+          "abhilfe": "art allianz nur als Allianzleitung; sonst die Leitung bitten."
+        },
+        {
+          "text": "Text braucht 1 bis 1200 Zeichen",
+          "abhilfe": "Nicht leeren Text mitsenden."
+        },
+        {
+          "text": "Nachrichten-Tageslimit erreicht",
+          "abhilfe": "Bis zum nächsten Spieltag warten."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "diplomatie_entscheiden": {
+      "bereich": "diplomatie",
+      "zweck": "Beantwortet eine offene Anfrage an dich: annehmen true setzt den verknüpften Vertrag in Kraft (wie vertrag_annehmen, eigene Kaution fällig), tritt bei art allianz der einladenden Allianz bei oder beendet bei frieden den erklärten Krieg; false lehnt ab. Auch Allianzanfragen (kommunikation.allianzanfragen mit empfangsberechtigt true) entscheidet die Leitung der Zielallianz hiermit. Wurde der verknüpfte Vertrag schon direkt mit vertrag_annehmen oder vertrag_ablehnen erledigt, ist die Anfrage nicht mehr entscheidbar.",
+      "ids_aus": [
+        "anfrage: kommunikation.anfragen[].id mit status 'offen' und an = eigener Spielername",
+        "anfrage (Allianz): kommunikation.allianzanfragen[].id mit status 'offen' und empfangsberechtigt=true"
+      ],
+      "vorher": [
+        "Bedingungen im verknüpften Vertrag prüfen: lage.vertraege[] mit vertrag = anfragen[].vertrag",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Keine offene Anfrage an dich",
+          "abhilfe": "Nur Anfragen mit status 'offen' an dich; erklärte Kriege (status 'erklaert') sind nicht entscheidbar."
+        },
+        {
+          "text": "Anfrage fehlt",
+          "abhilfe": "Id aus kommunikation.anfragen oder allianzanfragen übernehmen."
+        },
+        {
+          "text": "Vertrag … ist kein offenes Angebot an dich",
+          "abhilfe": "Vertrag wurde schon erledigt oder zurückgezogen; lage.vertraege prüfen."
+        },
+        {
+          "text": "für die Kaution fehlen Credits (… nötig)",
+          "abhilfe": "Credits beschaffen oder ablehnen."
+        },
+        {
+          "text": "… hat inzwischen das Bündnislimit erreicht",
+          "abhilfe": "Ablehnen oder erst ein anderes Bündnis kündigen."
+        },
+        {
+          "text": "du bist schon in einer Allianz",
+          "abhilfe": "Eine Allianzeinladung erst nach allianz_verlassen annehmen."
+        },
+        {
+          "text": "Quellallianz besteht nicht mehr",
+          "abhilfe": "Anfrage ablehnen; es gibt keinen Partner mehr."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "allianz_rolle": {
+      "bereich": "allianz",
+      "zweck": "Nur das Mitglied auf Rang 1 ordnet die Mitgliederliste: das genannte Mitglied tauscht den Platz mit dem, der auf rang steht. Ränge 1–4 bilden die Allianzleitung (einladen, Allianzpost, Allianzverhandlungen, Dysonsphäre); nur Rang 1 vergibt Ränge und schließt aus – wer rang 1 einem anderen gibt, verliert diese Rechte sofort.",
+      "ids_aus": [
+        "spieler und rang: kommunikation.allianzbereich.mitglieder[].{name, rang}",
+        "eigener Rang 1: kommunikation.allianzbereich.gruender=true"
+      ],
+      "vorher": [
+        "kommunikation.allianzbereich.mitglieder lesen"
+      ],
+      "fallen": [
+        {
+          "text": "Nur die Allianzleitung darf Ränge vergeben",
+          "abhilfe": "Nur Rang 1 darf das; sonst per Allianzbrief bitten."
+        },
+        {
+          "text": "Spieler ist kein Mitglied",
+          "abhilfe": "Namen aus kommunikation.allianzbereich.mitglieder nehmen."
+        },
+        {
+          "text": "Rang außerhalb der Mitgliederliste",
+          "abhilfe": "rang zwischen 1 und der Mitgliederzahl wählen."
+        },
+        {
+          "text": "Du bist in keiner Allianz",
+          "abhilfe": "Nur in einer Allianz möglich."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "allianz_ausschliessen": {
+      "bereich": "allianz",
+      "zweck": "Rang 1 entfernt ein Mitglied sofort aus der Allianz; das wird öffentlich registriert, der Ausgeschlossene verliert Bündnisschutz, internen Markt und Dyson-Mitgliedszeit.",
+      "ids_aus": [
+        "spieler: kommunikation.allianzbereich.mitglieder[].name (nicht du selbst)"
+      ],
+      "vorher": [
+        "Beschluss des Strategen auf der Pinwand"
+      ],
+      "fallen": [
+        {
+          "text": "Nur die Allianzleitung darf ausschließen",
+          "abhilfe": "Nur Rang 1 darf ausschließen."
+        },
+        {
+          "text": "Anderes Mitglied angeben",
+          "abhilfe": "Ein anderes Mitglied derselben Allianz nennen."
+        },
+        {
+          "text": "Du bist in keiner Allianz",
+          "abhilfe": "Nur in einer Allianz möglich."
+        },
+        {
+          "text": "Spieler '…' gibt es nicht",
+          "abhilfe": "Namen exakt übernehmen."
+        }
+      ],
+      "unumkehrbar": true
+    },
+    "allianz_hilfe": {
+      "bereich": "allianz",
+      "zweck": "Veröffentlicht einen Hilferuf für einen eigenen Planeten im Allianzchat und weckt dringend die Feldherren aller anderen Mitglieder. Die Hilfe selbst ist ein Flottenauftrag der Helfer (z. B. halten); der Ruf zählt zum Nachrichtenlimit.",
+      "ids_aus": [
+        "planet: lage.planeten[].koord, typischerweise ein Ziel aus lage.angriffe[] oder lage.warnungen"
+      ],
+      "vorher": [
+        "lage.angriffe prüfen"
+      ],
+      "fallen": [
+        {
+          "text": "Du bist in keiner Allianz",
+          "abhilfe": "Ohne Allianz Verbündete per Brief um Hilfe bitten."
+        },
+        {
+          "text": "… ist kein eigener Planet",
+          "abhilfe": "Koordinate aus lage.planeten[].koord nehmen."
+        },
+        {
+          "text": "Text braucht 1 bis 1200 Zeichen",
+          "abhilfe": "Kurze Lagebeschreibung mitsenden."
+        },
+        {
+          "text": "Nachrichten-Tageslimit erreicht",
+          "abhilfe": "Bis zum nächsten Spieltag warten; Pinwand nutzen."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "allianz_hilfe_status": {
+      "bereich": "allianz",
+      "zweck": "erledigt false: als Helfer zusagen (du erscheinst in helfer); erledigt true: nur der Anfragende schließt den Hilferuf. Die Zusage allein bewegt keine Schiffe – der Feldherr muss danach eine Flotte schicken.",
+      "ids_aus": [
+        "hilfe: kommunikation.allianzbereich.hilfe[].id mit status 'offen'"
+      ],
+      "vorher": [
+        "kommunikation.allianzbereich.hilfe lesen"
+      ],
+      "fallen": [
+        {
+          "text": "Hilferuf nicht zugänglich",
+          "abhilfe": "Nur Hilferufe der eigenen Allianz verwenden."
+        },
+        {
+          "text": "Hilferuf bereits geschlossen",
+          "abhilfe": "Nur status 'offen' beantworten."
+        },
+        {
+          "text": "Nur der Anfragende kann den Hilferuf schließen",
+          "abhilfe": "Als Helfer erledigt false senden."
+        },
+        {
+          "text": "Du bist in keiner Allianz",
+          "abhilfe": "Nur in einer Allianz möglich."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "intern_anbieten": {
+      "bereich": "handel",
+      "zweck": "Bietet allen Mitgliedern der eigenen Allianz eine feste Menge eines Guts von einem eigenen Planeten mit Markt zu einem Stückpreis in Credits an (preis 0 = Geschenk); die Ware wird sofort reserviert, ein Käufer übernimmt immer das ganze Angebot. So handelt man Rohstoffe gezielt innerhalb der Allianz; Angebote zählen zum Orderlimit des Planeten und werden storniert (Ware zurück), wenn du die Allianz verlässt oder den Planeten verlierst.",
+      "ids_aus": [
+        "planet: lage.planeten[].koord mit gebaeude.markt > 0; gut aus lage.planeten[].bestand",
+        "eigene Angebote: kommunikation.allianzbereich.angebote[] (von = du)"
+      ],
+      "vorher": [
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Du bist in keiner Allianz",
+          "abhilfe": "Außerhalb der Allianz markt_order oder schiffangebot nutzen."
+        },
+        {
+          "text": "Ungültige Menge oder Preis",
+          "abhilfe": "menge ≥ 1, preis ≥ 0 senden."
+        },
+        {
+          "text": "Ein Markt auf dem Angebotsplaneten ist erforderlich",
+          "abhilfe": "Planeten mit Markt wählen."
+        },
+        {
+          "text": "Orderlimit erreicht",
+          "abhilfe": "Offene Orders oder Angebote dieses Planeten stornieren oder Markt ausbauen."
+        },
+        {
+          "text": "Nicht genug Ware",
+          "abhilfe": "Menge auf den Bestand des Planeten senken."
+        },
+        {
+          "text": "intern_anbieten gehört nicht zur Rolle …, zuständig: diplomat, verwalter",
+          "abhilfe": "Diplomat oder Verwalter beauftragen."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "intern_kaufen": {
+      "bereich": "handel",
+      "zweck": "Kauft ein offenes Angebot eines anderen Allianzmitglieds vollständig: Menge × Preis plus Marktgebühr (mit Handelsabkommen halbiert) von den Reichs-Credits, Lieferung per neutraler Handelsflotte an den angegebenen eigenen Planeten. Der Diplomat zahlt zusätzlich aus dem Topf reserve, der Verwalter aus wirtschaft.",
+      "ids_aus": [
+        "angebot: kommunikation.allianzbereich.angebote[].id mit status 'offen' und von ≠ eigener Name",
+        "planet: eigener Zielplanet lage.planeten[].koord"
+      ],
+      "vorher": [
+        "lage.credits und lage.toepfe prüfen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Angebot nicht zugänglich",
+          "abhilfe": "Nur Angebote der eigenen Allianz verwenden."
+        },
+        {
+          "text": "Angebot nicht mehr verfügbar",
+          "abhilfe": "Angebot ist verkauft, zurückgezogen oder dein eigenes; Liste neu lesen."
+        },
+        {
+          "text": "Rollenbudget reicht für internen Kauf nicht",
+          "abhilfe": "Den Strategen per Pinwand um mehr reserve- bzw. wirtschaft-Anteil bitten."
+        },
+        {
+          "text": "Nicht genug Credits einschließlich Marktgebühr",
+          "abhilfe": "Credits beschaffen oder kleineres Angebot erbitten."
+        },
+        {
+          "text": "… ist kein eigener Planet",
+          "abhilfe": "Zielplaneten aus lage.planeten[].koord nehmen."
+        },
+        {
+          "text": "Du bist in keiner Allianz",
+          "abhilfe": "Nur in einer Allianz möglich."
+        }
+      ],
+      "unumkehrbar": true
+    },
+    "intern_storno": {
+      "bereich": "handel",
+      "zweck": "Zieht ein eigenes offenes internes Angebot zurück; die reservierte Ware geht zurück auf den Planeten.",
+      "ids_aus": [
+        "angebot: kommunikation.allianzbereich.angebote[].id mit status 'offen' und von = eigener Name"
+      ],
+      "vorher": [
+        "kommunikation.allianzbereich.angebote lesen"
+      ],
+      "fallen": [
+        {
+          "text": "Kein eigenes offenes Angebot",
+          "abhilfe": "Nur eigene Angebote mit status 'offen' stornieren."
+        },
+        {
+          "text": "intern_storno gehört nicht zur Rolle …, zuständig: diplomat, verwalter",
+          "abhilfe": "Diplomat oder Verwalter beauftragen."
+        },
+        {
+          "text": "Aktion nicht lesbar: …",
+          "abhilfe": "angebot als ganze Zahl senden."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "nachricht": {
+      "bereich": "diplomatie",
+      "zweck": "Kurzform ohne Betreff: an = Liste von Spielernamen, jeder erhält einen eigenen privaten Brief (Betreff „Nachricht“, ohne Antwortverknüpfung); allianz true mit leerer an-Liste schreibt in den Allianzchat. Für Antworten auf einen Brief, eigenen Betreff oder Post an eine andere Allianz brief_senden verwenden; jeder Empfänger zählt einzeln zum Tageslimit von 20.",
+      "ids_aus": [
+        "an: kommunikation.kontakte[].spieler (Spielernamen); bei allianz true leere Liste"
+      ],
+      "vorher": [
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Kein Empfänger angegeben",
+          "abhilfe": "Mindestens einen fremden Spielernamen in an oder allianz true setzen."
+        },
+        {
+          "text": "Allianzchat erlaubt keine externen Empfänger",
+          "abhilfe": "Bei allianz true die an-Liste leer lassen."
+        },
+        {
+          "text": "Nachrichten-Tageslimit erreicht",
+          "abhilfe": "Weniger Empfänger wählen oder bis zum nächsten Spieltag warten."
+        },
+        {
+          "text": "Empfänger ist nicht aktiv",
+          "abhilfe": "Inaktive Empfänger aus der Liste entfernen."
+        },
+        {
+          "text": "Spieler '…' gibt es nicht",
+          "abhilfe": "Namen exakt aus kommunikation.kontakte übernehmen."
+        },
+        {
+          "text": "Text braucht 1 bis 1200 Zeichen",
+          "abhilfe": "Text kürzen oder nicht leer senden."
+        },
+        {
+          "text": "Du bist in keiner Allianz",
+          "abhilfe": "allianz true nur als Allianzmitglied."
+        }
+      ],
+      "unumkehrbar": true
+    },
+    "vertrag_anbieten": {
+      "bereich": "diplomatie",
+      "zweck": "Bietet einem Spieler einen Engine-Vertrag an; beide Seiten hinterlegen dieselbe kaution aus den Reichs-Credits (du sofort, der Partner bei Annahme), beim regulären Ende kommen beide zurück, beim Bruch erhält das Opfer beide. nichtangriffspakt: Angriffe bleiben technisch möglich, brechen aber den Pakt öffentlich samt Kaution – mit hoher Kaution der glaubwürdige NAP; verteidigungsbuendnis: ihr seid Verbündete, Angriffe aufeinander sind gesperrt, Halten beim Partner möglich (höchstens 3 je Spieler); handelsabkommen: halbe Marktgebühr untereinander. tribut: DU als Anbieter zahlst täglich tribut_menge von tribut_gut (null = Credits, sonst von deiner Heimatwelt an seine) für tribut_tage (1–365); Ausfall oder eigene Kündigung ist Vertragsbruch – einen Tribut fordert man, indem man den anderen per Brief bittet, ihn anzubieten.",
+      "ids_aus": [
+        "partner: kommunikation.kontakte[].spieler (Spielername)",
+        "bestehende Verträge: lage.vertraege[] (art, status, kaution); Credits lage.credits",
+        "tribut_gut: Gutname aus lage.planeten[].bestand oder null"
+      ],
+      "vorher": [
+        "lage.vertraege auf bestehende Verträge gleicher Art prüfen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "zwischen euch gibt es schon einen Vertrag … oder ein offenes Angebot",
+          "abhilfe": "Bestehenden Vertrag in lage.vertraege nutzen oder erst kündigen bzw. ablehnen."
+        },
+        {
+          "text": "… hat schon 3 Verteidigungsbündnisse, mehr sind nicht erlaubt",
+          "abhilfe": "Ein Bündnis kündigen oder einen NAP mit Kaution anbieten."
+        },
+        {
+          "text": "ein Tribut braucht tribut_menge über 0 und tribut_tage zwischen 1 und 365",
+          "abhilfe": "Bei art tribut tribut_menge > 0 und tribut_tage 1–365 setzen."
+        },
+        {
+          "text": "für die Kaution fehlen Credits (… nötig)",
+          "abhilfe": "Kaution senken oder Credits beschaffen."
+        },
+        {
+          "text": "ein Vertrag braucht einen Partner",
+          "abhilfe": "Einen anderen Spieler als dich nennen."
+        },
+        {
+          "text": "Spieler '…' gibt es nicht",
+          "abhilfe": "Namen exakt übernehmen."
+        },
+        {
+          "text": "kaution muss eine nichtnegative, darstellbare Menge sein",
+          "abhilfe": "kaution als Zahl ≥ 0 senden."
+        }
+      ],
+      "unumkehrbar": false,
+      "beispiel": {
+        "typ": "vertrag_anbieten",
+        "partner": "Name",
+        "art": "nichtangriffspakt",
+        "kaution": 500,
+        "tribut_gut": null,
+        "tribut_menge": 0,
+        "tribut_tage": 0
+      }
+    },
+    "vertrag_annehmen": {
+      "bereich": "diplomatie",
+      "zweck": "Setzt ein Vertragsangebot an dich in Kraft; dabei wird deine Kaution in gleicher Höhe von den Reichs-Credits abgebucht und der Vertrag öffentlich registriert. Beim Tribut zahlt der Anbieter, du empfängst. Gleichwertig zu diplomatie_entscheiden annehmen true auf die verknüpfte Anfrage.",
+      "ids_aus": [
+        "vertrag: lage.vertraege[].vertrag mit status 'angebot an dich' (art, kaution, tribut prüfen)"
+      ],
+      "vorher": [
+        "lage.credits ≥ lage.vertraege[].kaution",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Vertrag … ist kein offenes Angebot an dich",
+          "abhilfe": "Nur status 'angebot an dich'; eigene Angebote nimmt der Partner an."
+        },
+        {
+          "text": "Vertrag … gibt es nicht",
+          "abhilfe": "Nummer aus lage.vertraege[].vertrag übernehmen."
+        },
+        {
+          "text": "für die Kaution fehlen Credits (… nötig)",
+          "abhilfe": "Credits beschaffen oder ablehnen und eine kleinere Kaution vorschlagen."
+        },
+        {
+          "text": "… hat inzwischen das Bündnislimit erreicht",
+          "abhilfe": "Ablehnen oder erst ein anderes Bündnis kündigen."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "vertrag_ablehnen": {
+      "bereich": "diplomatie",
+      "zweck": "Lehnt ein Vertragsangebot an dich ab oder zieht dein eigenes offenes Angebot zurück; die Kaution des Anbieters geht an ihn zurück.",
+      "ids_aus": [
+        "vertrag: lage.vertraege[].vertrag mit status 'angebot an dich' oder 'von dir angeboten'"
+      ],
+      "vorher": [
+        "lage.vertraege lesen"
+      ],
+      "fallen": [
+        {
+          "text": "Vertrag … ist kein offenes Angebot von dir oder an dich",
+          "abhilfe": "Laufende Verträge mit vertrag_kuendigen beenden."
+        },
+        {
+          "text": "Vertrag … gibt es nicht",
+          "abhilfe": "Nummer aus lage.vertraege[].vertrag übernehmen."
+        },
+        {
+          "text": "vertrag_ablehnen gehört nicht zur Rolle …, zuständig: diplomat",
+          "abhilfe": "Den Diplomaten per Pinwand bitten."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "vertrag_kuendigen": {
+      "bereich": "diplomatie",
+      "zweck": "Beendet einen laufenden Vertrag: Nichtangriffspakt und Verteidigungsbündnis gelten noch 48 Stunden (status 'gekündigt, endet …'), danach kommen beide Kautionen zurück; Handelsabkommen und ein Tribut, den du empfängst, enden sofort mit Kautionsrückgabe. Kündigt der Tributzahler, ist das ein öffentlicher Vertragsbruch – seine Kaution geht an den Empfänger.",
+      "ids_aus": [
+        "vertrag: lage.vertraege[].vertrag mit status 'aktiv'; beim Tribut zahler in lage.vertraege[].tribut.zahler"
+      ],
+      "vorher": [
+        "Beschluss des Strategen auf der Pinwand",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Vertrag … ist kein laufender Vertrag von dir",
+          "abhilfe": "Nur status 'aktiv' kündigen; Angebote mit vertrag_ablehnen, bereits gekündigte laufen von selbst aus."
+        },
+        {
+          "text": "Vertrag … gibt es nicht",
+          "abhilfe": "Nummer aus lage.vertraege[].vertrag übernehmen."
+        },
+        {
+          "text": "vertrag_kuendigen gehört nicht zur Rolle …, zuständig: diplomat",
+          "abhilfe": "Den Diplomaten per Pinwand bitten."
+        }
+      ],
+      "unumkehrbar": true
+    },
+    "allianz_gruenden": {
+      "bereich": "allianz",
+      "zweck": "Gründet eine Allianz (Name 1–30 Zeichen, Kürzel tag 2–6 Zeichen A–Z/0–9 oder null für automatisch); du stehst auf Rang 1. Mitglieder derselben Allianz sind verbündet: sie können einander nicht angreifen, dürfen beieinander halten, handeln über den internen Markt und können eine Dysonsphäre bauen; bis 50 Mitglieder einschließlich offener Einladungen.",
+      "ids_aus": [
+        "vorhandene Namen und Kürzel: kommunikation.allianzen[].{name, tag}"
+      ],
+      "vorher": [
+        "kommunikation.allianzen auf Namensgleichheit prüfen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "der Allianzname braucht 1 bis 30 Zeichen",
+          "abhilfe": "Namen mit 1–30 Zeichen wählen."
+        },
+        {
+          "text": "du bist schon in einer Allianz",
+          "abhilfe": "Erst allianz_verlassen oder in der bestehenden bleiben."
+        },
+        {
+          "text": "eine Allianz '…' gibt es schon",
+          "abhilfe": "Anderen Namen wählen."
+        },
+        {
+          "text": "Das Allianz-Kürzel braucht 2 bis 6 Buchstaben oder Ziffern (A–Z, 0–9)",
+          "abhilfe": "Kürzel ohne Umlaute und Sonderzeichen oder tag null senden."
+        },
+        {
+          "text": "Das Allianz-Kürzel […] ist bereits vergeben",
+          "abhilfe": "Anderes Kürzel oder tag null."
+        }
+      ],
+      "unumkehrbar": false,
+      "beispiel": {
+        "typ": "allianz_gruenden",
+        "name": "Nordbund",
+        "tag": null
+      }
+    },
+    "allianz_einladen": {
+      "bereich": "allianz",
+      "zweck": "Lädt einen Spieler ohne Allianz ein (nur Ränge 1–4); er tritt mit allianz_beitreten bei oder lehnt mit allianz_einladung_ablehnen ab. Offene Einladungen belegen Plätze bis zur Höchstzahl von 50.",
+      "ids_aus": [
+        "spieler: kommunikation.kontakte[].spieler mit allianz null"
+      ],
+      "vorher": [
+        "kommunikation.allianzbereich.mitglieder (Platz) prüfen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "du bist in keiner Allianz",
+          "abhilfe": "Erst allianz_gruenden."
+        },
+        {
+          "text": "Nur die obersten vier Mitglieder dürfen einladen",
+          "abhilfe": "Die Leitung per Allianzbrief um die Einladung bitten."
+        },
+        {
+          "text": "… ist schon in einer Allianz",
+          "abhilfe": "Nur Spieler mit allianz null einladen; mit Allianzen per allianz_anfrage verhandeln."
+        },
+        {
+          "text": "eine Allianz hat höchstens 50 Mitglieder",
+          "abhilfe": "Platz schaffen; offene Einladungen zählen mit."
+        },
+        {
+          "text": "Spieler '…' gibt es nicht",
+          "abhilfe": "Namen exakt übernehmen."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "allianz_beitreten": {
+      "bereich": "allianz",
+      "zweck": "Tritt einer Allianz bei, die dich eingeladen hat (Allianzname, nicht Kürzel); gleichwertig zu diplomatie_entscheiden auf eine Anfrage der art allianz. Die Mitgliedschaftsdauer zählt ab jetzt (für die Dysonsphäre 7 Tage Voraussetzung).",
+      "ids_aus": [
+        "allianz: lage.einladungen[] (Allianznamen; nur sichtbar, solange du in keiner Allianz bist)"
+      ],
+      "vorher": [
+        "lage.einladungen lesen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "du bist schon in einer Allianz",
+          "abhilfe": "Erst allianz_verlassen."
+        },
+        {
+          "text": "eine Allianz '…' gibt es nicht",
+          "abhilfe": "Namen exakt aus lage.einladungen übernehmen."
+        },
+        {
+          "text": "für die Allianz '…' liegt keine Einladung vor",
+          "abhilfe": "Um eine Einladung bitten (Brief an deren Leitung)."
+        },
+        {
+          "text": "die Allianz '…' ist voll",
+          "abhilfe": "Andere Allianz wählen oder warten."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "allianz_einladung_ablehnen": {
+      "bereich": "allianz",
+      "zweck": "Lehnt eine direkte Allianzeinladung ab; sie verschwindet und die Allianzleitung erfährt es.",
+      "ids_aus": [
+        "allianz: lage.einladungen[] (Allianznamen)"
+      ],
+      "vorher": [
+        "lage.einladungen lesen"
+      ],
+      "fallen": [
+        {
+          "text": "für die Allianz '…' liegt keine Einladung vor",
+          "abhilfe": "Namen exakt aus lage.einladungen übernehmen."
+        },
+        {
+          "text": "allianz_einladung_ablehnen gehört nicht zur Rolle …, zuständig: diplomat",
+          "abhilfe": "Den Diplomaten per Pinwand bitten."
+        },
+        {
+          "text": "Aktion nicht lesbar: …",
+          "abhilfe": "allianz als Zeichenkette senden."
+        }
+      ],
+      "unumkehrbar": false
+    },
+    "allianz_verlassen": {
+      "bereich": "allianz",
+      "zweck": "Verlässt die eigene Allianz sofort: Bündnisschutz, Allianzpakte und interner Markt gelten nicht mehr (eigene offene interne Angebote werden storniert), die Dyson-Mitgliedszeit beginnt bei einem neuen Beitritt von vorn. Verlässt Rang 1, rückt das nächste Mitglied an die Spitze; Rückkehr nur mit neuer Einladung.",
+      "ids_aus": [
+        "keine Felder; eigene Allianz in lage.allianz bzw. kommunikation.allianzbereich"
+      ],
+      "vorher": [
+        "Beschluss des Strategen auf der Pinwand",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "du bist in keiner Allianz",
+          "abhilfe": "Nichts zu tun."
+        },
+        {
+          "text": "allianz_verlassen gehört nicht zur Rolle …, zuständig: diplomat",
+          "abhilfe": "Den Diplomaten per Pinwand bitten."
+        },
+        {
+          "text": "Reich besiegt; bis zur nächsten Epoche nur noch zuschauen",
+          "abhilfe": "Keine Aktionen mehr möglich."
+        }
+      ],
+      "unumkehrbar": true
+    },
+    "schenken": {
+      "bereich": "diplomatie",
+      "zweck": "Überweist sofort Credits aus den Reichs-Credits (lage.credits, kein Topf) an einen anderen aktiven Spieler. Nur Credits: Rohstoffe verschenkt man per flotte_senden mission transport an dessen Planeten (Verwalter/Feldherr), samt Schiffen per schiffangebot preis 0, innerhalb der Allianz per intern_anbieten preis 0, dauerhaft per vertrag_anbieten art tribut.",
+      "ids_aus": [
+        "an: kommunikation.kontakte[].spieler (Spielername)",
+        "credits: verfügbar lage.credits"
+      ],
+      "vorher": [
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "schenken braucht einen anderen Spieler und einen Betrag über 0",
+          "abhilfe": "Fremden Spieler und credits > 0 angeben."
+        },
+        {
+          "text": "es fehlen Credits (… vorhanden)",
+          "abhilfe": "Betrag auf lage.credits senken."
+        },
+        {
+          "text": "Spieler '…' gibt es nicht",
+          "abhilfe": "Namen exakt übernehmen."
+        },
+        {
+          "text": "schenken gehört nicht zur Rolle …, zuständig: diplomat",
+          "abhilfe": "Den Diplomaten per Pinwand bitten."
+        }
+      ],
+      "unumkehrbar": true
+    },
+    "dyson_vorschlagen": {
+      "bereich": "dyson",
+      "zweck": "Die Allianzleitung (Ränge 1–4) schlägt ein Sonnensystem für eine Dysonsphäre vor (eine je System, eine offene je Allianz); die Allianz braucht dort mindestens einen Planeten. Danach treten Mitglieder mit eigenem Planeten im System bei und zahlen ihren Anteil ein; Stand und Bedingungen in lage.dyson.projekte.",
+      "ids_aus": [
+        "system: Sektor:System (ohne Position) eines Allianzplaneten, z. B. aus lage.planeten[].koord oder kommunikation.allianzbereich.mitglieder[].planeten",
+        "nach Abbruch gesperrte Systeme: lage.dyson.gesperrt[]"
+      ],
+      "vorher": [
+        "lage.dyson.regeln und lage.dyson.gesperrt lesen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Du bist in keiner Allianz",
+          "abhilfe": "Nur Allianzen bauen Dysonsphären."
+        },
+        {
+          "text": "Nur die Allianzleitung (die obersten vier Mitglieder) darf das",
+          "abhilfe": "Die Leitung per Allianzbrief bitten."
+        },
+        {
+          "text": "Deine Allianz braucht mindestens einen Planeten in diesem System",
+          "abhilfe": "System mit Allianzplanet wählen."
+        },
+        {
+          "text": "Im System … gibt es bereits ein Dysonprojekt (…)",
+          "abhilfe": "Anderes System wählen."
+        },
+        {
+          "text": "System … ist nach dem Abbruch gesperrt bis …",
+          "abhilfe": "Bis zum genannten Zeitpunkt warten oder anderes System."
+        },
+        {
+          "text": "Deine Allianz hat bereits ein offenes Dysonprojekt",
+          "abhilfe": "Bestehendes Projekt fortführen oder abbrechen."
+        },
+        {
+          "text": "system als Sektor:System angeben",
+          "abhilfe": "Zwei Zahlen mit Doppelpunkt senden, etwa 1:27."
+        },
+        {
+          "text": "dyson_vorschlagen gehört nicht zur Rolle …, zuständig: diplomat, stratege",
+          "abhilfe": "Diplomat oder Stratege beauftragen."
+        }
+      ],
+      "unumkehrbar": false,
+      "beispiel": {
+        "typ": "dyson_vorschlagen",
+        "system": "1:27"
+      }
+    },
+    "dyson_beitreten": {
+      "bereich": "dyson",
+      "zweck": "Meldet das Reich als Projektmitglied an; Voraussetzung: Mitglied der Eigner-Allianz mit eigenem Planeten im System, höchstens ein offenes Projekt je Reich. Erst danach kann eingezahlt und später ein Anschluss vergeben werden.",
+      "ids_aus": [
+        "projekt: lage.dyson.projekte[].id mit mitglied=false; ohne projekt nimmt der Kern das Projekt der eigenen Allianz",
+        "eigener Planet im System: lage.dyson.projekte[].eigene_planeten[]"
+      ],
+      "vorher": [
+        "lage.dyson.projekte lesen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Nur Mitglieder der Eigner-Allianz können beitreten",
+          "abhilfe": "Nur Projekte der eigenen Allianz wählen."
+        },
+        {
+          "text": "Du brauchst einen eigenen Planeten im System …",
+          "abhilfe": "Erst einen Planeten im System kolonisieren."
+        },
+        {
+          "text": "Du bist bereits Projektmitglied",
+          "abhilfe": "Gleich einzahlen (dyson_einzahlen)."
+        },
+        {
+          "text": "Du bist schon Mitglied eines anderen offenen Dysonprojekts",
+          "abhilfe": "Dort bleiben oder vor Baubeginn austreten."
+        },
+        {
+          "text": "Beitreten geht nur, solange gesammelt oder gebaut wird",
+          "abhilfe": "Projekt ist vollendet oder abgebrochen."
+        },
+        {
+          "text": "Deine Allianz hat kein Dysonprojekt",
+          "abhilfe": "Erst dyson_vorschlagen durch die Leitung."
+        },
+        {
+          "text": "dyson_beitreten gehört nicht zur Rolle …, zuständig: stratege, diplomat",
+          "abhilfe": "Stratege oder Diplomat beauftragen."
+        }
+      ],
+      "unumkehrbar": false,
+      "beispiel": {
+        "typ": "dyson_beitreten",
+        "projekt": 1
+      }
+    },
+    "dyson_austreten": {
+      "bereich": "dyson",
+      "zweck": "Austritt aus dem Projekt, nur vor Baubeginn (Phase sammeln); 90 % der Einzahlung kommen als Guthaben zurück, das man mit dyson_auszahlen abruft.",
+      "ids_aus": [
+        "projekt: lage.dyson.projekte[].id mit mitglied=true und phase 'sammeln'"
+      ],
+      "vorher": [
+        "Beschluss des Strategen auf der Pinwand"
+      ],
+      "fallen": [
+        {
+          "text": "Austreten geht nur vor dem Baubeginn – verbaute Paneele sind nicht zurückzuholen",
+          "abhilfe": "Im Bau ist nur noch dyson_abbrechen durch die Leitung möglich."
+        },
+        {
+          "text": "Du bist kein Projektmitglied",
+          "abhilfe": "Nichts zu tun."
+        },
+        {
+          "text": "Dysonprojekt gibt es nicht",
+          "abhilfe": "projekt aus lage.dyson.projekte[].id nehmen."
+        },
+        {
+          "text": "dyson_austreten gehört nicht zur Rolle …, zuständig: stratege, diplomat",
+          "abhilfe": "Stratege oder Diplomat beauftragen."
+        }
+      ],
+      "unumkehrbar": true,
+      "beispiel": {
+        "typ": "dyson_austreten",
+        "projekt": 1
+      }
+    },
+    "dyson_einzahlen": {
+      "bereich": "dyson",
+      "zweck": "Zahlt Erz, Kristall und Deuterium von einem eigenen Planeten oder Mond (zielart mond) im Dyson-System in die Projektkasse, in Teilzahlungen bis zum Anteil je Gut (lage.dyson.anteil); keine Überzahlung, je Gut und Buchung mindestens lage.dyson.mindestbuchung oder genau der Rest. Bezahlt wird aus dem Bestand, nicht aus einem Topf; das Eingezahlte ist zweckgebunden und kommt nur bei Austritt oder Abbruch teilweise zurück.",
+      "ids_aus": [
+        "projekt: lage.dyson.projekte[].id mit mitglied=true",
+        "von: lage.dyson.projekte[].eigene_planeten[] bzw. eigene_monde[] (dann zielart mond)",
+        "eigener Stand: lage.dyson.projekte[].mitglieder[] mit eigene=true, Feld eingezahlt [erz, kristall, deuterium]; Ziel je Gut lage.dyson.anteil"
+      ],
+      "vorher": [
+        "Rest je Gut = anteil − eingezahlt berechnen",
+        "Bestand von lage.planeten[].bestand prüfen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Erst dem Projekt beitreten (dyson_beitreten)",
+          "abhilfe": "Stratege oder Diplomat tritt zuerst bei."
+        },
+        {
+          "text": "Einzahlen geht nur von eigenen Planeten oder Monden im System …",
+          "abhilfe": "von aus eigene_planeten oder eigene_monde nehmen; Güter vorher dorthin transportieren."
+        },
+        {
+          "text": "…: offener Rest nur … (Anteil …, keine Überzahlung)",
+          "abhilfe": "Menge auf den offenen Rest senken."
+        },
+        {
+          "text": "…: Mindestbuchung … (oder genau der Rest)",
+          "abhilfe": "Mindestens lage.dyson.mindestbuchung oder exakt den Rest buchen."
+        },
+        {
+          "text": "Auf … liegen nur … …",
+          "abhilfe": "Menge auf den Bestand senken."
+        },
+        {
+          "text": "Mengen für erz, kristall oder deuterium angeben (ganze Einheiten, nicht negativ)",
+          "abhilfe": "Mindestens eine Menge > 0 senden."
+        },
+        {
+          "text": "Einzahlen geht nur, solange gesammelt oder gebaut wird",
+          "abhilfe": "Projekt ist vollendet oder abgebrochen."
+        },
+        {
+          "text": "dyson_einzahlen gehört nicht zur Rolle …, zuständig: verwalter, stratege",
+          "abhilfe": "Verwalter oder Stratege beauftragen."
+        }
+      ],
+      "unumkehrbar": true,
+      "beispiel": {
+        "typ": "dyson_einzahlen",
+        "projekt": 1,
+        "von": "1:27:6",
+        "zielart": "planet",
+        "erz": 100000,
+        "kristall": 100000,
+        "deuterium": 50000
+      }
+    },
+    "dyson_bau_starten": {
+      "bereich": "dyson",
+      "zweck": "Die Allianzleitung startet den Bau (15 Spieltage), wenn alle Bedingungen erfüllt sind: alle Plätze des Systems von Allianzmitgliedern besiedelt, mindestens 10 Projektmitglieder mit Planet im System, alle voll eingezahlt, alle auf Zivilisationsstufe V und seit mindestens 7 Spieltagen in der Allianz. Fällt im Bau das volle System oder die Mindestzahl weg, ruht er; nach insgesamt 14 Tagen Ruhe bricht er ab.",
+      "ids_aus": [
+        "projekt: lage.dyson.projekte[].id mit phase 'sammeln' und leitung=true",
+        "Bedingungen: lage.dyson.projekte[].bedingungen[].{kennung, text, ist, soll, erfuellt}"
+      ],
+      "vorher": [
+        "alle lage.dyson.projekte[].bedingungen[].erfuellt=true",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Baubeginn nicht möglich: …",
+          "abhilfe": "Die genannten Bedingungen (ist/soll) erfüllen; fehlende Einzahlungen per Allianzbrief einfordern."
+        },
+        {
+          "text": "Das Projekt ist in Phase …",
+          "abhilfe": "Nur in Phase sammeln möglich."
+        },
+        {
+          "text": "Nur die Allianzleitung (die obersten vier Mitglieder) darf das",
+          "abhilfe": "Die Leitung per Allianzbrief bitten."
+        },
+        {
+          "text": "Das Projekt gehört nicht zu deiner Allianz",
+          "abhilfe": "projekt aus lage.dyson.projekte der eigenen Allianz nehmen."
+        }
+      ],
+      "unumkehrbar": true,
+      "beispiel": {
+        "typ": "dyson_bau_starten",
+        "projekt": 1
+      }
+    },
+    "dyson_abbrechen": {
+      "bereich": "dyson",
+      "zweck": "Die Allianzleitung bricht das Projekt ab (bestaetigt true nötig): vor Baubeginn 100 %, im Bau 75 % des noch nicht verbauten Teils als Guthaben an jedes Mitglied; nach einem Abbruch im Bau ist das System 30 Tage gesperrt.",
+      "ids_aus": [
+        "projekt: lage.dyson.projekte[].id mit phase 'sammeln' oder 'bau' und leitung=true"
+      ],
+      "vorher": [
+        "Beschluss des Strategen auf der Pinwand",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Abbruch bitte mit bestaetigt: true bestätigen",
+          "abhilfe": "bestaetigt true senden."
+        },
+        {
+          "text": "Abbrechen geht nur vor oder während des Baus",
+          "abhilfe": "Vollendete Sphären lassen sich nicht abbrechen."
+        },
+        {
+          "text": "Nur die Allianzleitung (die obersten vier Mitglieder) darf das",
+          "abhilfe": "Die Leitung per Allianzbrief bitten."
+        },
+        {
+          "text": "Dysonprojekt gibt es nicht",
+          "abhilfe": "projekt aus lage.dyson.projekte[].id nehmen."
+        }
+      ],
+      "unumkehrbar": true,
+      "beispiel": {
+        "typ": "dyson_abbrechen",
+        "projekt": 1,
+        "bestaetigt": true
+      }
+    },
+    "dyson_anschluss_waehlen": {
+      "bereich": "dyson",
+      "zweck": "An der vollendeten Sphäre schließt die Allianzleitung bis zu 4 Planeten von Projektmitgliedern im System an (höchstens einer je Spieler): nach 72 Stunden Vorlauf erhalten sie Energieeinspeisung, volle Energiedeckung und Strahlsynthese von Deuterium und Xenokristall. Der Platz bleibt bis 7 Tage nach Aktivierung gesperrt.",
+      "ids_aus": [
+        "projekt: lage.dyson.projekte[].id mit phase 'vollendet'",
+        "slot: lage.dyson.projekte[].anschluesse[].slot mit planet null und sperre_bis ≤ lage.sekunden",
+        "planet: Planet eines Projektmitglieds im System (lage.dyson.projekte[].mitglieder, werkzeug galaxie)"
+      ],
+      "vorher": [
+        "lage.dyson.projekte[].anschluesse lesen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Anschlüsse gibt es erst an der vollendeten Sphäre",
+          "abhilfe": "Fertigstellung abwarten."
+        },
+        {
+          "text": "Anschluss-Platz 1 bis 4",
+          "abhilfe": "slot 1–4 wählen (das Schema erlaubt bis 8, der Kern nur bis 4)."
+        },
+        {
+          "text": "Anschluss … ist belegt – erst dyson_anschluss_loesen",
+          "abhilfe": "Freien Platz wählen oder erst lösen."
+        },
+        {
+          "text": "Anschluss … ist gesperrt bis …",
+          "abhilfe": "Bis zum genannten Zeitpunkt warten."
+        },
+        {
+          "text": "Nur Planeten im System … können angeschlossen werden",
+          "abhilfe": "Planeten im Dyson-System wählen."
+        },
+        {
+          "text": "Der Besitzer muss Projektmitglied der Eigner-Allianz sein",
+          "abhilfe": "Nur Planeten von Projektmitgliedern anschließen."
+        },
+        {
+          "text": "Höchstens 1 Anschluss je Spieler",
+          "abhilfe": "Anderen Spieler berücksichtigen."
+        },
+        {
+          "text": "Nur die Allianzleitung (die obersten vier Mitglieder) darf das",
+          "abhilfe": "Die Leitung per Allianzbrief bitten."
+        }
+      ],
+      "unumkehrbar": true,
+      "beispiel": {
+        "typ": "dyson_anschluss_waehlen",
+        "projekt": 1,
+        "slot": 1,
+        "planet": "1:27:6"
+      }
+    },
+    "dyson_anschluss_loesen": {
+      "bereich": "dyson",
+      "zweck": "Die Allianzleitung löst einen Anschluss, sobald dessen Sperre abgelaufen ist; der Planet verliert die Dysonwirkung, der Platz wird frei.",
+      "ids_aus": [
+        "projekt: lage.dyson.projekte[].id",
+        "slot: lage.dyson.projekte[].anschluesse[].slot mit planet ≠ null und sperre_bis ≤ lage.sekunden"
+      ],
+      "vorher": [
+        "lage.dyson.projekte[].anschluesse lesen"
+      ],
+      "fallen": [
+        {
+          "text": "Anschluss … ist frei",
+          "abhilfe": "Nur belegte Plätze lösen."
+        },
+        {
+          "text": "Anschluss … ist gesperrt bis …",
+          "abhilfe": "Bis zum genannten Zeitpunkt warten."
+        },
+        {
+          "text": "Unbekannter Anschluss-Platz",
+          "abhilfe": "slot aus anschluesse[].slot nehmen."
+        },
+        {
+          "text": "Nur die Allianzleitung (die obersten vier Mitglieder) darf das",
+          "abhilfe": "Die Leitung per Allianzbrief bitten."
+        }
+      ],
+      "unumkehrbar": false,
+      "beispiel": {
+        "typ": "dyson_anschluss_loesen",
+        "projekt": 1,
+        "slot": 1
+      }
+    },
+    "dyson_auszahlen": {
+      "bereich": "dyson",
+      "zweck": "Bucht Rückzahlungsguthaben aus Austritt oder Abbruch (lage.dyson.guthaben = [erz, kristall, deuterium]) auf einen eigenen Planeten, höchstens bis zur Lagergrenze; der Rest bleibt Guthaben für spätere Auszahlungen.",
+      "ids_aus": [
+        "planet: lage.planeten[].koord mit freiem Lager (lage.planeten[].lager − bestand)",
+        "Mengen: höchstens lage.dyson.guthaben je Gut"
+      ],
+      "vorher": [
+        "lage.dyson.guthaben lesen",
+        "handeln probe=true"
+      ],
+      "fallen": [
+        {
+          "text": "Kein Rückzahlungsguthaben",
+          "abhilfe": "Nichts auszuzahlen."
+        },
+        {
+          "text": "Nichts auszuzahlen (Guthaben leer oder Lager voll)",
+          "abhilfe": "Planeten mit freiem Lager wählen oder Mengen > 0 angeben."
+        },
+        {
+          "text": "… ist kein eigener Planet",
+          "abhilfe": "Koordinate aus lage.planeten[].koord nehmen."
+        },
+        {
+          "text": "dyson_auszahlen gehört nicht zur Rolle …, zuständig: verwalter, stratege",
+          "abhilfe": "Verwalter oder Stratege beauftragen."
+        }
+      ],
+      "unumkehrbar": false,
+      "beispiel": {
+        "typ": "dyson_auszahlen",
+        "planet": "1:27:6",
+        "erz": 50000,
+        "kristall": 50000,
+        "deuterium": 50000
+      }
+    }
+  }
+}

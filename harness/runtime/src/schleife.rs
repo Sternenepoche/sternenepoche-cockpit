@@ -9,7 +9,7 @@ use crate::gedaechtnis::{jetzt, Speicher};
 use crate::konfig::{Konfig, RollenKonfig, RoutineKonfig, ROLLEN, ROUTINEN};
 use crate::modell::{json_aus_text, ModellAntwort, Modelle};
 use crate::server::{anfrage_id, Server};
-use crate::{prompt, routinen, wachposten, wissen};
+use crate::{pinwand, prompt, routinen, skillpaket, wachposten, wissen};
 use serde_json::{json, Value};
 use std::collections::{BTreeMap, VecDeque};
 use std::path::PathBuf;
@@ -60,6 +60,12 @@ pub struct Zustand {
     pub lage_kurz: BTreeMap<String, Value>,
     pub lage_voll: BTreeMap<String, Value>,
     pub lage_zeit: BTreeMap<String, i64>,
+    /// Kompakte Lage des letzten Modellzugs je Rolle (bei älterem Server gleich der vollen Lage).
+    pub lage_kompakt: BTreeMap<String, (i64, Value)>,
+    /// Agenda je Rolle mit Abrufzeit (kurz zwischengespeichert, spart Quote).
+    pub agenda: BTreeMap<String, (i64, Value)>,
+    /// Zuletzt gesehene Karten der Rats-Pinwand (für Cockpit und Auslöser).
+    pub pinwand: Vec<Value>,
     pub jetzt: Vec<String>,
     pub extern_zuege: Vec<ExternerZug>,
     pub konto: Value,
@@ -97,6 +103,10 @@ pub struct Harness {
     wissen_geheim: BTreeMap<String, String>,
     /// Nur prüfen, nie spielen (Befehl „probe“ und Probelauf im Cockpit).
     pub nur_probe: std::sync::atomic::AtomicBool,
+    /// Aktionskatalog des Servers je Rolle mit Abrufzeit (`None`-Wert: Server hat keinen).
+    katalog: Mutex<BTreeMap<String, (i64, Option<Value>)>>,
+    /// Skill-Paket des Servers (oder aus dem Zwischenspeicher); leer = eingebettete Skills.
+    skill_paket: Mutex<Vec<skillpaket::Skill>>,
 }
 
 fn rolle_status(z: &mut Zustand, rolle: &str, felder: Value) {
@@ -118,6 +128,18 @@ pub fn lage_kurz(l: &Value) -> Value {
         "server_hinweise":l["server_hinweise"],"freigabe":l["freigabe"]})
 }
 
+/// Cockpit-Übersicht aus einer kompakten Lage auffrischen: Reichswerte, Angriffe, Warnungen, Hinweise neu;
+/// die Planetenliste bleibt aus der letzten vollen Lage (kompakte Planeten sind nur Kurzzeilen).
+fn kurz_auffrischen(alt: Option<&Value>, kompakt: &Value) -> Value {
+    let neu = lage_kurz(kompakt);
+    let Some(alt) = alt.filter(|a| a["planeten"].as_array().is_some_and(|p| !p.is_empty())) else { return neu };
+    let mut v = alt.clone();
+    for (k, x) in neu.as_object().into_iter().flatten() {
+        if k != "planeten" && !x.is_null() { v[k] = x.clone(); }
+    }
+    v
+}
+
 /// Signale der Lage, die Auslöser wecken können.
 #[derive(Default, Clone, PartialEq)]
 struct Signale { angriffe: Vec<String>, neue_briefe: usize, leere_schleifen: usize }
@@ -126,8 +148,28 @@ fn signale(l: &Value) -> Signale {
     Signale {
         angriffe: v["angriffe"].as_array().into_iter().flatten().map(|a| format!("{}@{}", a["ziel"], a["ankunft"])).collect(),
         neue_briefe: v["nachrichten"].as_array().map(|a| a.iter().filter(|n| n["neu"] == true).count()).unwrap_or(0),
-        leere_schleifen: v["planeten"].as_array().into_iter().flatten().filter(|p| p["bauschleife"].as_array().is_some_and(|b| b.is_empty())).count(),
+        // Volle Lage: leere Liste; kompakte Lage: Zahl der Aufträge (0).
+        leere_schleifen: v["planeten"].as_array().into_iter().flatten().filter(|p| p["bauschleife"].as_array().is_some_and(|b| b.is_empty()) || p["bauschleife"].as_u64() == Some(0)).count(),
     }
+}
+
+/// Karten der Pinwand aus einer (kompakten) Lage: `pinwand` neben oder in `lage`.
+fn pinwand_aus_lage(l: &Value) -> Option<Vec<Value>> {
+    pinwand::karten_aus(&json!({"pinwand":l["pinwand"]})).or_else(|| pinwand::karten_aus(&json!({"pinwand":l["lage"]["pinwand"]})))
+}
+
+/// Antwort eines Servers auf `lage?planet=K` (oder volle Lage eines älteren Servers): der eine Planet.
+pub fn planet_aus_lage(l: &Value, koord: &str) -> Option<Value> {
+    let v = &l["lage"];
+    if v["planet"].is_object() && (v["planet"]["koord"] == koord || v["planet"]["koord"].is_null()) { return Some(v["planet"].clone()); }
+    if l["planet"].is_object() { return Some(l["planet"].clone()); }
+    let p = v["planeten"].as_array()?.iter().find(|p| p["koord"] == koord)?.clone();
+    let mut p = p;
+    // Mond des Planeten mitgeben, wenn die Lage ihn getrennt führt.
+    if p["mond"].is_null() {
+        if let Some(m) = v["monde"].as_array().and_then(|m| m.iter().find(|m| m["planet"] == koord || m["koord"] == koord)) { p["mond"] = m.clone(); }
+    }
+    Some(p)
 }
 
 /// Antwortschema des Servers plus die Felder des Harness (Planung, Team, Gedächtnis)
@@ -144,25 +186,55 @@ fn schema_erweitern(s: &Value, rk: &RollenKonfig, planung: bool, quellen: &[Stri
         for typ in ["analyse", "inventur"] {
             if erlaubt(typ) { liste.push(json!({"type":"object","properties":{"typ":{"type":"string","enum":[typ]}},"required":["typ"],"additionalProperties":false})); }
         }
+        if erlaubt("planet_detail") {
+            liste.push(json!({"type":"object","properties":{"typ":{"type":"string","enum":["planet_detail"]},"planet":{"type":"string","pattern":"^[0-9]{1,3}:[0-9]{1,3}:[0-9]{1,2}$"}},"required":["typ","planet"],"additionalProperties":false}));
+        }
+        if erlaubt("lage_teil") {
+            liste.push(json!({"type":"object","properties":{"typ":{"type":"string","enum":["lage_teil"]},"teile":{"type":"array","minItems":1,"maxItems":6,"items":{"type":"string","pattern":"^[a-z0-9_]{1,40}$"}}},"required":["typ","teile"],"additionalProperties":false}));
+        }
         if erlaubt("wissen") && !quellen.is_empty() {
             liste.push(json!({"type":"object","properties":{"typ":{"type":"string","enum":["wissen"]},"quelle":{"type":"string","enum":quellen},"frage":{"type":"string","maxLength":2000}},"required":["typ","quelle","frage"],"additionalProperties":false}));
         }
     }
     if planung {
-        let rollen = json!(ROLLEN);
+        let mut an = ROLLEN.to_vec(); an.push("alle"); an.push("besitzer");
+        // Lokale Planung und Rats-Pinwand teilen ein Schema: karte = Nummer einer Pinwand-Karte, id = lokale Aufgabe.
         s["properties"]["aufgaben"] = json!({"type":"array","maxItems":5,"items":{"type":"object","properties":{"op":{"type":"string","enum":["neu","status","notiz"]},"id":{"type":"integer"},
-            "titel":{"type":"string","maxLength":120},"rolle":{"type":"string","enum":rollen},"prioritaet":{"type":"integer","minimum":1,"maximum":3},
-            "status":{"type":"string","enum":["offen","aktiv","erledigt","blockiert"]},"text":{"type":"string","maxLength":400}},"required":["op"]}});
-        s["properties"]["an_team"] = json!({"type":"array","maxItems":3,"items":{"type":"object","properties":{"an":{"type":"string","enum":rollen},"text":{"type":"string","maxLength":500}},"required":["an","text"]}});
+            "karte":{"type":"integer"},"titel":{"type":"string","maxLength":100},"rolle":{"type":"string","enum":an},"prioritaet":{"type":"integer","minimum":1,"maximum":3},
+            "art":{"type":"string","enum":["auftrag","zusage","warnung","beschluss"]},"frist_stunden":{"type":"number","minimum":0,"maximum":720},
+            "status":{"type":"string","enum":pinwand::STATUS_MODELL},"beleg_request_id":{"type":"string","maxLength":64},"text":{"type":"string","maxLength":800}},"required":["op"]}});
+        s["properties"]["an_team"] = json!({"type":"array","maxItems":3,"items":{"type":"object","properties":{"an":{"type":"string","enum":an},"text":{"type":"string","maxLength":1500},
+            "art":{"type":"string","enum":["anfrage","befund","warnung"]},"titel":{"type":"string","maxLength":100}},"required":["an","text"]}});
         s["properties"]["merken"] = json!({"type":"array","maxItems":3,"items":{"type":"object","properties":{"thema":{"type":"string","maxLength":60},"text":{"type":"string","maxLength":400}},"required":["thema","text"]}});
+        s["properties"]["an_allianz"] = json!({"type":"array","maxItems":3,"items":{"type":"object","properties":{"op":{"type":"string","enum":["neu","antworten","status"]},"karte":{"type":"integer"},
+            "art":{"type":"string","enum":pinwand::ARTEN},"an":{"type":"array","maxItems":12,"items":{"type":"string","maxLength":60}},"titel":{"type":"string","maxLength":100},"text":{"type":"string","maxLength":1500},
+            "status":{"type":"string","enum":pinwand::STATUS},"prioritaet":{"type":"integer","minimum":1,"maximum":3},"frist_stunden":{"type":"number","minimum":0,"maximum":720},
+            "beleg_request_id":{"type":"string","maxLength":64}},"required":["op"]}});
+        s["properties"]["akte"] = json!({"type":"array","maxItems":2,"items":{"type":"object","properties":{"spieler":{"type":["string","integer"]},"text":{"type":"string","maxLength":800}},"required":["spieler","text"]}});
     }
     s
+}
+
+/// Längen der Listen im Schema für das Modell begrenzen (KI-Weg-Lauf 27.10.2026: qwen3:8b schrieb
+/// `dyson_beitreten` für Projekt 1, 2, 3 … bis die Antwort am Tokenlimit abbrach; mit maxItems schließt die Grammatik
+/// des Modellservers die Liste). Mehr als `max_aktionen` Aktionen lehnt der Wachposten ohnehin ab.
+fn listen_begrenzen(s: &mut Value, max_aktionen: usize) {
+    for (feld, n) in [("aktionen", max_aktionen.max(1)), ("abfragen", 4)] {
+        if let Some(p) = s.pointer_mut(&format!("/properties/{feld}")).filter(|p| p.is_object()) {
+            let alt = p["maxItems"].as_u64().unwrap_or(u64::MAX);
+            p["maxItems"] = json!(alt.min(n as u64));
+        }
+    }
 }
 
 fn sauber(s: &str, n: usize) -> String { s.chars().filter(|c| !c.is_control() || *c == '\n').take(n).collect() }
 
 /// Alles, was ein Modellzug vorab braucht: wirksame Rolle (mit soul.md), Schema und Prompt.
-pub struct Vorbereitet { pub rk: RollenKonfig, pub schema: Value, pub p: prompt::Prompt, pub aufgaben: usize, pub team: usize, pub erinnerungen: usize, pub seele_version: String }
+pub struct Vorbereitet { pub rk: RollenKonfig, pub schema: Value, pub p: prompt::Prompt, pub aufgaben: usize, pub team: usize, pub erinnerungen: usize, pub seele_version: String,
+    /// Planung läuft über die Rats-Pinwand des Servers.
+    pub pinwand: bool,
+    /// Woher der Kontext kam (Katalog, Agenda, Pinwand, Skills, ausgelassene Regeln) – für Cockpit und Verlauf.
+    pub quellen: Value }
 
 /// Was ein Modell zu einer vorbereiteten Lage entscheidet – noch ohne jede Wirkung.
 pub struct Entscheidung {
@@ -195,7 +267,70 @@ impl Harness {
         #[cfg(feature = "wasm")]
         let plugins = konfig.plugins.iter().map(|p| crate::plugin::Plugin::laden(p, &basis)).collect::<Result<Vec<_>, _>>()?;
         Ok(Self { server, modelle, speicher: Mutex::new(Speicher { db }), #[cfg(feature = "wasm")] plugins, zustand: Default::default(), bus,
-            schemas: Default::default(), freigabe: Default::default(), marke: anfrage_id()[..12].to_string(), wissen_geheim, nur_probe: Default::default(), konfig: RwLock::new(konfig), basis })
+            schemas: Default::default(), freigabe: Default::default(), marke: anfrage_id()[..12].to_string(), wissen_geheim, nur_probe: Default::default(),
+            katalog: Default::default(), skill_paket: Mutex::new(skillpaket::cache_laden(&basis)), konfig: RwLock::new(konfig), basis })
+    }
+
+    /// Skill-Paket vom Server holen und zwischenspeichern. Ohne Endpunkt bleibt der Zwischenspeicher
+    /// (oder, wenn leer, die eingebetteten Skills). Unveränderte Skills (gleicher hash) werden nicht neu geladen.
+    pub fn skills_laden(&self) {
+        let liste = match self.server.skills() {
+            Ok(Some(v)) => skillpaket::liste_lesen(&v),
+            Ok(None) => return,
+            Err(e) => { self.bus.senden("warnung", json!({"text":format!("Skill-Paket nicht geladen: {e}")})); return; }
+        };
+        let alt = self.skill_paket.lock().unwrap().clone();
+        let mut neu = Vec::new();
+        for (name, beschreibung, hash) in liste.into_iter().take(40) {
+            if let Some(s) = alt.iter().find(|s| s.name == name && !hash.is_empty() && s.hash == hash) { neu.push(s.clone()); continue; }
+            match self.server.skill(&name) {
+                Ok(Some(v)) => if let Some(text) = skillpaket::text_lesen(&v) { neu.push(skillpaket::Skill { name, beschreibung, text, hash }); },
+                Ok(None) => {}
+                Err(e) => { self.bus.senden("warnung", json!({"text":format!("Skill {name}: {e}")})); if let Some(s) = alt.iter().find(|s| s.name == name) { neu.push(s.clone()); } }
+            }
+        }
+        if neu.is_empty() { return; }
+        if let Err(e) = skillpaket::cache_speichern(&self.basis, &neu) { self.bus.senden("warnung", json!({"text":format!("Skill-Zwischenspeicher: {e}")})); }
+        self.bus.senden("skills", json!({"quelle":"server","namen":neu.iter().map(|s| s.name.clone()).collect::<Vec<_>>()}));
+        *self.skill_paket.lock().unwrap() = neu;
+    }
+
+    /// Aktionskatalog der Rolle (eine Stunde zwischengespeichert); `None`, wenn der Server keinen hat.
+    fn katalog_fuer(&self, rolle: &str) -> Option<Value> {
+        if let Some((t, k)) = self.katalog.lock().unwrap().get(rolle) { if jetzt() - t < 3600 { return k.clone(); } }
+        let k = match self.server.aktionen(rolle) {
+            Ok(k) => k.filter(|v| !crate::regelblock::katalog_eintraege(v).is_empty()),
+            // Vorübergehender Fehler: alten Stand behalten, später neu versuchen.
+            Err(_) => return self.katalog.lock().unwrap().get(rolle).and_then(|(_, k)| k.clone()),
+        };
+        self.katalog.lock().unwrap().insert(rolle.into(), (jetzt(), k.clone()));
+        k
+    }
+
+    /// Agenda der Rolle (30 s zwischengespeichert, zählt zur Lage-Quote).
+    fn agenda_fuer(&self, rolle: &str) -> Option<Value> {
+        if let Some((t, a)) = self.zustand.lock().unwrap().agenda.get(rolle) { if jetzt() - t < 30 { return Some(a.clone()); } }
+        match self.server.agenda(rolle) {
+            Ok(Some(a)) => { self.zustand.lock().unwrap().agenda.insert(rolle.into(), (jetzt(), a.clone())); Some(a) }
+            _ => None,
+        }
+    }
+
+    /// Offene Karten der Allianz-Pinwand an dieses Reich (volle Karten); `None` ohne Allianz.
+    fn allianz_fuer(&self, rolle: &str) -> Option<Vec<Value>> {
+        let karten = match self.server.pinwand_allianz(rolle) { Ok(Some(v)) => pinwand::karten_aus(&v)?, _ => return None };
+        self.bus.senden("allianz_pinwand", json!({"rolle":rolle,"karten":karten}));
+        Some(karten)
+    }
+
+    /// Offene Pinwand-Karten der Rolle: `GET pinwand` (volle Karten mit Text und Antworten), sonst die Kurzform
+    /// aus der Lage; `None` ohne Pinwand auf dem Server.
+    fn pinwand_fuer(&self, rolle: &str, lage: &Value) -> Option<Vec<Value>> {
+        let voll = match self.server.pinwand(rolle) { Ok(Some(v)) => pinwand::karten_aus(&v).or(Some(vec![])), _ => None };
+        let karten = voll.or_else(|| pinwand_aus_lage(lage))?;
+        let mut z = self.zustand.lock().unwrap();
+        if z.pinwand != karten { z.pinwand = karten.clone(); drop(z); self.bus.senden("pinwand", json!({"rolle":rolle,"karten":karten})); }
+        Some(karten)
     }
 
     /// Aktuelle Konfiguration (kann im Betrieb neu geladen werden).
@@ -229,8 +364,10 @@ impl Harness {
 
     /// Planung, Gedächtnis und Routinen an Cockpit und lokale API melden.
     pub fn daten_melden(&self) {
+        // Sperrreihenfolge wie überall: erst Zustand (hier sofort wieder frei), dann Speicher.
+        let karten = self.zustand.lock().unwrap().pinwand.clone();
         let s = self.speicher.lock().unwrap();
-        if let Ok(a) = s.aufgaben(true) { self.bus.senden("planung", json!({"aufgaben":a})); }
+        if let Ok(a) = s.aufgaben(true) { self.bus.senden("planung", json!({"aufgaben":a,"pinwand":karten})); }
         let notizen: BTreeMap<String, Value> = ROLLEN.iter().map(|r| (r.to_string(), json!(s.notizen(r, 5).unwrap_or_default()))).collect();
         self.bus.senden("gedaechtnis_daten", json!({"team":s.team_letzte(40).unwrap_or_default(),"erinnerungen":s.erinnerungen(&[], 80).unwrap_or_default(),"notizen":notizen,"statistik":s.statistik().unwrap_or(Value::Null)}));
     }
@@ -242,6 +379,9 @@ impl Harness {
         self.bus.senden("server", json!({"info":{"welt":info["welt"],"quoten":info["quoten_je_minute"],"regeln":info["regeln"]["version"]}}));
         let rollen = self.rollen_konto()?;
         for r in &rollen { self.schema(r)?; }
+        // Skill-Paket und Aktionskataloge einmal beim Start (danach stündlich bzw. aus dem Zwischenspeicher).
+        self.skills_laden();
+        for r in &rollen { let _ = self.katalog_fuer(r); }
         let mut versuch = 0;
         while let Err(e) = self.freigabe_holen(&rollen) {
             versuch += 1;
@@ -262,6 +402,7 @@ impl Harness {
         let mut naechste_wache = jetzt() + 30;
         let mut zuletzt: Option<Signale> = None;
         let mut aufgaben_stand: BTreeMap<String, i64> = BTreeMap::new();
+        let mut pinwand_stand: BTreeMap<String, i64> = BTreeMap::new();
         self.zustand.lock().unwrap().status = "spielt".into();
         self.bus.senden("status", json!({"status":"spielt","rollen":rollen}));
         loop {
@@ -305,7 +446,8 @@ impl Harness {
             if jetzt() >= naechste_wache && rollen.iter().any(|r| k.rollen.get(r).is_some_and(|x| !x.ausloeser.is_empty())) {
                 naechste_wache = jetzt() + k.wache.sekunden as i64;
                 let wach = rollen.iter().find(|r| *r == "feldherr").unwrap_or(&rollen[0]).clone();
-                if let Ok(l) = self.lage_frisch(&wach, 20) {
+                // Kompakte Lage genügt für die Auslöser (Angriffe, Briefe, Bauschleifen, Pinwand).
+                if let Ok(l) = self.lage_kompakt_frisch(&wach, 20) {
                     let neu = signale(&l);
                     let alt = zuletzt.clone().unwrap_or_default();
                     let aufgaben = self.speicher.lock().unwrap().aufgaben(false).unwrap_or_default();
@@ -314,11 +456,19 @@ impl Harness {
                         let seit_zug = jetzt() - self.zustand.lock().unwrap().letzter_zug.get(r).copied().unwrap_or(0);
                         if seit_zug < 120 { continue; }
                         let neueste_aufgabe = aufgaben.iter().filter(|a| a["rolle"] == r.as_str() && a["von"] != r.as_str()).filter_map(|a| a["aktualisiert"].as_i64()).max().unwrap_or(0);
+                        // Pinwand je Rolle (der Server liefert die Karten an sie, an alle und von ihr), nur wenn „aufgabe“ weckt.
+                        let karten = if rk.ausloeser.iter().any(|a| a == "aufgabe") {
+                            match self.server.pinwand(r) { Ok(Some(v)) => pinwand::karten_aus(&v).unwrap_or_default(), _ => vec![] }
+                        } else { vec![] };
+                        // Spielzeit der Pinwand und Uhrzeit der lokalen Aufgaben getrennt vergleichen.
+                        let neueste_karte = pinwand::neueste_fremde(&karten, r);
+                        let neue_karte = neueste_karte > pinwand_stand.get(r).copied().unwrap_or(i64::MAX);
+                        pinwand_stand.insert(r.clone(), neueste_karte);
                         let grund = rk.ausloeser.iter().find(|a| match a.as_str() {
                             "angriff" => neu.angriffe.iter().any(|x| !alt.angriffe.contains(x)),
                             "brief" => neu.neue_briefe > alt.neue_briefe,
                             "bauschleife_leer" => neu.leere_schleifen > 0 && zuletzt.is_some(),
-                            "aufgabe" => neueste_aufgabe > aufgaben_stand.get(r).copied().unwrap_or(i64::MAX),
+                            "aufgabe" => neueste_aufgabe > aufgaben_stand.get(r).copied().unwrap_or(i64::MAX) || neue_karte,
                             _ => false,
                         });
                         aufgaben_stand.insert(r.clone(), neueste_aufgabe);
@@ -457,12 +607,19 @@ impl Harness {
 
     // ------------------------------------------------------------------ Modellzug
 
-    /// Eingebaute Skills und eigene Skills aus dem Ordner „skills“ des Harness.
-    fn skills(&self, rk: &RollenKonfig) -> Vec<(String, String)> {
-        rk.skills.iter().filter_map(|s| {
-            prompt::SKILLS.iter().find(|(n, _)| n == s).map(|(n, t)| (n.to_string(), t.to_string()))
-                .or_else(|| std::fs::read_to_string(self.basis.join("skills").join(format!("{s}.md"))).ok().map(|t| (s.clone(), t.chars().take(6000).collect())))
-        }).collect()
+    /// Skills eines Zugs: das Skill-Paket des Servers (Auswahl je Rolle im Budget), dazu eigene Skills
+    /// aus dem Ordner „skills“. Ohne Paket gelten die eingebetteten Skills der Rollenkonfiguration.
+    fn skills(&self, rk: &RollenKonfig, rolle: &str, budget: usize) -> (Vec<(String, String)>, Vec<String>) {
+        let eigene = |s: &String| std::fs::read_to_string(self.basis.join("skills").join(format!("{s}.md"))).ok().map(|t| (s.clone(), t.chars().take(6000).collect::<String>()));
+        let paket = self.skill_paket.lock().unwrap().clone();
+        if !paket.is_empty() {
+            let (mut v, gekuerzt) = skillpaket::auswahl(&paket, rolle, budget);
+            if !v.is_empty() {
+                v.extend(rk.skills.iter().filter(|s| !prompt::SKILLS.iter().any(|(n, _)| n == *s)).filter_map(eigene));
+                return (v, gekuerzt);
+            }
+        }
+        (rk.skills.iter().filter_map(|s| prompt::SKILLS.iter().find(|(n, _)| n == s).map(|(n, t)| (n.to_string(), t.to_string())).or_else(|| eigene(s))).collect(), vec![])
     }
 
     /// Modell fragen; bei Fehler einmal das Ersatzmodell der Rolle.
@@ -505,8 +662,15 @@ impl Harness {
         let quellen: Vec<(String, String)> = wissen::fuer_rolle(&k.wissen, rolle).iter().map(|w| (w.name.clone(), w.beschreibung.clone())).collect();
         let namen: Vec<String> = quellen.iter().map(|(n, _)| n.clone()).collect();
         let server_schema = self.schema(rolle)?;
-        let schema = schema_erweitern(&server_schema["schema"], &rk, k.planung.aktiv, &namen);
-        let lokale: Vec<&str> = ["analyse", "inventur", "wissen"].into_iter().filter(|t| rk.werkzeuge.as_ref().is_none_or(|w| w.iter().any(|x| x == t))).collect();
+        let mut schema = schema_erweitern(&server_schema["schema"], &rk, k.planung.aktiv, &namen);
+        listen_begrenzen(&mut schema, k.wachposten.max_aktionen_je_zug);
+        let lokale: Vec<&str> = ["analyse", "inventur", "wissen", "planet_detail", "lage_teil"].into_iter().filter(|t| rk.werkzeuge.as_ref().is_none_or(|w| w.iter().any(|x| x == t))).collect();
+        // Wahrnehmung über die Harness-API v1: Aktionskatalog, Agenda und Rats-Pinwand (fehlen sie, gilt das Bisherige).
+        let typen = wachposten::typen_aus_schema(&server_schema["schema"]);
+        let katalog = self.katalog_fuer(rolle);
+        let agenda = self.agenda_fuer(rolle);
+        let karten = if k.planung.aktiv { self.pinwand_fuer(rolle, lage) } else { None };
+        let allianz = if k.planung.aktiv && karten.is_some() { self.allianz_fuer(rolle) } else { None };
         // Stichworte für das Langzeitgedächtnis: Absender von Briefen, Angriffsziele, eigene Rolle.
         let mut stichworte: Vec<String> = lage["lage"]["nachrichten"].as_array().into_iter().flatten().filter_map(|n| n["von"].as_str().map(str::to_string)).collect();
         stichworte.extend(lage["lage"]["angriffe"].as_array().into_iter().flatten().filter_map(|a| a["ziel"].as_str().map(str::to_string)));
@@ -517,12 +681,14 @@ impl Harness {
                 s.team_fuer(rolle, echt)?, s.erinnerungen(&stichworte, k.gedaechtnis.erinnerungen_im_kontext)?)
         };
         let besitzer = { let mut z = self.zustand.lock().unwrap(); if echt { z.besitzer.remove(rolle).unwrap_or_default() } else { z.besitzer.get(rolle).cloned().unwrap_or_default() } };
-        let skills = self.skills(&rk);
+        let (skills, skills_gekuerzt) = self.skills(&rk, rolle, k.kontext.skills_zeichen);
         let p = prompt::bauen(&prompt::Eingaben { rolle, konfig: &rk, doktrin: &k.doktrin, skills: &skills, aufgaben: &aufgaben, team: &team, erinnerungen: &erinnerungen, planung: k.planung.aktiv,
             regeltext: server_schema["regeltext"].as_str().unwrap_or(""), schema: &schema, lage, notizen: &notizen, zuege: &zuege, besitzer: &besitzer, max_zeichen: k.kontext.max_zeichen, marke: &self.marke,
-            lokale: &lokale, wissen: &quellen });
+            lokale: &lokale, wissen: &quellen, katalog: katalog.as_ref(), typen: &typen, agenda: agenda.as_ref(), schema_erzwungen: rk.anbieter == "ollama", pinwand: karten.as_deref(), allianz: allianz.as_deref(), regel_zeichen: k.kontext.regel_zeichen });
         let seele_version = seele_version(&rk);
-        Ok(Vorbereitet { rk, schema, p, aufgaben: aufgaben.len(), team: team.len(), erinnerungen: erinnerungen.len(), seele_version })
+        let quellen_info = json!({"katalog":p.katalog,"agenda":agenda.is_some(),"pinwand":karten.as_ref().map(Vec::len),"allianz_pinwand":allianz.as_ref().map(Vec::len),"skills":skills.iter().map(|(n, _)| n.clone()).collect::<Vec<_>>(),
+            "skills_gekuerzt":skills_gekuerzt,"regel_ausgelassen":p.regel_ausgelassen,"kompakt":!lage["teile_verfuegbar"].is_null() || !lage["lage"]["teile_verfuegbar"].is_null()});
+        Ok(Vorbereitet { rk, schema, p, aufgaben: aufgaben.len(), team: team.len(), erinnerungen: erinnerungen.len(), seele_version, pinwand: karten.is_some(), quellen: quellen_info })
     }
 
     /// Beantwortet die lesenden Abfragen eines Modells. Fremde Texte (von Mitspielern und
@@ -543,8 +709,37 @@ impl Harness {
                             .map(|e| json!({"thema":e["thema"],"text":prompt::entschaerfen(e["text"].as_str().unwrap_or(""), &self.marke),"von":e["von"]})).collect();
                         json!({"abfrage":q,"antwort":treffer})
                     }
-                    "analyse" => { let vorher = self.speicher.lock().unwrap().inventur_vorher().unwrap_or_default(); json!({"abfrage":q,"antwort":routinen::analyse(lage, &vorher)}) }
-                    "inventur" => json!({"abfrage":q,"antwort":routinen::inventur(lage)}),
+                    // Analyse und Inventur rechnen mit vollen Planeten: volle Lage holen, wenn der Zug nur die kompakte hat.
+                    "analyse" | "inventur" => match self.voll_fuer(rolle, lage) {
+                        Ok(voll) if typ == "analyse" => { let vorher = self.speicher.lock().unwrap().inventur_vorher().unwrap_or_default(); json!({"abfrage":q,"antwort":routinen::analyse(&voll, &vorher)}) }
+                        Ok(voll) => json!({"abfrage":q,"antwort":routinen::inventur(&voll)}),
+                        Err(e) => json!({"abfrage":q,"fehler":e}),
+                    },
+                    "planet_detail" | "lage_teil" => {
+                        let r = if typ == "planet_detail" {
+                            let koord = q["planet"].as_str().unwrap_or("").to_string();
+                            self.server.lage_planet(rolle, &koord).map_err(|e| e.text).map(|l| (l, Some(koord)))
+                        } else {
+                            let teile: Vec<String> = q["teile"].as_array().into_iter().flatten().filter_map(|t| t.as_str()).filter(|t| crate::konfig::kennname(t)).take(6).map(str::to_string).collect();
+                            if teile.is_empty() { Err("teile fehlt".to_string()) } else { self.server.lage_teile(rolle, &teile).map_err(|e| e.text).map(|l| { let mut l = l; l["gewuenscht"] = json!(teile); (l, None) }) }
+                        };
+                        match r {
+                            Err(e) => json!({"abfrage":q,"fehler":e}),
+                            Ok((l, koord)) => {
+                                let zeiger: Vec<String> = l["fremdtexte"].as_array().into_iter().flatten().filter_map(|z| z.as_str().map(str::to_string)).collect();
+                                let (sauber, f) = prompt::quarantaene_mit(&l["lage"], &zeiger, "/lage", &self.marke, &format!("ABFRAGE{}-FREMDTEXT", n + 1));
+                                fremd.extend(f.into_iter().map(|(platz, _, text)| (platz, text)));
+                                let antwort = match koord {
+                                    Some(k) => planet_aus_lage(&json!({"lage":sauber,"planet":l["planet"]}), &k).unwrap_or_else(|| json!({"fehler":format!("Planet {k} gehört nicht zu deinem Reich oder ist unbekannt")})),
+                                    // Nur die gewünschten Abschnitte zurückgeben (ein älterer Server liefert die ganze Lage).
+                                    None => json!(l["gewuenscht"].as_array().into_iter().flatten().filter_map(|t| t.as_str()).map(|t| (t.to_string(), sauber.get(t).cloned().unwrap_or(json!("nicht vorhanden")))).collect::<serde_json::Map<_, _>>()),
+                                };
+                                let text = antwort.to_string();
+                                if text.len() > 30_000 { json!({"abfrage":q,"antwort":{"gekuerzt":true,"auszug":text.chars().take(30_000).collect::<String>()}}) }
+                                else { json!({"abfrage":q,"antwort":antwort}) }
+                            }
+                        }
+                    }
                     "wissen" => {
                         let name = q["quelle"].as_str().unwrap_or("");
                         match k.wissen.iter().find(|w| w.name == name && w.rollen.iter().any(|r| r == rolle)) {
@@ -560,7 +755,8 @@ impl Harness {
                             }
                         }
                     }
-                    _ => match self.server.werkzeug(q) {
+                    // Serverabfragen prüfen Vorschauen in der Rolle des Zugs (Rechte und Töpfe wie beim späteren Befehl).
+                    _ => match self.server.werkzeug(q, Some(rolle)) {
                         Ok(v) => {
                             let zeiger: Vec<String> = v["fremdtexte"].as_array().into_iter().flatten().filter_map(|z| z.as_str().map(str::to_string)).collect();
                             let (sauber, f) = prompt::quarantaene_mit(&v["ergebnis"], &zeiger, "/ergebnis", &self.marke, &format!("ABFRAGE{}-FREMDTEXT", n + 1));
@@ -584,7 +780,8 @@ impl Harness {
     fn zug_intern(&self, rolle: &str, probe: bool) -> Result<(), String> {
         let k = self.k();
         rolle_status(&mut self.zustand.lock().unwrap(), rolle, json!({"status":if probe { "Probezug: liest Lage" } else { "liest Lage" }}));
-        let lage = self.lage_mit_warten(rolle)?;
+        // Kompakte Lage (bei 15 Planeten mit Monden ist die volle etwa 1 MB); Einzelheiten holt das Modell gezielt nach.
+        let lage = self.lage_kompakt_mit_warten(rolle)?;
         if lage["welt"]["paused"] == true || lage["welt"]["beendet"] == true {
             rolle_status(&mut self.zustand.lock().unwrap(), rolle, json!({"status":"Welt pausiert"}));
             return Ok(());
@@ -593,7 +790,7 @@ impl Harness {
         let (rk, schema, p) = (&v.rk, &v.schema, &v.p);
         if !probe { self.zustand.lock().unwrap().aufrufe.entry(rolle.into()).or_default().push_back(jetzt()); }
         rolle_status(&mut self.zustand.lock().unwrap(), rolle, json!({"status":"denkt","modell":rk.modell,"anbieter":rk.anbieter}));
-        self.bus.senden("denkt", json!({"rolle":rolle,"modell":rk.modell,"probe":probe,"seele_version":v.seele_version,"fremdtexte":p.fremdtexte,"gekuerzt":p.gekuerzt,"aufgaben":v.aufgaben,"team":v.team,"erinnerungen":v.erinnerungen}));
+        self.bus.senden("denkt", json!({"rolle":rolle,"modell":rk.modell,"probe":probe,"seele_version":v.seele_version,"fremdtexte":p.fremdtexte,"gekuerzt":p.gekuerzt,"aufgaben":v.aufgaben,"team":v.team,"erinnerungen":v.erinnerungen,"quellen":v.quellen}));
         let e = self.entscheiden(rolle, rk, p, schema, &lage, true)?;
         let (tokens, latenz, kosten) = (e.tokens, e.latenz_ms, e.kosten_usd);
         let antwort = &e.antwort;
@@ -615,7 +812,7 @@ impl Harness {
             self.bus.senden("zug", ergebnis);
             return Ok(());
         }
-        ergebnis["team_und_plan"] = self.team_und_plan(rolle, antwort, k.planung.aktiv, k.planung.max_offen);
+        ergebnis["team_und_plan"] = self.team_und_plan(rolle, antwort, k.planung.aktiv, k.planung.max_offen, v.pinwand, &ergebnis);
         {
             let zahl = |f: &str| ergebnis[f].as_array().map(Vec::len).unwrap_or(0);
             let angenommen = ergebnis["ergebnisse"].as_array().map(|v| v.iter().filter(|r| r["ok"] == true).count()).unwrap_or(0);
@@ -672,7 +869,9 @@ impl Harness {
         e.aktionen = e.antwort["aktionen"].as_array().cloned().unwrap_or_default();
         #[cfg(feature = "wasm")]
         for pl in self.plugins.iter().filter(|p| p.rollen.is_empty() || p.rollen.iter().any(|r| r == rolle)) {
-            match pl.bewerten(&json!({"rolle":rolle,"lage":lage_kurz(lage),"aktionen":e.aktionen})) {
+            // Plugins bekommen die Übersicht wie bisher (aus der letzten vollen Lage, aufgefrischt).
+            let kurz = self.zustand.lock().unwrap().lage_kurz.get(rolle).cloned().unwrap_or_else(|| lage_kurz(lage));
+            match pl.bewerten(&json!({"rolle":rolle,"lage":kurz,"aktionen":e.aktionen})) {
                 Ok(v) => {
                     if let Some(neu) = v["aktionen"].as_array() { e.aktionen = neu.clone(); }
                     if let Some(h) = v["hinweise"].as_array() { e.plugin_hinweise.extend(h.iter().filter_map(|x| x.as_str().map(|s| format!("{}: {s}", pl.name)))); }
@@ -686,7 +885,7 @@ impl Harness {
     /// Arena: dieselbe Lage, bis zu drei Varianten (Anbieter, Modell, Seele). Jede entscheidet,
     /// der Spielkern probt, nichts wird gespielt, gespeichert oder dem Team mitgeteilt.
     fn arena(&self, rolle: &str, varianten: &[Value]) -> Result<Value, String> {
-        let lage = self.lage_frisch(rolle, 120)?;
+        let lage = self.lage_kompakt_frisch(rolle, 120)?;
         if lage["welt"]["paused"] == true || lage["welt"]["beendet"] == true { return Err("Die Welt ist pausiert".into()); }
         let mut out = Vec::new();
         for (i, va) in varianten.iter().enumerate() {
@@ -713,9 +912,128 @@ impl Harness {
         Ok(e)
     }
 
-    /// Planung, Teambesprechung und Langzeitgedächtnis aus der Modellantwort übernehmen.
-    fn team_und_plan(&self, rolle: &str, a: &Value, planung: bool, max_offen: usize) -> Value {
+    /// Planung, Teambesprechung und Langzeitgedächtnis aus der Modellantwort übernehmen. Mit Rats-Pinwand
+    /// gehen Aufgaben und Teamnachrichten als Karten an den Server (lokal bleibt ein Spiegel fürs Cockpit);
+    /// ohne Pinwand bleibt alles wie bisher im lokalen Gedächtnis.
+    fn team_und_plan(&self, rolle: &str, a: &Value, planung: bool, max_offen: usize, mit_pinwand: bool, zug: &Value) -> Value {
         if !planung { return json!({}); }
+        let freigabe = self.freigabe();
+        if mit_pinwand && self.server.hat("pinwand") {
+            if let Some(f) = freigabe.as_deref() {
+                let mut protokoll = self.pinwand_schreiben(rolle, a, f, max_offen, zug);
+                // Was die Pinwand nicht übernehmen konnte (Server ohne Pinwand), geht lokal weiter.
+                if !self.server.hat("pinwand") { protokoll.extend(self.lokal_planen(rolle, a, max_offen).as_array().cloned().unwrap_or_default()); }
+                else { protokoll.extend(self.lokal_planen(rolle, &json!({"merken":a["merken"],"aufgaben":a["aufgaben"].as_array().map(|x| x.iter().filter(|o| self.ist_lokale_aufgabe(o)).cloned().collect::<Vec<_>>())}), max_offen).as_array().cloned().unwrap_or_default()); }
+                self.akten_schreiben(a, f, &mut protokoll);
+                return json!(protokoll);
+            }
+        }
+        let mut protokoll = self.lokal_planen(rolle, a, max_offen).as_array().cloned().unwrap_or_default();
+        if let Some(f) = freigabe.as_deref() { self.akten_schreiben(a, f, &mut protokoll); }
+        json!(protokoll)
+    }
+
+    /// Bezieht sich eine Aufgaben-Operation auf eine lokale Aufgabe des Besitzers (id ohne karte, kein Spiegel)?
+    fn ist_lokale_aufgabe(&self, op: &Value) -> bool {
+        if op["op"] == "neu" || !op["karte"].is_null() { return false; }
+        let Some(id) = op["id"].as_i64() else { return false };
+        self.speicher.lock().unwrap().aufgaben(true).unwrap_or_default().iter().any(|x| x["id"] == id && !ROLLEN.contains(&x["von"].as_str().unwrap_or("")) && !x["titel"].as_str().unwrap_or("").starts_with('#'))
+    }
+
+    /// Belege für „erledigt“: request_ids eigener Züge, deren Aktionen alle angenommen wurden.
+    fn belege(&self, rolle: &str, zug: &Value) -> (Option<String>, Vec<String>) {
+        let alle_ok = |e: &Value| e["ergebnisse"].as_array().is_some_and(|r| !r.is_empty() && r.iter().all(|x| x["ok"] == true));
+        let dieser = zug["request_id"].as_str().filter(|_| alle_ok(zug)).map(str::to_string);
+        let fruehere = self.speicher.lock().unwrap().letzte_zuege(rolle, 30).unwrap_or_default().into_iter()
+            .filter(|z| alle_ok(&z["ergebnis"])).filter_map(|z| z["request_id"].as_str().map(str::to_string)).collect();
+        (dieser, fruehere)
+    }
+
+    /// Aufgaben und Teamnachrichten als Pinwand-Karten; dazu der lokale Spiegel („#Karte Titel“).
+    fn pinwand_schreiben(&self, rolle: &str, a: &Value, freigabe: &str, max_offen: usize, zug: &Value) -> Vec<Value> {
+        let mut protokoll = Vec::new();
+        let (dieser, fruehere) = self.belege(rolle, zug);
+        let senden = |mut karte: Value| -> Result<Value, String> {
+            karte["rolle"] = json!(rolle);
+            karte["freigabe"] = json!(freigabe);
+            match self.server.pinwand_schreiben(&karte) { Ok(Some(v)) => Ok(v), Ok(None) => Err("Pinwand nicht verfügbar".into()), Err(e) => Err(e.text) }
+        };
+        for op in a["aufgaben"].as_array().into_iter().flatten().take(5) {
+            if self.ist_lokale_aufgabe(op) { continue; }
+            let beleg = op["beleg_request_id"].as_str().filter(|b| fruehere.iter().any(|x| x == b) || dieser.as_deref() == Some(*b)).map(str::to_string).or_else(|| dieser.clone());
+            if op["beleg_request_id"].is_string() && beleg.as_deref() != op["beleg_request_id"].as_str() && op["status"] == "erledigt" {
+                protokoll.push(json!({"ok":false,"text":format!("Beleg {} ist kein eigener, angenommener Zug", op["beleg_request_id"].as_str().unwrap_or(""))}));
+                continue;
+            }
+            let r = pinwand::aufgabe_karte(op, rolle, beleg.as_deref()).and_then(|k| { let art = k["op"].clone(); senden(k.clone()).map(|v| (art, k, v)) });
+            protokoll.push(match r {
+                Ok((art, k, v)) => {
+                    let id = v["karte"]["id"].as_i64().or(v["id"].as_i64()).or(k["karte"].as_i64());
+                    let s = self.speicher.lock().unwrap();
+                    match art.as_str() {
+                        Some("neu") => if let Some(id) = id {
+                            if s.offene_aufgaben().unwrap_or(0) < max_offen as i64 {
+                                let ziel = k["an"][0].as_str().filter(|r| ROLLEN.contains(r)).unwrap_or(rolle);
+                                let _ = s.aufgabe_neu(&format!("#{id} {}", k["titel"].as_str().unwrap_or("")), k["text"].as_str().unwrap_or(""), ziel, k["prioritaet"].as_i64().unwrap_or(2), rolle);
+                            }
+                        },
+                        _ => if let Some(id) = id {
+                            let spiegel = s.aufgaben(true).unwrap_or_default().into_iter().find(|x| x["titel"].as_str().is_some_and(|t| t.starts_with(&format!("#{id} "))));
+                            if let Some(lid) = spiegel.and_then(|x| x["id"].as_i64()) {
+                                let st = k["status"].as_str().map(pinwand::status_lokal);
+                                let _ = s.aufgabe_aendern(lid, st, k["text"].as_str());
+                            }
+                        },
+                    }
+                    json!({"ok":true,"text":format!("Pinwand {} {}: {}", art.as_str().unwrap_or(""), id.map(|i| format!("#{i}")).unwrap_or_default(), sauber(k["titel"].as_str().or(k["status"].as_str()).or(k["text"].as_str()).unwrap_or(""), 100))})
+                }
+                Err(e) => json!({"ok":false,"text":format!("Pinwand: {e}")}),
+            });
+        }
+        for op in a["an_allianz"].as_array().into_iter().flatten().take(3) {
+            let beleg = op["beleg_request_id"].as_str().filter(|b| fruehere.iter().any(|x| x == b) || dieser.as_deref() == Some(*b)).map(str::to_string).or_else(|| dieser.clone());
+            if op["beleg_request_id"].is_string() && beleg.as_deref() != op["beleg_request_id"].as_str() && op["status"] == "erledigt" {
+                protokoll.push(json!({"ok":false,"text":format!("Allianz-Pinwand: Beleg {} ist kein eigener, angenommener Zug", op["beleg_request_id"].as_str().unwrap_or(""))}));
+                continue;
+            }
+            protokoll.push(match pinwand::allianz_karte(op, beleg.as_deref()).and_then(|k| senden(k.clone()).map(|v| (k, v))) {
+                Ok((k, v)) => json!({"ok":true,"text":format!("Allianz-Pinwand {} #{}: {}", k["op"].as_str().unwrap_or(""), v["karte"]["id"].as_i64().or(k["karte"].as_i64()).unwrap_or(0),
+                    sauber(k["titel"].as_str().or(k["status"].as_str()).or(k["text"].as_str()).unwrap_or(""), 100))}),
+                Err(e) => json!({"ok":false,"text":format!("Allianz-Pinwand: {e}")}),
+            });
+        }
+        for m in a["an_team"].as_array().into_iter().flatten().take(3) {
+            let r = pinwand::an_team_karte(m, rolle).and_then(|k| senden(k.clone()).map(|v| (k, v)));
+            match r {
+                Ok((k, v)) => {
+                    // Spiegel fürs Cockpit; im Prompt stehen Rollen-Nachrichten dann nur auf der Pinwand.
+                    for an in k["an"].as_array().into_iter().flatten().filter_map(|x| x.as_str()) {
+                        let ziele: Vec<&str> = if an == "alle" { ROLLEN.iter().copied().filter(|r| *r != rolle).collect() } else { vec![an] };
+                        for z in ziele { let _ = self.speicher.lock().unwrap().team_senden(rolle, z, k["text"].as_str().unwrap_or("")); }
+                    }
+                    protokoll.push(json!({"ok":true,"text":format!("Pinwand {} #{} an {}: {}", k["art"].as_str().unwrap_or(""), v["karte"]["id"].as_i64().or(v["id"].as_i64()).unwrap_or(0), k["an"], sauber(k["titel"].as_str().unwrap_or(""), 100))}));
+                }
+                Err(e) => protokoll.push(json!({"ok":false,"text":format!("Pinwand: {e}")})),
+            }
+        }
+        protokoll
+    }
+
+    /// Notizen zu fremden Reichen (Gegnerakte); ohne Endpunkt als Erinnerung im eigenen Gedächtnis.
+    fn akten_schreiben(&self, a: &Value, freigabe: &str, protokoll: &mut Vec<Value>) {
+        for n in a["akte"].as_array().into_iter().flatten().take(2) {
+            let (spieler, text) = (&n["spieler"], sauber(n["text"].as_str().unwrap_or(""), 800));
+            if spieler.is_null() { continue; }
+            match self.server.akte(freigabe, spieler, &text) {
+                Ok(Some(_)) => protokoll.push(json!({"ok":true,"text":format!("Akte {}: {}", spieler, sauber(&text, 80))})),
+                Ok(None) => { if !text.trim().is_empty() && self.speicher.lock().unwrap().merken("akte", &format!("Akte {}", spieler.as_str().map(str::to_string).unwrap_or_else(|| spieler.to_string())), &text).is_ok() { protokoll.push(json!({"ok":true,"text":"Akte lokal gemerkt"})); } }
+                Err(e) => protokoll.push(json!({"ok":false,"text":format!("Akte: {}", e.text)})),
+            }
+        }
+    }
+
+    /// Lokale Planung (bisheriger Weg und Spiegel): Aufgaben, Teamnachrichten, Erinnerungen.
+    fn lokal_planen(&self, rolle: &str, a: &Value, max_offen: usize) -> Value {
         let s = self.speicher.lock().unwrap();
         let mut protokoll = Vec::new();
         for op in a["aufgaben"].as_array().into_iter().flatten().take(5) {
@@ -727,15 +1045,16 @@ impl Harness {
                     else if s.offene_aufgaben().unwrap_or(0) as usize >= max_offen { Err(format!("Höchstens {max_offen} offene Aufgaben")) }
                     else { s.aufgabe_neu(&titel, &sauber(op["text"].as_str().unwrap_or(""), 800), ziel, op["prioritaet"].as_i64().unwrap_or(2), rolle).map(|id| format!("Aufgabe {id} für {ziel}: {titel}")) }
                 }
-                Some("status") => op["id"].as_i64().ok_or("id fehlt".to_string()).and_then(|id| s.aufgabe_aendern(id, op["status"].as_str(), None).map(|_| format!("Aufgabe {id}: {}", op["status"].as_str().unwrap_or("")))),
+                Some("status") => op["id"].as_i64().ok_or("id fehlt".to_string()).and_then(|id| { let st = op["status"].as_str().map(pinwand::status_lokal); s.aufgabe_aendern(id, st, None).map(|_| format!("Aufgabe {id}: {}", st.unwrap_or(""))) }),
                 Some("notiz") => op["id"].as_i64().ok_or("id fehlt".to_string()).and_then(|id| s.aufgabe_aendern(id, None, op["text"].as_str()).map(|_| format!("Aufgabe {id}: Notiz"))),
                 _ => Err("unbekannte Aufgaben-Operation".into()),
             };
             protokoll.push(match r { Ok(t) => json!({"ok":true,"text":t}), Err(e) => json!({"ok":false,"text":e}) });
         }
         for m in a["an_team"].as_array().into_iter().flatten().take(3) {
-            if let (Some(an), Some(text)) = (m["an"].as_str().filter(|r| ROLLEN.contains(r) && *r != rolle), m["text"].as_str().filter(|t| !t.trim().is_empty())) {
-                if s.team_senden(rolle, an, text).is_ok() { protokoll.push(json!({"ok":true,"text":format!("an {an}: {}", sauber(text, 120))})); }
+            let ziele: Vec<&str> = match m["an"].as_str() { Some("alle") => ROLLEN.iter().copied().filter(|r| *r != rolle).collect(), Some(r) if ROLLEN.contains(&r) && r != rolle => vec![r], _ => vec![] };
+            if let Some(text) = m["text"].as_str().filter(|t| !t.trim().is_empty()) {
+                for an in ziele { if s.team_senden(rolle, an, text).is_ok() { protokoll.push(json!({"ok":true,"text":format!("an {an}: {}", sauber(text, 120))})); } }
             }
         }
         for m in a["merken"].as_array().into_iter().flatten().take(3) {
@@ -772,6 +1091,40 @@ impl Harness {
             if let (Some(l), Some(t)) = (z.lage_voll.get(rolle), z.lage_zeit.get(rolle)) { if jetzt() - t <= max_alter { return Ok(l.clone()); } }
         }
         self.lage_mit_warten(rolle)
+    }
+
+    /// Kompakte Lage für Modellzug und Wache (`kompakt=1`). Ein älterer Server liefert die volle Lage:
+    /// dann zählt sie auch als volle Lage (Cockpit, Routinen).
+    fn lage_kompakt_mit_warten(&self, rolle: &str) -> Result<Value, String> {
+        for _ in 0..3 {
+            match self.server.lage_kompakt(rolle) {
+                Ok(l) => {
+                    let kompakt = !l["teile_verfuegbar"].is_null() || !l["lage"]["teile_verfuegbar"].is_null();
+                    let mut z = self.zustand.lock().unwrap();
+                    z.lage_kompakt.insert(rolle.into(), (jetzt(), l.clone()));
+                    let kurz = if kompakt { kurz_auffrischen(z.lage_kurz.get(rolle), &l) } else { lage_kurz(&l) };
+                    z.lage_kurz.insert(rolle.into(), kurz.clone());
+                    if !kompakt { z.lage_voll.insert(rolle.into(), l.clone()); z.lage_zeit.insert(rolle.into(), jetzt()); }
+                    drop(z);
+                    self.bus.senden("lage", json!({"rolle":rolle,"kurz":kurz,"kompakt":kompakt,"quote":*self.server.quote.lock().unwrap()}));
+                    return Ok(l);
+                }
+                Err(e) if e.status == 429 => std::thread::sleep(Duration::from_secs(e.warten_s.unwrap_or(30).min(60))),
+                Err(e) => return Err(e.to_string()),
+            }
+        }
+        Err("Quote für Lagebilder erschöpft".into())
+    }
+
+    fn lage_kompakt_frisch(&self, rolle: &str, max_alter: i64) -> Result<Value, String> {
+        if let Some((t, l)) = self.zustand.lock().unwrap().lage_kompakt.get(rolle) { if jetzt() - t <= max_alter { return Ok(l.clone()); } }
+        self.lage_kompakt_mit_warten(rolle)
+    }
+
+    /// Volle Lage zu einer (vielleicht kompakten) Zuglage: ist sie schon voll, diese; sonst höchstens 60 s alt.
+    fn voll_fuer(&self, rolle: &str, lage: &Value) -> Result<Value, String> {
+        if lage["teile_verfuegbar"].is_null() && lage["lage"]["teile_verfuegbar"].is_null() { return Ok(lage.clone()); }
+        self.lage_frisch(rolle, 60)
     }
 
     /// Zug ohne Modell (bestätigt, Routine oder lokale API).
@@ -840,6 +1193,7 @@ impl Harness {
             }
         }
         let request_id = anfrage_id();
+        let gesendet = !nur_probe && !(pruefung.frei.is_empty() && notiz.is_empty());
         let ergebnis = if nur_probe { json!({"ergebnisse":probe_ergebnisse,"nur_probe":true}) } else if pruefung.frei.is_empty() && notiz.is_empty() { json!({"ergebnisse":[]}) } else {
             let mut zug = json!({"request_id":request_id,"rolle":rolle,"freigabe":freigabe,"aktionen":pruefung.frei,"begruendung":begruendung});
             if !notiz.is_empty() { zug["notiz"] = json!(notiz); }
@@ -852,6 +1206,7 @@ impl Harness {
             self.speicher.lock().unwrap().zug(rolle, &request_id, &json!(pruefung.frei), &ergebnis, begruendung)?;
         }
         Ok(json!({"rolle":rolle,"quelle":quelle,"begruendung":begruendung,"aktionen":pruefung.frei,"ergebnisse":ergebnis["ergebnisse"],"probe":probe_ergebnisse,"nur_probe":nur_probe,
+            "request_id":if gesendet { json!(request_id) } else { Value::Null },
             "wartend":pruefung.wartend.iter().map(|(a, g)| json!({"aktion":a,"grund":g})).collect::<Vec<_>>(),
             "abgelehnt":pruefung.abgelehnt.iter().map(|(a, g)| json!({"aktion":a,"grund":g})).collect::<Vec<_>>(),"quote":*self.server.quote.lock().unwrap()}))
     }
@@ -893,10 +1248,10 @@ impl Harness {
             }
             "kontext" => {
                 let r = rolle.ok_or("rolle fehlt")?;
-                let lage = self.lage_frisch(r, 120)?;
+                let lage = self.lage_kompakt_frisch(r, 120)?;
                 let v = self.vorbereiten(r, &lage, false)?;
                 let zeichen = v.p.system.chars().count() + v.p.nutzer.chars().count();
-                let e = json!({"rolle":r,"system":v.p.system,"nutzer":v.p.nutzer,"zeichen":zeichen,"tokens_geschaetzt":zeichen / 4,"fremdtexte":v.p.fremdtexte,"gekuerzt":v.p.gekuerzt,"teile":v.p.teile,
+                let e = json!({"rolle":r,"system":v.p.system,"nutzer":v.p.nutzer,"zeichen":zeichen,"tokens_geschaetzt":zeichen / 4,"fremdtexte":v.p.fremdtexte,"gekuerzt":v.p.gekuerzt,"teile":v.p.teile,"quellen":v.quellen,
                     "aufgaben":v.aufgaben,"team":v.team,"erinnerungen":v.erinnerungen,"seele_version":v.seele_version,"seele_aus_datei":!v.rk.seele_datei.is_empty() && v.rk.auftrag.is_empty()});
                 self.bus.senden("kontext", e.clone());
                 return Ok(e);
@@ -1009,6 +1364,16 @@ impl Harness {
 mod tests {
     use super::*;
     #[test]
+    fn listen_im_modellschema_begrenzt() {
+        let mut s = json!({"properties":{"aktionen":{"type":"array","maxItems":8},"abfragen":{"type":"array"}}});
+        listen_begrenzen(&mut s, 6);
+        assert_eq!((s["properties"]["aktionen"]["maxItems"].as_u64(), s["properties"]["abfragen"]["maxItems"].as_u64()), (Some(6), Some(4)));
+        let mut ohne = json!({"properties":{}});
+        listen_begrenzen(&mut ohne, 6);
+        assert_eq!(ohne, json!({"properties":{}}), "fehlende Felder werden nicht angelegt");
+    }
+
+    #[test]
     fn schema_wird_um_harnessfelder_und_werkzeugrechte_erweitert() {
         let server = json!({"properties":{"abfragen":{"items":{"anyOf":[{"properties":{"typ":{"enum":["kosten"]}}},{"properties":{"typ":{"enum":["galaxie"]}}}]}}}});
         let mut rk: RollenKonfig = serde_json::from_value(json!({"anbieter":"ollama","modell":"x"})).unwrap();
@@ -1020,7 +1385,8 @@ mod tests {
         assert!(s["properties"]["aufgaben"].is_object() && s["properties"]["merken"].is_object() && s["properties"]["an_team"].is_object());
         rk.werkzeuge = None;
         // Ohne Liste: Serverwerkzeuge, Gedächtnissuche, Analyse, Inventur – Wissen nur mit freigegebener Quelle.
-        assert_eq!(schema_erweitern(&server, &rk, false, &[])["properties"]["abfragen"]["items"]["anyOf"].as_array().unwrap().len(), 5);
+        // Dazu planet_detail und lage_teil für die kompakte Lage.
+        assert_eq!(schema_erweitern(&server, &rk, false, &[])["properties"]["abfragen"]["items"]["anyOf"].as_array().unwrap().len(), 7);
         let l = json!({"lage":{"angriffe":[{"ziel":"1:2:3","ankunft":"x"}],"nachrichten":[{"neu":true},{"neu":false}],"planeten":[{"bauschleife":[]},{"bauschleife":[1]}]}});
         let sg = signale(&l);
         assert_eq!((sg.angriffe.len(), sg.neue_briefe, sg.leere_schleifen), (1, 1, 1));

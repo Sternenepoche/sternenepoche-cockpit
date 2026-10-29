@@ -22,9 +22,12 @@
       }
     }
     for (const source of document.querySelectorAll(selector)) {
+      if(source.closest('.art-shell,.tile-image,.item-info-dialog,.planet-pick,.bs-kachel,.bs-banner,.bs-detail-bild,.bs-auftrag,.planet-bild,.gt-tabelle,#techinfo'))continue;
       if (labels.has(source)) continue;
       const host = hostFor(source);
       if (!host) continue;
+      // Kleine Bilder (Kosten-Symbole, Listen) tragen nie eine sichtbare Marke – gar nicht erst anlegen.
+      if (source.tagName === 'IMG' && source.complete && source.naturalWidth && Math.min(source.offsetWidth, source.offsetHeight) < 64) continue;
       if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
       const label = document.createElement('span');
       label.className = 'ai-image-label';
@@ -37,12 +40,15 @@
       resize.observe(source);
     }
     for (const [source, label] of labels) {
-      label.hidden = Math.min(source.offsetWidth, source.offsetHeight) < 64 || !source.getClientRects().length || !source.offsetWidth || !source.offsetHeight
+      // Nur schreiben, was sich ändert: jedes Setzen löste neue Mutationen und am Handy sichtbares Blinken aus.
+      const hidden = Math.min(source.offsetWidth, source.offsetHeight) < 64 || !source.getClientRects().length || !source.offsetWidth || !source.offsetHeight
         || (source.tagName === 'IMG' && (!source.complete || !source.naturalWidth));
-      if (source.hasAttribute('data-ai-image')) continue;
+      if (label.hidden !== hidden) label.hidden = hidden;
+      if (hidden || source.hasAttribute('data-ai-image')) continue;
       // Sibling overlays preserve existing grid, flex and absolute image layouts.
-      label.style.left = `${source.offsetLeft + source.offsetWidth - 2}px`;
-      label.style.top = `${source.offsetTop + source.offsetHeight - 2}px`;
+      const left = `${source.offsetLeft + source.offsetWidth - 2}px`, top = `${source.offsetTop + source.offsetHeight - 2}px`;
+      if (label.style.left !== left) label.style.left = left;
+      if (label.style.top !== top) label.style.top = top;
     }
   }
 
@@ -53,7 +59,7 @@
   function start() {
     new MutationObserver(records => {
       if (records.some(record => record.type === 'attributes'
-        ? !record.target.classList.contains('ai-image-label')
+        ? !record.target.classList.contains('ai-image-label') && !record.target.closest('#galaxy-labels')
         : [...record.addedNodes, ...record.removedNodes].some(node =>
           node.nodeType === 1 && !node.classList.contains('ai-image-label')))) schedule();
     }).observe(document.body, {subtree: true, childList: true, attributes: true,

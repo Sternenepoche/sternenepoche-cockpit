@@ -1,0 +1,80 @@
+// Mondgeneration (STERNE13): Monde, Mondgebäude, Mondökonomie, Tiefenphalanx, Hyperraumloch, Zerstörung.
+// Konzept und Beschlüsse: docs/MONDKONZEPT.md (Abschnitt "Beschlossen"). Diese Datei wirkt nur in Welten,
+// die Welt::monde_aktivieren aufrufen; ihre Bytes gehen dabei einmalig in den Regelhash ein.
+(
+    version: 1,
+    // Entstehung: 1 % je 2.000 Trümmer dieses Kampfes, höchstens 40 % (19.10.2026, Karl: „Monde entstehen noch zu
+    // schwer … das muss echt klappen“; vorher OGame 1 % je 100.000, höchstens 20 %. Messung bot_lage 60 Tage: Bot-Kämpfe
+    // hinterlassen meist 2.000–50.000 Trümmer – mit 1 % je 100.000 entstand nie ein Mond).
+    truemmer_je_prozent: 2000,
+    chance_max_prozent: 40,
+    truemmer_groesse_max: 2000000,
+    groesse_x_min: 10,
+    groesse_x_max: 20,
+    durchmesser_max: 8944,
+    grundfelder: 1,
+    felder_je_mondbasis: 3,
+    nebel_amethyst_faktor: 3,
+    typen: {
+        krater_grau:      (glut: 10, leben: 18, frost: 14, regolith_erz: 0.2, regolith_kristall: 0.2),
+        basalt_dunkel:    (glut: 14, leben: 12, frost: 8,  zerstoerung_mod: 0.15, solar_mod: -0.1),
+        eis_rissig:       (glut: 2,  leben: 4,  frost: 26, kryolager_mod: 0.5, deuterium_spur: 0.25, zerstoerung_mod: -0.1),
+        mineral_blau:     (glut: 5,  leben: 10, frost: 16, regolith_kristall: 0.4, regolith_erz: -0.2),
+        organisch_gruen:  (glut: 2,  leben: 16, frost: 4,  nahrung_je_stufe: 8.0, unterhalt_mod: -0.25, spionage_mod: -1),
+        rost_staub:       (glut: 16, leben: 10, frost: 6,  spionage_mod: 1, solar_mod: -0.2),
+        schluucht_tief:   (glut: 8,  leben: 14, frost: 10, felder_bonus: 0.25, regolith_erz: -0.2, regolith_kristall: -0.2),
+        vulkan_glut:      (glut: 22, leben: 4,  frost: 2,  grundenergie_mod: 2.0, kryolager_mod: -0.3),
+        amethyst_violett: (glut: 3,  leben: 6,  frost: 10, xeno_spur: 0.01, xeno_spur_nebel: 0.02, regolith_erz: -0.2),
+        karmin_rot:       (glut: 18, leben: 6,  frost: 4,  phalanx_stufe: 1, scan_mod: -0.2, solar_mod: -0.1),
+    },
+    // Ökonomie
+    grundenergie_je_mondbasis: 20.0,
+    lager_anteil: 0.5,
+    kryolager_basis: 20000,
+    kryolager_faktor: 1.6,
+    kryolager_geschuetzt: 0.25,
+    faehre_je_mondbasis_stunde: 2000,
+    unterhalt_basis_tag: 150,
+    unterhalt_je_stufe_tag: 20,
+    werftdock_zeitaufschlag: 0.0,       // Weltenkrümmer schneller (Karl 20.10.2026; vorher 0,25 = Bauzeit × 1,25)
+    weltentruemmer_werftdock: 8,         // Karl 21.10.2026: 8 statt 10 – der Krümmer soll klar vor Tag 180 möglich sein (frische Welt 712: Tag 145 kein Mond über Werftdock 6)
+    reparatur_je_stufe: 0.03,
+    reparatur_max: 0.3,
+    reparatur_kosten_anteil: 0.1,
+    reparatur_zeit_anteil: 0.1,
+    solarsonde_energie: 33.0,           // +10 % (Karl 20.10.2026)
+    gebaeude: {
+        mondbasis: (kosten: {erz: 10000, kristall: 20000, deuterium: 10000}, faktor: 1.45, ab_stufe: 4, ertrag: 20.0,
+            wirkung: "+3 Felder je Stufe bis zur Obergrenze, Raumhafen und Bauhof des Mondes, Grundenergie, Lager, Fähre"),
+        tiefenphalanx: (kosten: {erz: 10000, kristall: 20000, deuterium: 5000, elektronik: 500}, faktor: 1.5, energie: 40.0, ab_stufe: 4,
+            braucht: {mondbasis: 1}, forschung: {spionagetechnik: 2, ueberwachungstechnik: 1},
+            wirkung: "scannt Flottenbewegungen eines Planeten in Reichweite; Monde sind nicht scannbar"),
+        sprungtor: (kosten: {erz: 500000, kristall: 1000000, deuterium: 500000, legierung: 20000, elektronik: 10000, xenokristall: 3000},
+            faktor: 1.6, energie: 150.0, ab_stufe: 5, max_stufe: 5, braucht: {mondbasis: 3}, forschung: {hyperraumantrieb: 3},
+            wirkung: "öffnet ein öffentliches Hyperraumloch zu einem anderen Sprungtor"),
+        regolithfoerderung: (kosten: {erz: 4000, kristall: 2000, legierung: 100}, faktor: 1.38, energie: 15.0, ab_stufe: 4,
+            braucht: {mondbasis: 1}, ertrag_erz: 15.0, ertrag_kristall: 10.0, wirkung: "fördert Regolith ohne Arbeiter"),
+        kryolager: (kosten: {erz: 5000, kristall: 3000, legierung: 200}, faktor: 1.36, energie: 5.0, ab_stufe: 4,
+            braucht: {mondbasis: 1}, wirkung: "lagert Deuterium, ein Viertel davon plünderungssicher"),
+        werftdock: (kosten: {erz: 20000, kristall: 10000, legierung: 1000, elektronik: 300}, faktor: 1.35, energie: 30.0, ab_stufe: 4,
+            braucht: {mondbasis: 2}, wirkung: "Mondwerft und Reparaturdock; ab Stufe 8 Weltenkrümmer"),
+        ortungsschleier: (kosten: {kristall: 8000, deuterium: 4000, elektronik: 400}, faktor: 1.45, energie: 25.0, ab_stufe: 4,
+            max_stufe: 5, braucht: {mondbasis: 2}, forschung: {abschirmtechnik: 1},
+            wirkung: "erschwert Spionage auf den Mond und verbirgt Lochöffnungen vor fernen Phalanxen"),
+    },
+    tiefenphalanx: (scan_deuterium: 5000, abklingzeit_sekunden: 300, reichweite_teiler: 2, berichte_max: 50),
+    hyperraumloch: (
+        offen_sekunden: 300,
+        abklingzeit_basis_minuten: 120,
+        abklingzeit_min_minuten: 60,
+        abklingzeit_je_stufe: 0.1,
+        reichweite_je_stufe: 15,
+        sektorwechsel_ab_stufe: 4,
+        sektorwechsel_aufschlag: 30,
+        deuterium_basis: 20000,
+        deuterium_je_system: 2000,
+        kapazitaet_je_stufe: 2000000,
+        gebuehr_anteil: 0.0,   // Karl 18.10.2026: Durchreise ohne Deuterium (nur der spaetere Heimflug aus dem Orbit wird mitbezahlt)
+    ),
+    zerstoerung: (fallout_lager_anteil: 0.5, fallout_gebaeude_anteil: 0.1, fallout_malus: 5.0, fallout_stunden: 72),
+)

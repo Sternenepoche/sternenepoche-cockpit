@@ -1,0 +1,2117 @@
+{
+  "version": 1,
+  "units": {
+    "spionagesonde": {
+      "struktur": 1000,
+      "schild": 0,
+      "angriff": 0,
+      "ladung": 0,
+      "tempo": 100000,
+      "verbrauch": 1,
+      "besatzung": 0,
+      "ab_stufe": 1,
+      "werft": 1,
+      "kosten": {
+        "kristall": 300
+      },
+      "antrieb": "verbrennungsantrieb",
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "Aufklärung, sehr schnell, keine Besatzung",
+      "klasse": "sonde",
+      "label": "Spionagesonde",
+      "voraussetzungen": {},
+      "motiv": "a tiny unmanned reconnaissance probe with a sensor dish, optical telescope and compact ion thruster",
+      "neu": false
+    },
+    "kleiner_transporter": {
+      "struktur": 4000,
+      "schild": 10,
+      "angriff": 5,
+      "ladung": 5000,
+      "tempo": 10000,
+      "verbrauch": 10,
+      "besatzung": 5,
+      "ab_stufe": 2,
+      "werft": 1,
+      "kosten": {
+        "erz": 2000,
+        "kristall": 2000
+      },
+      "antrieb": "verbrennungsantrieb",
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "schneller Frachter",
+      "klasse": "transporter",
+      "label": "Kleiner Transporter",
+      "voraussetzungen": {},
+      "motiv": "a compact freighter with four external cargo pods and twin rear engines",
+      "neu": false
+    },
+    "grosser_transporter": {
+      "struktur": 12000,
+      "schild": 25,
+      "angriff": 5,
+      "ladung": 25000,
+      "tempo": 7500,
+      "verbrauch": 50,
+      "besatzung": 15,
+      "ab_stufe": 3,
+      "werft": 2,
+      "kosten": {
+        "erz": 6000,
+        "kristall": 6000,
+        "legierung": 50
+      },
+      "antrieb": "verbrennungsantrieb",
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "großer Frachter",
+      "klasse": "transporter",
+      "label": "Großer Transporter",
+      "voraussetzungen": {},
+      "motiv": "a broad heavy cargo carrier with two long banks of standardized freight containers",
+      "neu": false
+    },
+    "leichter_jaeger": {
+      "struktur": 4000,
+      "schild": 10,
+      "angriff": 270,
+      "ladung": 50,
+      "tempo": 12500,
+      "verbrauch": 20,
+      "besatzung": 2,
+      "ab_stufe": 2,
+      "werft": 1,
+      "kosten": {
+        "erz": 3000,
+        "kristall": 1000
+      },
+      "antrieb": "verbrennungsantrieb",
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "Günstiger Schwarmjäger: jagt Raketenkreuzer und Schlachtschiffe, plündert Frachter; verliert gegen Kreuzer, Lasergeschütze und Abfangschirme.",
+      "klasse": "jaeger",
+      "label": "Leichter Jäger",
+      "voraussetzungen": {},
+      "motiv": "a small agile single-seat space interceptor, clear swept silhouette and twin forward guns",
+      "neu": false
+    },
+    "bergbauschiff": {
+      "struktur": 12000,
+      "schild": 20,
+      "angriff": 5,
+      "ladung": 10000,
+      "tempo": 4000,
+      "verbrauch": 40,
+      "besatzung": 20,
+      "ab_stufe": 2,
+      "werft": 2,
+      "kosten": {
+        "erz": 5000,
+        "kristall": 2500,
+        "deuterium": 1000,
+        "legierung": 50
+      },
+      "antrieb": "verbrennungsantrieb",
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "baut in Asteroidengürteln Erz und Kristall ab",
+      "klasse": "bergbau",
+      "label": "Bergbauschiff",
+      "voraussetzungen": {},
+      "motiv": "an industrial asteroid mining vessel with rotary cutters, grapple arms and an ore hold",
+      "neu": false
+    },
+    "kreuzer": {
+      "struktur": 29000,
+      "schild": 54,
+      "angriff": 2200,
+      "ladung": 800,
+      "tempo": 15000,
+      "verbrauch": 300,
+      "besatzung": 30,
+      "ab_stufe": 3,
+      "werft": 3,
+      "kosten": {
+        "erz": 20000,
+        "kristall": 7000,
+        "deuterium": 2000,
+        "legierung": 300,
+        "elektronik": 100
+      },
+      "antrieb": "impulsantrieb",
+      "braucht": {},
+      "schnellfeuer": {
+        "leichter_jaeger": 6,
+        "sturmjaeger": 3,
+        "abfangjaeger": 3
+      },
+      "wirkung": "Geleitkreuzer gegen Jägerschwärme: Schnellfeuer gegen leichte, Sturm- und Abfangjäger; verliert gegen Schlachtschiffe, Zerstörer und Schlachtkreuzer.",
+      "klasse": "kreuzer",
+      "label": "Kreuzer",
+      "voraussetzungen": {},
+      "motiv": "a medium armored cruiser with a long central spine, broad shoulders and clearly readable gun turrets",
+      "neu": false
+    },
+    "recycler": {
+      "struktur": 16000,
+      "schild": 10,
+      "angriff": 1,
+      "ladung": 20000,
+      "tempo": 2000,
+      "verbrauch": 300,
+      "besatzung": 15,
+      "ab_stufe": 3,
+      "werft": 2,
+      "kosten": {
+        "erz": 10000,
+        "kristall": 6000,
+        "deuterium": 2000,
+        "legierung": 100
+      },
+      "antrieb": "verbrennungsantrieb",
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "sammelt Trümmerfelder ein",
+      "klasse": "bergung",
+      "label": "Recycler",
+      "voraussetzungen": {},
+      "motiv": "a salvage vessel with a wide open collection mouth, robotic claws and compact refining modules",
+      "neu": false
+    },
+    "kolonieschiff": {
+      "struktur": 30000,
+      "schild": 100,
+      "angriff": 50,
+      "ladung": 10000,
+      "tempo": 2500,
+      "verbrauch": 1000,
+      "besatzung": 0,
+      "ab_stufe": 4,
+      "werft": 4,
+      "kosten": {
+        "erz": 10000,
+        "kristall": 20000,
+        "deuterium": 10000,
+        "legierung": 400,
+        "elektronik": 200,
+        "habitatmodul": 2,
+        "antriebskern": 1
+      },
+      "antrieb": "impulsantrieb",
+      "braucht": {
+        "orbitalwerft": 1
+      },
+      "schnellfeuer": {},
+      "wirkung": "gründet eine Kolonie, nimmt Siedler aus der Bevölkerung mit",
+      "klasse": "kolonie",
+      "label": "Kleines Kolonieschiff",
+      "voraussetzungen": {},
+      "motiv": "a large unarmed colony ark with paired cylindrical habitat modules, a central propulsion core and landing modules",
+      "neu": false
+    },
+    "truppentransporter": {
+      "struktur": 15000,
+      "schild": 30,
+      "angriff": 10,
+      "ladung": 2000,
+      "tempo": 6000,
+      "verbrauch": 200,
+      "besatzung": 500,
+      "ab_stufe": 4,
+      "werft": 3,
+      "kosten": {
+        "erz": 8000,
+        "kristall": 4000,
+        "deuterium": 2000,
+        "legierung": 200
+      },
+      "antrieb": "impulsantrieb",
+      "braucht": {
+        "kaserne": 1
+      },
+      "schnellfeuer": {},
+      "wirkung": "bringt Bodentruppen für Invasionen, die Truppen zählen als Besatzung",
+      "klasse": "truppen",
+      "label": "Truppentransporter",
+      "voraussetzungen": {},
+      "motiv": "an armored troop landing carrier with a wide landing ramp and reinforced descent engines",
+      "neu": false
+    },
+    "schlachtschiff": {
+      "struktur": 68000,
+      "schild": 230,
+      "angriff": 4500,
+      "ladung": 1500,
+      "tempo": 10000,
+      "verbrauch": 500,
+      "besatzung": 100,
+      "ab_stufe": 5,
+      "werft": 6,
+      "kosten": {
+        "erz": 45000,
+        "kristall": 15000,
+        "legierung": 1000,
+        "elektronik": 300,
+        "xenokristall": 20
+      },
+      "antrieb": "hyperraumantrieb",
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "Linienschiff gegen Kreuzer: jagt Kreuzer und Flottenkreuzer, erfasst Schild- und Raketenkreuzer und Bomber; verliert gegen Zerstörer, Schlachtkreuzer und Jägerschwärme.",
+      "klasse": "schlachter",
+      "label": "Schlachtschiff",
+      "voraussetzungen": {},
+      "motiv": "a massive battleship with layered armor, multiple large turrets and a strong rectangular silhouette",
+      "neu": false
+    },
+    "bomber": {
+      "struktur": 63000,
+      "schild": 420,
+      "angriff": 2100,
+      "ladung": 500,
+      "tempo": 5000,
+      "verbrauch": 1000,
+      "besatzung": 80,
+      "ab_stufe": 5,
+      "werft": 7,
+      "kosten": {
+        "erz": 50000,
+        "kristall": 25000,
+        "deuterium": 15000,
+        "legierung": 1000,
+        "elektronik": 500,
+        "xenokristall": 50
+      },
+      "antrieb": "hyperraumantrieb",
+      "braucht": {},
+      "schnellfeuer": {
+        "raketenwerfer": 10,
+        "lasergeschuetz": 8,
+        "ionengeschuetz": 3
+      },
+      "wirkung": "Bodenbekämpfung: vier Ziele und Schnellfeuer gegen Raketenwerfer, Lasergeschütze und Ionengeschütze; im Flottenkampf schwach – braucht Geleit gegen Schwere Jäger und Flottenkreuzer.",
+      "klasse": "bomber",
+      "label": "Bomber",
+      "voraussetzungen": {},
+      "motiv": "a heavily armored siege bomber with two clearly visible ventral bomb bays and broad stabilizing fins",
+      "neu": false
+    },
+    "zerstoerer": {
+      "struktur": 170000,
+      "schild": 760,
+      "angriff": 7100,
+      "ladung": 2000,
+      "tempo": 5000,
+      "verbrauch": 1000,
+      "besatzung": 120,
+      "ab_stufe": 5,
+      "werft": 8,
+      "kosten": {
+        "erz": 60000,
+        "kristall": 50000,
+        "deuterium": 15000,
+        "legierung": 2000,
+        "elektronik": 1000,
+        "xenokristall": 200
+      },
+      "antrieb": "hyperraumantrieb",
+      "braucht": {
+        "orbitalwerft": 3
+      },
+      "schnellfeuer": {
+        "kreuzer": 3,
+        "schlachtschiff": 2,
+        "schlachtkreuzer": 2
+      },
+      "wirkung": "Linienbrecher: dreifacher Schaden gegen Schlachtschiffe, Belagerer und Schwere Schlachtkreuzer, Schnellfeuer gegen Kreuzer; verliert gegen Sturmjäger und Sturmschlachtschiffe.",
+      "klasse": "zerstoerer",
+      "label": "Zerstörer",
+      "voraussetzungen": {},
+      "motiv": "an advanced long-range destroyer with a large spinal beam cannon and violet xenocrystal reactor windows",
+      "neu": false
+    },
+    "raketenwerfer": {
+      "struktur": 3000,
+      "schild": 30,
+      "angriff": 160,
+      "ab_stufe": 2,
+      "kosten": {
+        "erz": 2000
+      },
+      "antrieb": null,
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "Günstige Masse gegen Kreuzer und Raketenkreuzer; fällt gegen Bomber.",
+      "klasse": "verteidigung",
+      "label": "Raketenwerfer",
+      "voraussetzungen": {},
+      "motiv": "a rugged surface missile battery with six launch tubes on an armored rotating platform",
+      "neu": false
+    },
+    "lasergeschuetz": {
+      "struktur": 3300,
+      "schild": 42,
+      "angriff": 91,
+      "ab_stufe": 2,
+      "kosten": {
+        "erz": 1500,
+        "kristall": 500
+      },
+      "antrieb": null,
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "Zwei Ziele gegen leichte, Abfang- und Sturmjäger; fällt gegen Bomber.",
+      "klasse": "verteidigung",
+      "label": "Lasergeschütz",
+      "voraussetzungen": {},
+      "motiv": "a compact dual-barrel surface laser defense turret with cooling fins",
+      "neu": false
+    },
+    "ionengeschuetz": {
+      "struktur": 14000,
+      "schild": 860,
+      "angriff": 540,
+      "ab_stufe": 3,
+      "kosten": {
+        "erz": 5000,
+        "kristall": 3000,
+        "elektronik": 30
+      },
+      "antrieb": null,
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "Schildbrecher: doppelter Schaden auf Schilde, dreifach gegen Schildkreuzer, jagt Schlachtschiffe; fällt gegen Bomber und Belagerungsschlachtschiffe.",
+      "klasse": "verteidigung",
+      "label": "Ionengeschütz",
+      "voraussetzungen": {},
+      "motiv": "an ion defense cannon with a prominent blue induction coil and heavy base",
+      "neu": false
+    },
+    "gausskanone": {
+      "struktur": 71000,
+      "schild": 400,
+      "angriff": 2100,
+      "ab_stufe": 4,
+      "kosten": {
+        "erz": 20000,
+        "kristall": 15000,
+        "deuterium": 2000,
+        "legierung": 200
+      },
+      "antrieb": null,
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "Panzerbrechender Schuss gegen Schlachtschiffe und Zerstörer; fällt gegen Strategische Bomber und Belagerungsschlachtschiffe.",
+      "klasse": "verteidigung",
+      "label": "Gaußkanone",
+      "voraussetzungen": {},
+      "motiv": "a long electromagnetic rail defense cannon supported by two structural rails",
+      "neu": false
+    },
+    "plasmawerfer": {
+      "struktur": 290000,
+      "schild": 1900,
+      "angriff": 8200,
+      "ab_stufe": 5,
+      "kosten": {
+        "erz": 50000,
+        "kristall": 50000,
+        "deuterium": 30000,
+        "legierung": 1000,
+        "elektronik": 500
+      },
+      "antrieb": null,
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "Schwere Bomberabwehr (dreifacher Schaden), erfasst Schlachtschiffe; fällt gegen Strategische Bomber, schwere Jäger und Belagerungsschlachtschiffe.",
+      "klasse": "verteidigung",
+      "label": "Plasmawerfer",
+      "voraussetzungen": {},
+      "motiv": "a heavily shielded plasma defense turret with a bright contained plasma chamber",
+      "neu": false
+    },
+    "planetenschild": {
+      "struktur": 300000,
+      "schild": 30000,
+      "angriff": 0,
+      "ab_stufe": 4,
+      "max_anzahl": 1,
+      "kosten": {
+        "erz": 50000,
+        "kristall": 50000,
+        "legierung": 2000,
+        "elektronik": 1000,
+        "xenokristall": 100
+      },
+      "antrieb": null,
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "sehr starker Schild, nur einer je Planet",
+      "klasse": "schild",
+      "label": "Planetenschild I",
+      "voraussetzungen": {
+        "schildtechnik": 4,
+        "energietechnik": 3
+      },
+      "motiv": "a planetary shield generator with three pylons projecting a translucent hemispherical energy field",
+      "neu": false
+    },
+    "abfangjaeger": {
+      "label": "Abfangjäger",
+      "klasse": "jaeger",
+      "struktur": 8400,
+      "schild": 96,
+      "angriff": 1200,
+      "ladung": 100,
+      "tempo": 18000,
+      "verbrauch": 28,
+      "besatzung": 3,
+      "ab_stufe": 3,
+      "werft": 2,
+      "antrieb": "impulsantrieb",
+      "kosten": {
+        "erz": 7000,
+        "kristall": 3500,
+        "deuterium": 500,
+        "legierung": 116,
+        "elektronik": 35
+      },
+      "braucht": {},
+      "schnellfeuer": {},
+      "max_anzahl": 0,
+      "wirkung": "Jäger gegen Jäger: jagt leichte, Sturm- und schwere Jäger, erfasst Bomber; verliert gegen Kreuzer, Schildkreuzer und Trägerschlachtschiffe.",
+      "voraussetzungen": {
+        "impulsantrieb": 1,
+        "waffentechnik": 1
+      },
+      "motiv": "a narrow twin-boom interceptor with four compact tracking guns and long acceleration nozzles",
+      "neu": true
+    },
+    "schwerer_jaeger": {
+      "label": "Schwerer Jäger",
+      "klasse": "jaeger",
+      "struktur": 13000,
+      "schild": 200,
+      "angriff": 460,
+      "ladung": 120,
+      "tempo": 9000,
+      "verbrauch": 80,
+      "besatzung": 5,
+      "ab_stufe": 3,
+      "werft": 3,
+      "antrieb": "impulsantrieb",
+      "kosten": {
+        "erz": 6000,
+        "kristall": 4000,
+        "deuterium": 1000,
+        "legierung": 50,
+        "elektronik": 25
+      },
+      "braucht": {},
+      "schnellfeuer": {},
+      "max_anzahl": 0,
+      "wirkung": "Zwei Ziele je Runde: fängt Bomber ab (dreifacher Schaden) und knackt Plasmawerfer; verliert gegen Schildkreuzer, Abfangjäger und Abfangzerstörer.",
+      "voraussetzungen": {
+        "impulsantrieb": 2,
+        "schildtechnik": 3,
+        "waffentechnik": 2
+      },
+      "motiv": "a compact armored heavy fighter with two independently tracking dorsal gun mounts and a visible reinforced shield emitter",
+      "neu": true
+    },
+    "sturmjaeger": {
+      "label": "Sturmjäger",
+      "klasse": "jaeger",
+      "struktur": 20000,
+      "schild": 180,
+      "angriff": 1300,
+      "ladung": 80,
+      "tempo": 14500,
+      "verbrauch": 60,
+      "besatzung": 4,
+      "ab_stufe": 4,
+      "werft": 4,
+      "antrieb": "impulsantrieb",
+      "kosten": {
+        "erz": 11000,
+        "kristall": 5500,
+        "deuterium": 720,
+        "legierung": 183,
+        "elektronik": 55
+      },
+      "braucht": {},
+      "schnellfeuer": {},
+      "max_anzahl": 0,
+      "wirkung": "Torpedojäger: dreifacher Schaden gegen alle Zerstörer, erfasst Belagerungs- und Sturmschlachtschiffe; verliert gegen Kreuzer, Trägerschlachtschiffe und Lasergeschütze.",
+      "voraussetzungen": {
+        "impulsantrieb": 3,
+        "waffentechnik": 3
+      },
+      "motiv": "an asymmetric-looking but mechanically balanced dart assault fighter with two spinal anti-capital torpedo rails",
+      "neu": true
+    },
+    "schnellfrachter": {
+      "label": "Schnellfrachter",
+      "klasse": "transporter",
+      "struktur": 8000,
+      "schild": 45,
+      "angriff": 5,
+      "ladung": 12000,
+      "tempo": 18000,
+      "verbrauch": 40,
+      "besatzung": 8,
+      "ab_stufe": 3,
+      "werft": 3,
+      "antrieb": "impulsantrieb",
+      "kosten": {
+        "erz": 8000,
+        "kristall": 4000,
+        "deuterium": 500,
+        "legierung": 133,
+        "elektronik": 40
+      },
+      "braucht": {},
+      "schnellfeuer": {},
+      "max_anzahl": 0,
+      "wirkung": "Schnelle Versorgung: 12.000 Grundfracht bei hohem Tempo, mehr Treibstoff je Frachteinheit als Großtransporter; benötigt Eskorte.",
+      "voraussetzungen": {
+        "impulsantrieb": 2,
+        "logistik": 2
+      },
+      "motiv": "a streamlined courier freighter with six compact flush cargo pods and oversized rear acceleration engines",
+      "neu": true
+    },
+    "schwerlastfrachter": {
+      "label": "Schwerlastfrachter",
+      "klasse": "transporter",
+      "struktur": 55000,
+      "schild": 100,
+      "angriff": 10,
+      "ladung": 150000,
+      "tempo": 3500,
+      "verbrauch": 150,
+      "besatzung": 40,
+      "ab_stufe": 4,
+      "werft": 5,
+      "antrieb": "impulsantrieb",
+      "kosten": {
+        "erz": 55000,
+        "kristall": 27500,
+        "deuterium": 1800,
+        "legierung": 916,
+        "elektronik": 275
+      },
+      "braucht": {},
+      "schnellfeuer": {},
+      "max_anzahl": 0,
+      "wirkung": "150.000 Grundfracht für große Lieferungen; langsamer Anflug, hohe Besatzung und große Angriffsfläche. Nur mit Eskorte senden.",
+      "voraussetzungen": {
+        "logistik": 4,
+        "panzerung": 2
+      },
+      "motiv": "a very broad industrial super-freighter with a central tug spine carrying four long detachable container banks",
+      "neu": true
+    },
+    "raketenkreuzer": {
+      "label": "Raketenkreuzer",
+      "klasse": "kreuzer",
+      "struktur": 55000,
+      "schild": 140,
+      "angriff": 4100,
+      "ladung": 1000,
+      "tempo": 10000,
+      "verbrauch": 380,
+      "besatzung": 40,
+      "ab_stufe": 4,
+      "werft": 5,
+      "antrieb": "impulsantrieb",
+      "kosten": {
+        "erz": 32000,
+        "kristall": 16000,
+        "deuterium": 4560,
+        "legierung": 533,
+        "elektronik": 160
+      },
+      "braucht": {},
+      "schnellfeuer": {},
+      "max_anzahl": 0,
+      "wirkung": "Langstreckensalven gegen Sturm- und Trägerschlachtschiffe, erfasst Schlachtschiffe und Belagerer; verliert gegen leichte Jäger, Raketenwerfer und Schwere Schlachtkreuzer.",
+      "voraussetzungen": {
+        "waffentechnik": 4,
+        "computertechnik": 2
+      },
+      "motiv": "a lean medium missile cruiser with two long armored missile racks and a clear central command spine",
+      "neu": true
+    },
+    "schildkreuzer": {
+      "label": "Schildkreuzer",
+      "klasse": "kreuzer",
+      "struktur": 75000,
+      "schild": 3000,
+      "angriff": 1500,
+      "ladung": 900,
+      "tempo": 8500,
+      "verbrauch": 360,
+      "besatzung": 45,
+      "ab_stufe": 4,
+      "werft": 5,
+      "antrieb": "impulsantrieb",
+      "kosten": {
+        "erz": 40000,
+        "kristall": 20000,
+        "deuterium": 4320,
+        "legierung": 666,
+        "elektronik": 200
+      },
+      "braucht": {},
+      "schnellfeuer": {
+        "schwerer_jaeger": 3,
+        "abfangjaeger": 3
+      },
+      "max_anzahl": 0,
+      "wirkung": "Stark geschirmte Eskorte: zwei Ziele, dreifacher Schaden und Schnellfeuer gegen schwere Jäger und Abfangjäger; verliert gegen Schlachtschiffe, Zerstörer und Ionengeschütze.",
+      "voraussetzungen": {
+        "schildtechnik": 5,
+        "energietechnik": 4
+      },
+      "motiv": "a compact broad escort cruiser with three readable shield emitter fins and two short independently aimed point-defense turrets",
+      "neu": true
+    },
+    "flottenkreuzer": {
+      "label": "Flottenkreuzer",
+      "klasse": "kreuzer",
+      "struktur": 110000,
+      "schild": 600,
+      "angriff": 2700,
+      "ladung": 1600,
+      "tempo": 7500,
+      "verbrauch": 650,
+      "besatzung": 65,
+      "ab_stufe": 5,
+      "werft": 6,
+      "antrieb": "hyperraumantrieb",
+      "kosten": {
+        "erz": 65000,
+        "kristall": 32500,
+        "deuterium": 7800,
+        "legierung": 1083,
+        "elektronik": 325,
+        "xenokristall": 81
+      },
+      "braucht": {
+        "orbitalwerft": 2
+      },
+      "schnellfeuer": {},
+      "max_anzahl": 0,
+      "wirkung": "Größter mittlerer Kreuzer: drei Ziele gegen Bomber und Jäger; verliert gegen Schlachtschiffe, Schwere Schlachtkreuzer und Ionengeschütze.",
+      "voraussetzungen": {
+        "hyperraumantrieb": 1,
+        "computertechnik": 4,
+        "waffentechnik": 4
+      },
+      "motiv": "the largest medium cruiser, broad armored shoulders, three distinct long-range tracking turrets and a small central sensor tower",
+      "neu": true
+    },
+    "sturmschlachtschiff": {
+      "label": "Sturmschlachtschiff",
+      "klasse": "schlachter",
+      "struktur": 160000,
+      "schild": 480,
+      "angriff": 8700,
+      "ladung": 1400,
+      "tempo": 8500,
+      "verbrauch": 850,
+      "besatzung": 130,
+      "ab_stufe": 5,
+      "werft": 7,
+      "antrieb": "hyperraumantrieb",
+      "kosten": {
+        "erz": 85000,
+        "kristall": 42500,
+        "deuterium": 10200,
+        "legierung": 1416,
+        "elektronik": 425,
+        "xenokristall": 106
+      },
+      "braucht": {
+        "orbitalwerft": 2
+      },
+      "schnellfeuer": {},
+      "max_anzahl": 0,
+      "wirkung": "Vorstoß gegen Zerstörer: dreifacher Schaden gegen Zerstörer und Schwere Zerstörer; verliert gegen leichte Jäger, Raketenkreuzer und Gauß-/Ionengeschütze.",
+      "voraussetzungen": {
+        "hyperraumantrieb": 2,
+        "waffentechnik": 6,
+        "panzerung": 4
+      },
+      "motiv": "a massive forward assault battleship with a reinforced wedge bow and two broad primary spinal artillery mounts",
+      "neu": true
+    },
+    "traegerschlachtschiff": {
+      "label": "Trägerschlachtschiff",
+      "klasse": "schlachter",
+      "struktur": 140000,
+      "schild": 770,
+      "angriff": 2000,
+      "ladung": 2000,
+      "tempo": 7000,
+      "verbrauch": 750,
+      "besatzung": 150,
+      "ab_stufe": 5,
+      "werft": 7,
+      "antrieb": "hyperraumantrieb",
+      "kosten": {
+        "erz": 75000,
+        "kristall": 37500,
+        "deuterium": 9000,
+        "legierung": 1250,
+        "elektronik": 375,
+        "xenokristall": 93
+      },
+      "braucht": {
+        "orbitalwerft": 2
+      },
+      "schnellfeuer": {},
+      "max_anzahl": 0,
+      "wirkung": "Vier Ziele je Runde: dreifacher Schaden gegen leichte, Abfang- und Sturmjäger, erfasst Bomber; verliert gegen Raketenkreuzer, Schwere Zerstörer und Gauß-/Ionengeschütze.",
+      "voraussetzungen": {
+        "computertechnik": 6,
+        "schildtechnik": 5
+      },
+      "motiv": "a large carrier battleship with twin closed fighter launch corridors and four independently tracking compact anti-fighter turrets, no loose escort ships",
+      "neu": true
+    },
+    "belagerungsschlachtschiff": {
+      "label": "Belagerungsschlachtschiff",
+      "klasse": "schlachter",
+      "struktur": 130000,
+      "schild": 1000,
+      "angriff": 5900,
+      "ladung": 1000,
+      "tempo": 4500,
+      "verbrauch": 1400,
+      "besatzung": 160,
+      "ab_stufe": 5,
+      "werft": 8,
+      "antrieb": "hyperraumantrieb",
+      "kosten": {
+        "erz": 100000,
+        "kristall": 50000,
+        "deuterium": 16800,
+        "legierung": 1666,
+        "elektronik": 500,
+        "xenokristall": 125
+      },
+      "braucht": {
+        "orbitalwerft": 2
+      },
+      "schnellfeuer": {
+        "ionengeschuetz": 5,
+        "gausskanone": 2,
+        "plasmawerfer": 2
+      },
+      "max_anzahl": 0,
+      "wirkung": "Belagerungsartillerie mit Schnellfeuer gegen Ionengeschütze, Gaußkanonen und Plasmawerfer, trifft Planetenschilde doppelt; im Flottenkampf schwach – braucht Geleit gegen Zerstörer und Sturmjäger.",
+      "voraussetzungen": {
+        "waffentechnik": 7,
+        "xenomaterialkunde": 2
+      },
+      "motiv": "a massive siege battleship with two heavy downward artillery assemblies and recessed reinforced ammunition magazines",
+      "neu": true
+    },
+    "strategischer_bomber": {
+      "label": "Strategischer Bomber",
+      "klasse": "bomber",
+      "struktur": 110000,
+      "schild": 740,
+      "angriff": 7600,
+      "ladung": 600,
+      "tempo": 3800,
+      "verbrauch": 1700,
+      "besatzung": 110,
+      "ab_stufe": 5,
+      "werft": 9,
+      "antrieb": "hyperraumantrieb",
+      "kosten": {
+        "erz": 100000,
+        "kristall": 50000,
+        "deuterium": 20400,
+        "legierung": 1666,
+        "elektronik": 500,
+        "xenokristall": 125
+      },
+      "braucht": {
+        "orbitalwerft": 2
+      },
+      "schnellfeuer": {
+        "plasmawerfer": 3,
+        "gausskanone": 3
+      },
+      "max_anzahl": 0,
+      "wirkung": "Schild- und Plasmabrecher mit Schnellfeuer gegen Plasmawerfer und Gaußkanonen, trifft Planetenschilde dreifach; im Flottenkampf schwach – braucht Abfangschutz gegen Jäger und Flottenkreuzer.",
+      "voraussetzungen": {
+        "hyperraumantrieb": 3,
+        "waffentechnik": 8,
+        "xenomaterialkunde": 3
+      },
+      "motiv": "a broad strategic siege bomber with three sealed ventral penetrator bomb bays and strong shield emitter shoulders",
+      "neu": true
+    },
+    "abfangzerstoerer": {
+      "label": "Abfangzerstörer",
+      "klasse": "zerstoerer",
+      "struktur": 120000,
+      "schild": 380,
+      "angriff": 2300,
+      "ladung": 1000,
+      "tempo": 11000,
+      "verbrauch": 650,
+      "besatzung": 90,
+      "ab_stufe": 5,
+      "werft": 7,
+      "antrieb": "hyperraumantrieb",
+      "kosten": {
+        "erz": 65000,
+        "kristall": 32500,
+        "deuterium": 7800,
+        "legierung": 1083,
+        "elektronik": 325,
+        "xenokristall": 81
+      },
+      "braucht": {
+        "orbitalwerft": 2
+      },
+      "schnellfeuer": {},
+      "max_anzahl": 0,
+      "wirkung": "Drei Ziele gegen Jäger: dreifacher Schaden gegen schwere Jäger, jagt Abfangjäger; verliert gegen Sturmjäger und Sturmschlachtschiffe.",
+      "voraussetzungen": {
+        "computertechnik": 5,
+        "waffentechnik": 5
+      },
+      "motiv": "a fast destroyer with three clearly separated tracking turrets, slender segmented hull and large aft acceleration engines",
+      "neu": true
+    },
+    "schwerer_zerstoerer": {
+      "label": "Schwerer Zerstörer",
+      "klasse": "zerstoerer",
+      "struktur": 300000,
+      "schild": 790,
+      "angriff": 8100,
+      "ladung": 2400,
+      "tempo": 3500,
+      "verbrauch": 1900,
+      "besatzung": 180,
+      "ab_stufe": 5,
+      "werft": 10,
+      "antrieb": "hyperraumantrieb",
+      "kosten": {
+        "erz": 150000,
+        "kristall": 75000,
+        "deuterium": 22800,
+        "legierung": 2500,
+        "elektronik": 750,
+        "xenokristall": 187
+      },
+      "braucht": {
+        "orbitalwerft": 2
+      },
+      "schnellfeuer": {},
+      "max_anzahl": 0,
+      "wirkung": "Zwei Ziele, dreifacher Schaden gegen Schlachtschiffe und Belagerungsschlachtschiffe; teuer und langsam, verliert gegen Sturmjäger und Sturmschlachtschiffe.",
+      "voraussetzungen": {
+        "hyperraumantrieb": 4,
+        "waffentechnik": 9,
+        "panzerung": 6
+      },
+      "motiv": "an enormous heavily armored destroyer with two axial beam cannons, layered armored shoulder slabs and a recessed high-power reactor",
+      "neu": true
+    },
+    "grosses_kolonieschiff": {
+      "label": "Großes Kolonieschiff",
+      "klasse": "kolonie",
+      "struktur": 65000,
+      "schild": 250,
+      "angriff": 30,
+      "ladung": 50000,
+      "tempo": 4000,
+      "verbrauch": 1500,
+      "besatzung": 0,
+      "ab_stufe": 4,
+      "werft": 6,
+      "antrieb": "impulsantrieb",
+      "kosten": {
+        "erz": 65000,
+        "kristall": 32500,
+        "deuterium": 18000,
+        "legierung": 1083,
+        "elektronik": 325,
+        "habitatmodul": 4,
+        "antriebskern": 2
+      },
+      "braucht": {
+        "orbitalwerft": 2
+      },
+      "schnellfeuer": {},
+      "max_anzahl": 0,
+      "wirkung": "",
+      "voraussetzungen": {
+        "astrophysik": 3,
+        "logistik": 3,
+        "impulsantrieb": 4
+      },
+      "motiv": "a broad large colony ark with four visibly distinct habitat cylinders, two folded mine starter modules, large cargo pods and a strong central propulsion unit",
+      "neu": true
+    },
+    "planetenschild_ii": {
+      "label": "Planetenschild II",
+      "klasse": "schild",
+      "struktur": 500000,
+      "schild": 60000,
+      "angriff": 0,
+      "ladung": 0,
+      "tempo": 0,
+      "verbrauch": 0,
+      "besatzung": 0,
+      "ab_stufe": 5,
+      "werft": 0,
+      "antrieb": null,
+      "kosten": {
+        "erz": 500000,
+        "kristall": 250000,
+        "deuterium": 500,
+        "legierung": 8333,
+        "elektronik": 2500,
+        "xenokristall": 625
+      },
+      "braucht": {
+        "orbitalwerft": 2
+      },
+      "schnellfeuer": {},
+      "max_anzahl": 1,
+      "wirkung": "Mittlere Planetenschutzbarriere: stärkerer Schild und Rumpf, hohe Energie- und Schildtechnik erforderlich. Ersetzt Stufe I; wird im Kampf als eigenes Ziel bekämpft.",
+      "voraussetzungen": {
+        "schildtechnik": 7,
+        "energietechnik": 6
+      },
+      "motiv": "a planetary shield facility with six robust emitters projecting two clearly visible concentric translucent energy domes",
+      "neu": true
+    },
+    "planetenschild_iii": {
+      "label": "Planetenschild III",
+      "klasse": "schild",
+      "struktur": 800000,
+      "schild": 100000,
+      "angriff": 0,
+      "ladung": 0,
+      "tempo": 0,
+      "verbrauch": 0,
+      "besatzung": 0,
+      "ab_stufe": 5,
+      "werft": 0,
+      "antrieb": null,
+      "kosten": {
+        "erz": 800000,
+        "kristall": 400000,
+        "deuterium": 500,
+        "legierung": 13333,
+        "elektronik": 4000,
+        "xenokristall": 1000
+      },
+      "braucht": {
+        "orbitalwerft": 2
+      },
+      "schnellfeuer": {},
+      "max_anzahl": 1,
+      "wirkung": "Größte Planetenschutzbarriere: höchster Schild und Rumpf. Teurer Xenomaterial- und Technikpfad; ersetzt kleinere Stufen und besitzt keine Angriffskraft.",
+      "voraussetzungen": {
+        "schildtechnik": 10,
+        "energietechnik": 8,
+        "xenomaterialkunde": 4
+      },
+      "motiv": "a massive planetary shield facility with nine emitter pylons, three concentric translucent energy domes and a protected central reactor",
+      "neu": true
+    },
+    "handelsfrachter": {
+      "label": "Handelsfrachter",
+      "klasse": "transporter",
+      "struktur": 28000,
+      "schild": 75,
+      "angriff": 5,
+      "ladung": 50000,
+      "tempo": 6000,
+      "verbrauch": 90,
+      "besatzung": 25,
+      "ab_stufe": 3,
+      "werft": 4,
+      "antrieb": "impulsantrieb",
+      "kosten": {
+        "erz": 16000,
+        "kristall": 10000,
+        "deuterium": 1000,
+        "legierung": 150,
+        "elektronik": 40
+      },
+      "braucht": {},
+      "schnellfeuer": {},
+      "max_anzahl": 0,
+      "wirkung": "50.000 Grundfracht und 20 zusätzliche Personenplätze unabhängig vom Frachtraum; 25 Besatzung. Mittlere Versorgungslinie, Eskorte empfohlen.",
+      "voraussetzungen": {
+        "impulsantrieb": 2,
+        "logistik": 3
+      },
+      "motiv": "a medium merchant cargo ship with six sealed freight modules, a central service spine and a small protected passenger cabin",
+      "neu": true
+    },
+    "pathfinder": {
+      "struktur": 18000,
+      "schild": 100,
+      "angriff": 40,
+      "ladung": 5000,
+      "tempo": 12000,
+      "verbrauch": 100,
+      "besatzung": 20,
+      "ab_stufe": 3,
+      "werft": 4,
+      "kosten": {
+        "erz": 18000,
+        "kristall": 9000,
+        "legierung": 4500,
+        "elektronik": 3600
+      },
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "Pathfinder: Aufklärung, 20 wiederverwendbare Bordsonden und Expeditionsnavigation",
+      "klasse": "erkundung",
+      "label": "Pathfinder",
+      "voraussetzungen": {
+        "impulsantrieb": 2,
+        "astrophysik": 2
+      },
+      "motiv": "a slim long-range scout cruiser with a large forward sensor array and twenty docked recoverable probes",
+      "neu": true,
+      "antrieb": "impulsantrieb"
+    },
+    "bergungsschiff": {
+      "struktur": 18000,
+      "schild": 100,
+      "angriff": 40,
+      "ladung": 7500,
+      "tempo": 7000,
+      "verbrauch": 100,
+      "besatzung": 30,
+      "ab_stufe": 3,
+      "werft": 4,
+      "kosten": {
+        "erz": 14000,
+        "kristall": 7000,
+        "legierung": 3500,
+        "elektronik": 2800
+      },
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "Bergungsschiff: 200 zusätzliche Personenplätze, 7.500 Fracht und begrenzte Notreparatur",
+      "klasse": "erkundung",
+      "label": "Bergungsschiff",
+      "voraussetzungen": {
+        "impulsantrieb": 2,
+        "astrophysik": 2
+      },
+      "motiv": "a broad rescue vessel with rescue pod bays, tractor arms and a medical habitat ring",
+      "neu": true,
+      "antrieb": "impulsantrieb"
+    },
+    "solarsonde": {
+      "struktur": 2000,
+      "schild": 1,
+      "angriff": 0,
+      "ladung": 0,
+      "tempo": 0,
+      "verbrauch": 0,
+      "besatzung": 0,
+      "ab_stufe": 2,
+      "werft": 1,
+      "kosten": {
+        "kristall": 2000,
+        "deuterium": 500
+      },
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "Solarsatellit: bleibt dauerhaft im Orbit seines Planeten oder Mondes, Energie nach Sonnenabstand, ab Zivilisationsstufe II; fliegt nie, wehrlos",
+      "klasse": "satellit",
+      "label": "Solarsatellit",
+      "voraussetzungen": {},
+      "motiv": "a small stationary orbital solar collector with four unfolded photovoltaic wings and a relay dish",
+      "neu": true
+    },
+    "weltentruemmer": {
+      "struktur": 9000000,
+      "schild": 50000,
+      "angriff": 200000,
+      "ladung": 1000000,
+      "tempo": 100,
+      "verbrauch": 2500,
+      "besatzung": 5000,
+      "ab_stufe": 5,
+      "werft": 8,
+      "kosten": {
+        "erz": 5000000,
+        "kristall": 4000000,
+        "deuterium": 1000000,
+        "legierung": 100000,
+        "elektronik": 50000,
+        "xenokristall": 20000,
+        "antriebskern": 20
+      },
+      "braucht": {},
+      "schnellfeuer": {
+        "spionagesonde": 64,
+        "kleiner_transporter": 64,
+        "grosser_transporter": 64,
+        "recycler": 64,
+        "leichter_jaeger": 50,
+        "kreuzer": 33,
+        "schlachtschiff": 30,
+        "bomber": 25,
+        "zerstoerer": 5,
+        "schlachtkreuzer": 15,
+        "abfang_schlachtkreuzer": 15,
+        "schwerer_schlachtkreuzer": 8,
+        "raketenwerfer": 50,
+        "lasergeschuetz": 50,
+        "ionengeschuetz": 25,
+        "gausskanone": 12,
+        "solarsonde": 64
+      },
+      "wirkung": "Mondgroßes Megaschiff (künstlicher Kleinmond von 160 km), nur im Werftdock (Stufe 8) eines Mondes; kann Monde zerstören; passt durch kein Hyperraumloch",
+      "klasse": "megaschiff",
+      "label": "Weltenkrümmer",
+      "voraussetzungen": {
+        "hyperraumantrieb": 5,
+        "waffentechnik": 8
+      },
+      "motiv": "a moon-sized battle station built from fused asteroid fragments with a colossal focusing dish",
+      "neu": true,
+      "antrieb": "hyperraumantrieb"
+    },
+    "schlachtkreuzer": {
+      "struktur": 88000,
+      "schild": 500,
+      "angriff": 7000,
+      "ladung": 750,
+      "tempo": 12500,
+      "verbrauch": 250,
+      "besatzung": 75,
+      "ab_stufe": 5,
+      "werft": 7,
+      "kosten": {
+        "erz": 30000,
+        "kristall": 40000,
+        "deuterium": 15000,
+        "legierung": 780,
+        "elektronik": 235,
+        "xenokristall": 58
+      },
+      "braucht": {
+        "orbitalwerft": 2
+      },
+      "schnellfeuer": {
+        "schlachtschiff": 7,
+        "kreuzer": 4,
+        "schwerer_jaeger": 4
+      },
+      "wirkung": "Linien-Schlachtkreuzer: Schnellfeuer gegen Schlachtschiffe, Kreuzer und schwere Jäger, schnell und sparsam; verliert gegen Zerstörer, Jägerschwärme und Anlagen.",
+      "klasse": "schlachtkreuzer",
+      "label": "Schlachtkreuzer",
+      "voraussetzungen": {
+        "hyperraumantrieb": 3,
+        "waffentechnik": 5,
+        "panzerung": 4
+      },
+      "motiv": "a long wedge-shaped battlecruiser with a narrow armored prow, two dorsal twin turrets and large hyperdrive nacelles",
+      "neu": true,
+      "antrieb": "hyperraumantrieb"
+    },
+    "abfang_schlachtkreuzer": {
+      "struktur": 69000,
+      "schild": 350,
+      "angriff": 1700,
+      "ladung": 600,
+      "tempo": 16000,
+      "verbrauch": 220,
+      "besatzung": 60,
+      "ab_stufe": 5,
+      "werft": 6,
+      "kosten": {
+        "erz": 25000,
+        "kristall": 30000,
+        "deuterium": 12000,
+        "legierung": 610,
+        "elektronik": 185,
+        "xenokristall": 45
+      },
+      "braucht": {
+        "orbitalwerft": 2
+      },
+      "schnellfeuer": {
+        "leichter_jaeger": 6,
+        "abfangjaeger": 4,
+        "sturmjaeger": 4,
+        "schwerer_jaeger": 3,
+        "bomber": 3,
+        "strategischer_bomber": 2
+      },
+      "wirkung": "Schnellster Großkampfträger: drei Ziele und Schnellfeuer gegen alle Jäger und Bomber; verliert gegen Linienschiffe, Zerstörer und Gaußkanonen.",
+      "klasse": "schlachtkreuzer",
+      "label": "Abfang-Schlachtkreuzer",
+      "voraussetzungen": {
+        "hyperraumantrieb": 2,
+        "computertechnik": 5,
+        "waffentechnik": 5
+      },
+      "motiv": "a lean fast battlecruiser with swept fins, many rapid point-defense turrets and oversized engines",
+      "neu": true,
+      "antrieb": "hyperraumantrieb"
+    },
+    "schwerer_schlachtkreuzer": {
+      "struktur": 160000,
+      "schild": 1600,
+      "angriff": 10000,
+      "ladung": 1500,
+      "tempo": 8000,
+      "verbrauch": 600,
+      "besatzung": 150,
+      "ab_stufe": 5,
+      "werft": 8,
+      "kosten": {
+        "erz": 60000,
+        "kristall": 70000,
+        "deuterium": 25000,
+        "legierung": 1450,
+        "elektronik": 435,
+        "xenokristall": 110
+      },
+      "braucht": {
+        "orbitalwerft": 3
+      },
+      "schnellfeuer": {
+        "schlachtschiff": 5,
+        "flottenkreuzer": 3,
+        "raketenkreuzer": 3,
+        "kreuzer": 3,
+        "schildkreuzer": 2
+      },
+      "wirkung": "Flaggschiff gegen Schlachtschiffe, Flotten- und Raketenkreuzer; langsam und teuer, verliert gegen Zerstörer, Jägerschwärme und Anlagen.",
+      "klasse": "schlachtkreuzer",
+      "label": "Schwerer Schlachtkreuzer",
+      "voraussetzungen": {
+        "hyperraumantrieb": 4,
+        "waffentechnik": 7,
+        "panzerung": 6,
+        "schildtechnik": 5
+      },
+      "motiv": "a massive armored flagship battlecruiser with a command tower, heavy spinal cannon and layered hull plates",
+      "neu": true,
+      "antrieb": "hyperraumantrieb"
+    },
+    "terraformer": {
+      "struktur": 25000,
+      "schild": 50,
+      "angriff": 0,
+      "ladung": 0,
+      "tempo": 3500,
+      "verbrauch": 400,
+      "besatzung": 40,
+      "ab_stufe": 4,
+      "werft": 4,
+      "kosten": {
+        "erz": 12000,
+        "kristall": 9000,
+        "deuterium": 6000,
+        "legierung": 600,
+        "elektronik": 400
+      },
+      "antrieb": "impulsantrieb",
+      "braucht": {},
+      "schnellfeuer": {},
+      "wirkung": "formt Klima und Kruste eines Planeten oder freien Platzes für dein Volk, bis zu +40 Felder; wird beim Einsatz verbraucht",
+      "klasse": "terraforming",
+      "label": "Terraformer",
+      "voraussetzungen": {
+        "terraforming": 1,
+        "impulsantrieb": 3
+      },
+      "motiv": "a bulky planetary terraforming ship with atmosphere processor towers, seeding pods, a deep crust drilling rig and radiator fins",
+      "neu": true
+    }
+  },
+  "profiles": {
+    "spionagesonde": {
+      "klasse": "sonde",
+      "rolle": "Aufklärung, sehr schnell, keine Besatzung",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {},
+      "schildfaktor": 1.0
+    },
+    "kleiner_transporter": {
+      "klasse": "transporter",
+      "rolle": "schneller Frachter",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {},
+      "schildfaktor": 1.0
+    },
+    "grosser_transporter": {
+      "klasse": "transporter",
+      "rolle": "großer Frachter",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {},
+      "schildfaktor": 1.0,
+      "personenplaetze": 10
+    },
+    "leichter_jaeger": {
+      "klasse": "jaeger",
+      "rolle": "Günstiger Schwarmjäger: jagt Raketenkreuzer und Schlachtschiffe, plündert Frachter; verliert gegen Kreuzer, Lasergeschütze und Abfangschirme.",
+      "ziele": 1,
+      "schadensfaktoren": {
+        "raketenkreuzer": 2.5
+      },
+      "voraussetzungen": {},
+      "schildfaktor": 1.0,
+      "primaer": [
+        "raketenkreuzer",
+        "schlachtschiff"
+      ],
+      "sekundaer": [
+        "kleiner_transporter",
+        "grosser_transporter",
+        "schnellfrachter",
+        "schwerlastfrachter",
+        "handelsfrachter",
+        "recycler"
+      ]
+    },
+    "bergbauschiff": {
+      "klasse": "bergbau",
+      "rolle": "baut in Asteroidengürteln Erz und Kristall ab",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {},
+      "schildfaktor": 1.0
+    },
+    "kreuzer": {
+      "klasse": "kreuzer",
+      "rolle": "Geleitkreuzer gegen Jägerschwärme: Schnellfeuer gegen leichte, Sturm- und Abfangjäger; verliert gegen Schlachtschiffe, Zerstörer und Schlachtkreuzer.",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {},
+      "schildfaktor": 1.0,
+      "primaer": [
+        "leichter_jaeger",
+        "sturmjaeger",
+        "abfangjaeger"
+      ],
+      "sekundaer": [
+        "schwerer_jaeger",
+        "kleiner_transporter",
+        "grosser_transporter"
+      ]
+    },
+    "recycler": {
+      "klasse": "bergung",
+      "rolle": "sammelt Trümmerfelder ein",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {},
+      "schildfaktor": 1.0
+    },
+    "kolonieschiff": {
+      "klasse": "kolonie",
+      "rolle": "gründet eine Kolonie, nimmt Siedler aus der Bevölkerung mit",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {},
+      "schildfaktor": 1.0,
+      "kolonie_minen": 0,
+      "siedler": 3000
+    },
+    "truppentransporter": {
+      "klasse": "truppen",
+      "rolle": "bringt Bodentruppen für Invasionen, die Truppen zählen als Besatzung",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {},
+      "schildfaktor": 1.0
+    },
+    "schlachtschiff": {
+      "klasse": "schlachter",
+      "rolle": "Linienschiff gegen Kreuzer: jagt Kreuzer und Flottenkreuzer, erfasst Schild- und Raketenkreuzer und Bomber; verliert gegen Zerstörer, Schlachtkreuzer und Jägerschwärme.",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {},
+      "schildfaktor": 1.0,
+      "primaer": [
+        "kreuzer",
+        "flottenkreuzer"
+      ],
+      "sekundaer": [
+        "schildkreuzer",
+        "raketenkreuzer",
+        "bomber",
+        "strategischer_bomber"
+      ]
+    },
+    "bomber": {
+      "klasse": "bomber",
+      "rolle": "Bodenbekämpfung: vier Ziele und Schnellfeuer gegen Raketenwerfer, Lasergeschütze und Ionengeschütze; im Flottenkampf schwach – braucht Geleit gegen Schwere Jäger und Flottenkreuzer.",
+      "ziele": 4,
+      "schadensfaktoren": {
+        "raketenwerfer": 1.5,
+        "lasergeschuetz": 1.5,
+        "ionengeschuetz": 1.5,
+        "gausskanone": 1.2,
+        "plasmawerfer": 1.2
+      },
+      "voraussetzungen": {},
+      "schildfaktor": 1.0,
+      "primaer": [
+        "raketenwerfer",
+        "lasergeschuetz",
+        "ionengeschuetz"
+      ],
+      "sekundaer": [
+        "gausskanone",
+        "plasmawerfer"
+      ]
+    },
+    "zerstoerer": {
+      "klasse": "zerstoerer",
+      "rolle": "Linienbrecher: dreifacher Schaden gegen Schlachtschiffe, Belagerer und Schwere Schlachtkreuzer, Schnellfeuer gegen Kreuzer; verliert gegen Sturmjäger und Sturmschlachtschiffe.",
+      "ziele": 1,
+      "schadensfaktoren": {
+        "belagerungsschlachtschiff": 3,
+        "schlachtschiff": 3,
+        "schwerer_schlachtkreuzer": 3
+      },
+      "voraussetzungen": {},
+      "schildfaktor": 1.0,
+      "primaer": [
+        "belagerungsschlachtschiff",
+        "schlachtschiff",
+        "schwerer_schlachtkreuzer"
+      ],
+      "sekundaer": [
+        "schildkreuzer",
+        "kreuzer",
+        "schlachtkreuzer",
+        "abfang_schlachtkreuzer"
+      ]
+    },
+    "raketenwerfer": {
+      "klasse": "verteidigung",
+      "rolle": "Günstige Masse gegen Kreuzer und Raketenkreuzer; fällt gegen Bomber.",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {},
+      "schildfaktor": 1.0,
+      "primaer": [
+        "kreuzer",
+        "raketenkreuzer"
+      ],
+      "sekundaer": [
+        "schildkreuzer",
+        "flottenkreuzer",
+        "leichter_jaeger"
+      ]
+    },
+    "lasergeschuetz": {
+      "klasse": "verteidigung",
+      "rolle": "Zwei Ziele gegen leichte, Abfang- und Sturmjäger; fällt gegen Bomber.",
+      "ziele": 2,
+      "schadensfaktoren": {},
+      "voraussetzungen": {},
+      "schildfaktor": 1.0,
+      "primaer": [
+        "leichter_jaeger",
+        "abfangjaeger",
+        "sturmjaeger"
+      ],
+      "sekundaer": [
+        "schwerer_jaeger",
+        "kreuzer"
+      ]
+    },
+    "ionengeschuetz": {
+      "klasse": "verteidigung",
+      "rolle": "Schildbrecher: doppelter Schaden auf Schilde, dreifach gegen Schildkreuzer, jagt Schlachtschiffe; fällt gegen Bomber und Belagerungsschlachtschiffe.",
+      "ziele": 1,
+      "schadensfaktoren": {
+        "schildkreuzer": 3
+      },
+      "voraussetzungen": {},
+      "schildfaktor": 2.0,
+      "primaer": [
+        "schildkreuzer",
+        "schlachtschiff",
+        "sturmschlachtschiff",
+        "traegerschlachtschiff"
+      ],
+      "sekundaer": [
+        "kreuzer",
+        "flottenkreuzer",
+        "zerstoerer",
+        "schwerer_zerstoerer",
+        "schwerer_schlachtkreuzer"
+      ]
+    },
+    "gausskanone": {
+      "klasse": "verteidigung",
+      "rolle": "Panzerbrechender Schuss gegen Schlachtschiffe und Zerstörer; fällt gegen Strategische Bomber und Belagerungsschlachtschiffe.",
+      "ziele": 1,
+      "schadensfaktoren": {
+        "schwerer_zerstoerer": 3
+      },
+      "voraussetzungen": {},
+      "schildfaktor": 1.0,
+      "primaer": [
+        "schlachtschiff",
+        "sturmschlachtschiff",
+        "traegerschlachtschiff",
+        "zerstoerer",
+        "schwerer_zerstoerer"
+      ],
+      "sekundaer": [
+        "schlachtkreuzer",
+        "abfang_schlachtkreuzer",
+        "schwerer_schlachtkreuzer",
+        "raketenkreuzer",
+        "schildkreuzer",
+        "flottenkreuzer"
+      ]
+    },
+    "plasmawerfer": {
+      "klasse": "verteidigung",
+      "rolle": "Schwere Bomberabwehr (dreifacher Schaden), erfasst Schlachtschiffe; fällt gegen Strategische Bomber, schwere Jäger und Belagerungsschlachtschiffe.",
+      "ziele": 1,
+      "schadensfaktoren": {
+        "bomber": 3
+      },
+      "voraussetzungen": {},
+      "schildfaktor": 1.0,
+      "primaer": [
+        "bomber"
+      ],
+      "sekundaer": [
+        "schlachtschiff",
+        "sturmschlachtschiff",
+        "traegerschlachtschiff"
+      ]
+    },
+    "planetenschild": {
+      "klasse": "schild",
+      "rolle": "sehr starker Schild, nur einer je Planet",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "schildtechnik": 4,
+        "energietechnik": 3
+      },
+      "schildfaktor": 1.0
+    },
+    "abfangjaeger": {
+      "klasse": "jaeger",
+      "rolle": "Jäger gegen Jäger: jagt leichte, Sturm- und schwere Jäger, erfasst Bomber; verliert gegen Kreuzer, Schildkreuzer und Trägerschlachtschiffe.",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "impulsantrieb": 1,
+        "waffentechnik": 1
+      },
+      "schildfaktor": 1.0,
+      "primaer": [
+        "leichter_jaeger",
+        "sturmjaeger",
+        "schwerer_jaeger"
+      ],
+      "sekundaer": [
+        "bomber",
+        "strategischer_bomber"
+      ]
+    },
+    "schwerer_jaeger": {
+      "klasse": "jaeger",
+      "rolle": "Zwei Ziele je Runde: fängt Bomber ab (dreifacher Schaden) und knackt Plasmawerfer; verliert gegen Schildkreuzer, Abfangjäger und Abfangzerstörer.",
+      "ziele": 2,
+      "schadensfaktoren": {
+        "bomber": 3,
+        "strategischer_bomber": 3,
+        "plasmawerfer": 3
+      },
+      "voraussetzungen": {
+        "impulsantrieb": 2,
+        "schildtechnik": 3,
+        "waffentechnik": 2
+      },
+      "schildfaktor": 1.0,
+      "primaer": [
+        "bomber",
+        "strategischer_bomber"
+      ],
+      "sekundaer": [
+        "plasmawerfer",
+        "belagerungsschlachtschiff"
+      ]
+    },
+    "sturmjaeger": {
+      "klasse": "jaeger",
+      "rolle": "Torpedojäger: dreifacher Schaden gegen alle Zerstörer, erfasst Belagerungs- und Sturmschlachtschiffe; verliert gegen Kreuzer, Trägerschlachtschiffe und Lasergeschütze.",
+      "ziele": 1,
+      "schadensfaktoren": {
+        "zerstoerer": 3,
+        "schwerer_zerstoerer": 3,
+        "abfangzerstoerer": 3
+      },
+      "voraussetzungen": {
+        "impulsantrieb": 3,
+        "waffentechnik": 3
+      },
+      "schildfaktor": 1.0,
+      "primaer": [
+        "zerstoerer",
+        "schwerer_zerstoerer",
+        "abfangzerstoerer"
+      ],
+      "sekundaer": [
+        "belagerungsschlachtschiff",
+        "sturmschlachtschiff"
+      ]
+    },
+    "schnellfrachter": {
+      "klasse": "transporter",
+      "rolle": "Schnelle Versorgung: 12.000 Grundfracht bei hohem Tempo, mehr Treibstoff je Frachteinheit als Großtransporter; benötigt Eskorte.",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "impulsantrieb": 2,
+        "logistik": 2
+      },
+      "schildfaktor": 1.0
+    },
+    "schwerlastfrachter": {
+      "klasse": "transporter",
+      "rolle": "150.000 Grundfracht für große Lieferungen; langsamer Anflug, hohe Besatzung und große Angriffsfläche. Nur mit Eskorte senden.",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "logistik": 4,
+        "panzerung": 2
+      },
+      "schildfaktor": 1.0
+    },
+    "raketenkreuzer": {
+      "klasse": "kreuzer",
+      "rolle": "Langstreckensalven gegen Sturm- und Trägerschlachtschiffe, erfasst Schlachtschiffe und Belagerer; verliert gegen leichte Jäger, Raketenwerfer und Schwere Schlachtkreuzer.",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "waffentechnik": 4,
+        "computertechnik": 2
+      },
+      "schildfaktor": 1.0,
+      "primaer": [
+        "sturmschlachtschiff",
+        "traegerschlachtschiff"
+      ],
+      "sekundaer": [
+        "schlachtschiff",
+        "belagerungsschlachtschiff"
+      ]
+    },
+    "schildkreuzer": {
+      "klasse": "kreuzer",
+      "rolle": "Stark geschirmte Eskorte: zwei Ziele, dreifacher Schaden und Schnellfeuer gegen schwere Jäger und Abfangjäger; verliert gegen Schlachtschiffe, Zerstörer und Ionengeschütze.",
+      "ziele": 2,
+      "schadensfaktoren": {
+        "schwerer_jaeger": 3
+      },
+      "voraussetzungen": {
+        "schildtechnik": 5,
+        "energietechnik": 4
+      },
+      "schildfaktor": 1.0,
+      "primaer": [
+        "schwerer_jaeger",
+        "abfangjaeger"
+      ],
+      "sekundaer": [
+        "leichter_jaeger",
+        "sturmjaeger"
+      ]
+    },
+    "flottenkreuzer": {
+      "klasse": "kreuzer",
+      "rolle": "Größter mittlerer Kreuzer: drei Ziele gegen Bomber und Jäger; verliert gegen Schlachtschiffe, Schwere Schlachtkreuzer und Ionengeschütze.",
+      "ziele": 3,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "hyperraumantrieb": 1,
+        "computertechnik": 4,
+        "waffentechnik": 4
+      },
+      "schildfaktor": 1.0,
+      "primaer": [
+        "bomber",
+        "strategischer_bomber"
+      ],
+      "sekundaer": [
+        "abfangjaeger",
+        "leichter_jaeger",
+        "sturmjaeger"
+      ]
+    },
+    "sturmschlachtschiff": {
+      "klasse": "schlachter",
+      "rolle": "Vorstoß gegen Zerstörer: dreifacher Schaden gegen Zerstörer und Schwere Zerstörer; verliert gegen leichte Jäger, Raketenkreuzer und Gauß-/Ionengeschütze.",
+      "ziele": 1,
+      "schadensfaktoren": {
+        "zerstoerer": 3,
+        "schwerer_zerstoerer": 3
+      },
+      "voraussetzungen": {
+        "hyperraumantrieb": 2,
+        "waffentechnik": 6,
+        "panzerung": 4
+      },
+      "schildfaktor": 1.0,
+      "primaer": [
+        "zerstoerer",
+        "schwerer_zerstoerer"
+      ],
+      "sekundaer": [
+        "abfangzerstoerer",
+        "schlachtschiff"
+      ]
+    },
+    "traegerschlachtschiff": {
+      "klasse": "schlachter",
+      "rolle": "Vier Ziele je Runde: dreifacher Schaden gegen leichte, Abfang- und Sturmjäger, erfasst Bomber; verliert gegen Raketenkreuzer, Schwere Zerstörer und Gauß-/Ionengeschütze.",
+      "ziele": 4,
+      "schadensfaktoren": {
+        "leichter_jaeger": 3,
+        "abfangjaeger": 3,
+        "sturmjaeger": 3
+      },
+      "voraussetzungen": {
+        "computertechnik": 6,
+        "schildtechnik": 5
+      },
+      "schildfaktor": 1.0,
+      "primaer": [
+        "leichter_jaeger",
+        "abfangjaeger",
+        "sturmjaeger"
+      ],
+      "sekundaer": [
+        "bomber",
+        "strategischer_bomber",
+        "schwerer_jaeger"
+      ]
+    },
+    "belagerungsschlachtschiff": {
+      "klasse": "schlachter",
+      "rolle": "Belagerungsartillerie mit Schnellfeuer gegen Ionengeschütze, Gaußkanonen und Plasmawerfer, trifft Planetenschilde doppelt; im Flottenkampf schwach – braucht Geleit gegen Zerstörer und Sturmjäger.",
+      "ziele": 2,
+      "schadensfaktoren": {
+        "gausskanone": 1.5,
+        "plasmawerfer": 1.5,
+        "ionengeschuetz": 1.5,
+        "planetenschild": 2,
+        "planetenschild_ii": 2,
+        "planetenschild_iii": 2
+      },
+      "voraussetzungen": {
+        "waffentechnik": 7,
+        "xenomaterialkunde": 2
+      },
+      "schildfaktor": 1.0,
+      "primaer": [
+        "gausskanone",
+        "plasmawerfer",
+        "ionengeschuetz"
+      ],
+      "sekundaer": [
+        "planetenschild",
+        "planetenschild_ii",
+        "planetenschild_iii"
+      ]
+    },
+    "strategischer_bomber": {
+      "klasse": "bomber",
+      "rolle": "Schild- und Plasmabrecher mit Schnellfeuer gegen Plasmawerfer und Gaußkanonen, trifft Planetenschilde dreifach; im Flottenkampf schwach – braucht Abfangschutz gegen Jäger und Flottenkreuzer.",
+      "ziele": 2,
+      "schadensfaktoren": {
+        "planetenschild": 3,
+        "planetenschild_ii": 3,
+        "planetenschild_iii": 3,
+        "plasmawerfer": 2,
+        "gausskanone": 2
+      },
+      "voraussetzungen": {
+        "hyperraumantrieb": 3,
+        "waffentechnik": 8,
+        "xenomaterialkunde": 3
+      },
+      "schildfaktor": 1.0,
+      "primaer": [
+        "planetenschild",
+        "planetenschild_ii",
+        "planetenschild_iii",
+        "plasmawerfer",
+        "gausskanone"
+      ],
+      "sekundaer": [
+        "ionengeschuetz"
+      ]
+    },
+    "abfangzerstoerer": {
+      "klasse": "zerstoerer",
+      "rolle": "Drei Ziele gegen Jäger: dreifacher Schaden gegen schwere Jäger, jagt Abfangjäger; verliert gegen Sturmjäger und Sturmschlachtschiffe.",
+      "ziele": 3,
+      "schadensfaktoren": {
+        "schwerer_jaeger": 3
+      },
+      "voraussetzungen": {
+        "computertechnik": 5,
+        "waffentechnik": 5
+      },
+      "schildfaktor": 1.0,
+      "primaer": [
+        "schwerer_jaeger",
+        "abfangjaeger"
+      ],
+      "sekundaer": [
+        "leichter_jaeger",
+        "sturmjaeger"
+      ]
+    },
+    "schwerer_zerstoerer": {
+      "klasse": "zerstoerer",
+      "rolle": "Zwei Ziele, dreifacher Schaden gegen Schlachtschiffe und Belagerungsschlachtschiffe; teuer und langsam, verliert gegen Sturmjäger und Sturmschlachtschiffe.",
+      "ziele": 2,
+      "schadensfaktoren": {
+        "belagerungsschlachtschiff": 3,
+        "schlachtschiff": 3
+      },
+      "voraussetzungen": {
+        "hyperraumantrieb": 4,
+        "waffentechnik": 9,
+        "panzerung": 6
+      },
+      "schildfaktor": 1.0,
+      "primaer": [
+        "belagerungsschlachtschiff",
+        "schlachtschiff"
+      ],
+      "sekundaer": [
+        "gausskanone",
+        "traegerschlachtschiff"
+      ]
+    },
+    "grosses_kolonieschiff": {
+      "klasse": "kolonie",
+      "rolle": "",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "astrophysik": 3,
+        "logistik": 3,
+        "impulsantrieb": 4
+      },
+      "schildfaktor": 1.0,
+      "kolonie_minen": 2,
+      "siedler": 6000
+    },
+    "planetenschild_ii": {
+      "klasse": "schild",
+      "rolle": "Mittlere Planetenschutzbarriere: stärkerer Schild und Rumpf, hohe Energie- und Schildtechnik erforderlich. Ersetzt Stufe I; wird im Kampf als eigenes Ziel bekämpft.",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "schildtechnik": 7,
+        "energietechnik": 6
+      },
+      "schildfaktor": 1.0
+    },
+    "planetenschild_iii": {
+      "klasse": "schild",
+      "rolle": "Größte Planetenschutzbarriere: höchster Schild und Rumpf. Teurer Xenomaterial- und Technikpfad; ersetzt kleinere Stufen und besitzt keine Angriffskraft.",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "schildtechnik": 10,
+        "energietechnik": 8,
+        "xenomaterialkunde": 4
+      },
+      "schildfaktor": 1.0
+    },
+    "handelsfrachter": {
+      "klasse": "transporter",
+      "rolle": "50.000 Grundfracht und 20 zusätzliche Personenplätze unabhängig vom Frachtraum; 25 Besatzung. Mittlere Versorgungslinie, Eskorte empfohlen.",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "impulsantrieb": 2,
+        "logistik": 3
+      },
+      "schildfaktor": 1.0,
+      "personenplaetze": 20
+    },
+    "pathfinder": {
+      "klasse": "erkundung",
+      "rolle": "Pathfinder: Aufklärung, 20 wiederverwendbare Bordsonden und Expeditionsnavigation",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "impulsantrieb": 2,
+        "astrophysik": 2
+      },
+      "schildfaktor": 1.0
+    },
+    "bergungsschiff": {
+      "klasse": "erkundung",
+      "rolle": "Bergungsschiff: 200 zusätzliche Personenplätze, 7.500 Fracht und begrenzte Notreparatur",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "impulsantrieb": 2,
+        "astrophysik": 2
+      },
+      "schildfaktor": 1.0,
+      "personenplaetze": 200
+    },
+    "solarsonde": {
+      "klasse": "satellit",
+      "rolle": "Stationäre Energieanlage ohne Waffen; nimmt am Verteidigungskampf teil und hinterlässt Trümmer.",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {},
+      "schildfaktor": 1.0
+    },
+    "weltentruemmer": {
+      "klasse": "megaschiff",
+      "rolle": "Megaschiff gegen Großkampfschiffe und Monde; Zerstörungsversuch nach vollständigem Sieg.",
+      "ziele": 4,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "hyperraumantrieb": 5,
+        "waffentechnik": 8
+      },
+      "schildfaktor": 1.0
+    },
+    "schlachtkreuzer": {
+      "klasse": "schlachtkreuzer",
+      "rolle": "Linien-Schlachtkreuzer: Schnellfeuer gegen Schlachtschiffe, Kreuzer und schwere Jäger, schnell und sparsam; verliert gegen Zerstörer, Jägerschwärme und Anlagen.",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "hyperraumantrieb": 3,
+        "waffentechnik": 5,
+        "panzerung": 4
+      },
+      "schildfaktor": 1.0,
+      "primaer": [
+        "schlachtschiff"
+      ],
+      "sekundaer": [
+        "kreuzer",
+        "schildkreuzer",
+        "flottenkreuzer",
+        "schwerer_jaeger",
+        "traegerschlachtschiff"
+      ]
+    },
+    "abfang_schlachtkreuzer": {
+      "klasse": "schlachtkreuzer",
+      "rolle": "Schnellster Großkampfträger: drei Ziele und Schnellfeuer gegen alle Jäger und Bomber; verliert gegen Linienschiffe, Zerstörer und Gaußkanonen.",
+      "ziele": 3,
+      "schadensfaktoren": {
+        "leichter_jaeger": 2,
+        "abfangjaeger": 2,
+        "sturmjaeger": 3,
+        "bomber": 3,
+        "strategischer_bomber": 3
+      },
+      "voraussetzungen": {
+        "hyperraumantrieb": 2,
+        "computertechnik": 5,
+        "waffentechnik": 5
+      },
+      "schildfaktor": 1.0,
+      "primaer": [
+        "leichter_jaeger",
+        "abfangjaeger",
+        "sturmjaeger",
+        "bomber",
+        "strategischer_bomber"
+      ],
+      "sekundaer": [
+        "schwerer_jaeger",
+        "kreuzer"
+      ]
+    },
+    "schwerer_schlachtkreuzer": {
+      "klasse": "schlachtkreuzer",
+      "rolle": "Flaggschiff gegen Schlachtschiffe, Flotten- und Raketenkreuzer; langsam und teuer, verliert gegen Zerstörer, Jägerschwärme und Anlagen.",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "hyperraumantrieb": 4,
+        "waffentechnik": 7,
+        "panzerung": 6,
+        "schildtechnik": 5
+      },
+      "schildfaktor": 1.0,
+      "primaer": [
+        "schlachtschiff",
+        "flottenkreuzer",
+        "raketenkreuzer"
+      ],
+      "sekundaer": [
+        "kreuzer",
+        "schildkreuzer",
+        "traegerschlachtschiff",
+        "zerstoerer",
+        "schlachtkreuzer",
+        "abfang_schlachtkreuzer"
+      ]
+    },
+    "terraformer": {
+      "klasse": "terraforming",
+      "rolle": "formt Klima und Kruste eines Planeten oder freien Platzes für dein Volk, bis zu +40 Felder; wird beim Einsatz verbraucht",
+      "ziele": 1,
+      "schadensfaktoren": {},
+      "voraussetzungen": {
+        "terraforming": 1,
+        "impulsantrieb": 3
+      },
+      "schildfaktor": 1.0
+    }
+  },
+  "klasse_soll": {
+    "jaeger": 4,
+    "transporter": 5,
+    "kreuzer": 4,
+    "schlachter": 4,
+    "bomber": 2,
+    "zerstoerer": 3,
+    "kolonie": 2,
+    "schlachtkreuzer": 3,
+    "erkundung": 2,
+    "satellit": 1,
+    "megaschiff": 1,
+    "terraforming": 1
+  }
+}

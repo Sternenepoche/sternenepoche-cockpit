@@ -12,6 +12,8 @@ fn goods(values: &[i64; GUETER]) -> Value {
 impl Welt {
     /// Constant-population, constant-research construction estimate; no enemy futures are simulated.
     pub fn kolonieplan(&self, sid: SpielerId, query: &Value) -> Result<Value, String> {
+        if self.ausbau.version>0{return self.kolonieplan_v12(sid,query);}
+
         if !self.kolonisationsregeln_v2() {
             return Err("Kolonieplanung benötigt Regelversion 4".into());
         }
@@ -30,7 +32,7 @@ impl Welt {
         let fid = w.naechste_flotte;
         let action = json!({"typ":"flotte_senden","mission":"kolonisieren","start":query["start"],
             "ziel":query["ziel"],"schiffe":query["schiffe"],"ladung":query["ladung"],
-            "geschwindigkeit":query.get("geschwindigkeit").cloned().unwrap_or(json!(1.0))});
+            "geschwindigkeit":query.get("geschwindigkeit").cloned().unwrap_or(json!(1.0)),"siedler_volk":query.get("siedler_volk")});
         let (ok, reason) = w.handeln(sid, Rolle::Verwalter, &action);
         if !ok {
             return Ok(
@@ -97,4 +99,26 @@ impl Welt {
             "annahmen":"Nur eigener gewählter Plan, heutige Forschung, konstante Siedlerzahl/Stabilität; keine Feindaktionen, kein Wachstum, keine externen Lieferungen. Laufende Kredit-/Flottenunterhaltskosten nicht hochgerechnet. Keine Erfolgszusage."}),
         )
     }
+    /// Current games use the same ticks and build projection as ordinary colonies.
+    fn kolonieplan_v12(&self,sid:SpielerId,query:&Value)->Result<Value,String>{
+        let target:Koord=query["ziel"].as_str().ok_or("ziel fehlt")?.parse()?;
+        let survey=self.spieler.get(sid as usize).ok_or("Spieler fehlt")?.erkundet.get(&target).ok_or("Ziel zuerst erkunden")?;
+        let builds=query["aufbau"].as_array().filter(|a|a.len()<=32).ok_or("Höchstens 32 Aufbauschritte")?;
+        let steps:Vec<Value>=builds.iter().map(|b|json!({"typ":"bauen","planet":target.to_string(),"gebaeude":b})).collect();
+        let action=json!({"typ":"flotte_senden","mission":"kolonisieren","start":query["start"],"ziel":query["ziel"],"schiffe":query["schiffe"],"ladung":query["ladung"],"geschwindigkeit":query.get("geschwindigkeit").cloned().unwrap_or(json!(1.0))});
+        let mut w=self.planer_kopie(sid);let fid=w.naechste_flotte;
+        let(ok,reason)=w.handeln(sid,Rolle::Verwalter,&action);
+        if !ok{return Ok(json!({"status":"blocked","start_moeglich":false,"grund":reason,"keine_ausfuehrung":true}));}
+        let arrival=w.flotten[&fid].ankunft;
+        let mut windows=0;
+        while w.zeit<arrival&&!w.beendet()&&windows<12000{w.schritt();windows+=1;}
+        if w.zeit<arrival||!w.belegung.get(&target).is_some_and(|p|w.planeten[*p as usize].besitzer==sid){
+            return Ok(json!({"status":"unknown","start_moeglich":true,"grund":"Ankunft nicht innerhalb des begrenzten Planungslaufs erreichbar oder Gründung nicht mehr möglich","keine_ausfuehrung":true,"ankunft":arrival}));
+        }
+        let result=w.ablaufplan(sid,&crate::planer::ablauf::PlanAnfrage{schritte:steps,horizont_stunden:168,rolle:Rolle::Verwalter})?;
+        Ok(json!({"status":result["status"],"start_moeglich":true,"keine_ausfuehrung":true,"ziel":target.to_string(),"sondenbericht_zeit":survey.zeit,
+            "ankunft":arrival,"aufbau":result["schritte"],"aufbau_vollstaendig":result["status"]=="completed","ablauf":result,
+            "annahmen":"Heutiger eigener Sondenbericht und freie Ankunft vorausgesetzt; echte Core-Ticks, Bevölkerung, Forschung, Unterhalt und Bau. Fremde künftige Aktionen bleiben unbekannt. Keine Erfolgszusage."}))
+    }
+
 }

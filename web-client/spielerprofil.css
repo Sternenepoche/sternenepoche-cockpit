@@ -1,0 +1,66 @@
+/* Spieler-, System- und Planetenprofil im Funk-Blatt (spielerprofil.js). Grundformen (Knöpfe, Zeilen, Blatt) kommen aus
+   berichtszentrale.css; hier nur die Profilteile. Keine style-Attribute (CSP). */
+#bz-blatt .sp-lage{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 4px}
+#bz-blatt .sp-chip{display:inline-flex;align-items:baseline;gap:5px;padding:5px 9px;border:1px solid var(--bz-rand2);border-radius:4px;background:rgba(9,20,34,.6);font-size:var(--bz-t2);color:var(--bz-text)}
+#bz-blatt .sp-chip b{font-variant-numeric:tabular-nums}
+#bz-blatt .sp-chip.rot{border-color:rgba(255,122,122,.6);color:#ffc9c9;background:rgba(60,14,18,.5)}
+#bz-blatt .sp-chip.warn{border-color:rgba(242,164,58,.6);color:#ffd9a6}
+#bz-blatt .sp-abschnitt{margin:14px 0 0}
+#bz-blatt .sp-abschnitt h3,#bz-blatt .sp-abschnitt summary h3{display:inline;margin:0;font:600 calc(12px * var(--text-scale,1))/1.3 var(--bz-schrift);letter-spacing:.1em;text-transform:uppercase;color:#c5d4e2}
+#bz-blatt .sp-abschnitt>h3{display:block;margin:0 0 6px}
+#bz-blatt .sp-abschnitt details>summary{display:flex;align-items:center;min-height:44px;padding:0 2px;cursor:pointer;list-style:none;border-bottom:1px solid var(--bz-rand);color:#c5d4e2;background:none}
+#bz-blatt .sp-abschnitt details>summary::-webkit-details-marker{display:none}
+#bz-blatt .sp-abschnitt details>summary::after{content:'';margin-left:auto;width:7px;height:7px;border-right:2px solid var(--bz-leise);border-bottom:2px solid var(--bz-leise);transform:rotate(45deg);margin-top:-4px}
+#bz-blatt .sp-abschnitt details[open]>summary::after{transform:rotate(-135deg);margin-top:4px}
+#bz-blatt .sp-planeten,#bz-blatt .sp-liste{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+#bz-blatt .sp-planet{padding:10px;border:1px solid var(--bz-rand);border-radius:4px;background:rgba(9,20,34,.55)}
+#bz-blatt .sp-planet.heimat{border-color:rgba(226,189,98,.55)}
+#bz-blatt .sp-planet-kopf{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+#bz-blatt .sp-planet-kopf .koord{font:600 var(--bz-t-titel)/1.2 var(--bz-schrift)}
+#bz-blatt .sp-marke{display:inline-block;padding:2px 7px;border:1px solid var(--bz-rand2);border-radius:4px;font:600 calc(11px * var(--text-scale,1))/1.3 var(--bz-schrift);color:#c5d4e2}
+#bz-blatt .sp-marke.gold{border-color:rgba(226,189,98,.6);color:var(--bz-gold)}
+#bz-blatt .sp-marke.rot{border-color:rgba(255,122,122,.6);color:#ffb3b3}
+#bz-blatt .sp-scan{display:flex;flex-wrap:wrap;gap:4px 12px;margin:8px 0;font-size:var(--bz-t2);color:var(--bz-leise)}
+#bz-blatt .sp-scan b{color:var(--bz-text);font-variant-numeric:tabular-nums}
+#bz-blatt .sp-liste li{padding:8px 10px;border-left:3px solid var(--bz-rand2);border-radius:4px;background:rgba(9,20,34,.55)}
+#bz-blatt .sp-liste li.rot{border-left-color:var(--bz-rot)}
+#bz-blatt .sp-liste small{display:block;margin-top:3px;font-size:var(--bz-t2);color:var(--bz-leise)}
+#bz-blatt .sp-zeitleiste{margin-top:4px}
+#bz-blatt .sp-notiz textarea{width:100%;box-sizing:border-box;min-height:84px;margin:0 0 8px;padding:10px;border:1px solid var(--bz-rand2);border-radius:4px;background:#050d18;color:var(--bz-text);font:400 16px/1.45 var(--bz-schrift);resize:vertical}
+#bz-blatt .sp-geschenk-feld{display:grid;gap:4px;margin:0 0 6px;font-size:var(--bz-t2);color:var(--bz-leise)}
+#bz-blatt .sp-geschenk-feld input{width:100%;box-sizing:border-box;min-height:44px;padding:8px 10px;border:1px solid var(--bz-rand2);border-radius:4px;background:#050d18;color:var(--bz-text);font:400 16px/1.3 var(--bz-schrift);font-variant-numeric:tabular-nums}
+#bz-blatt .sp-geschenk-frage{margin:6px 0;color:var(--bz-text)}
+#bz-blatt .sp-geschenk-status{min-height:1em;font-size:var(--bz-t2);color:var(--bz-leise)}
+#bz-blatt .sp-notiz-status{font-size:var(--bz-t2);color:var(--bz-leise)}
+#bz-blatt .sp-eigen{color:var(--bz-gut);font-weight:600}
+#bz-blatt .relation-verbuendet{color:#63d89a}#bz-blatt .relation-feindlich{color:#ef6b73}#bz-blatt .relation-nap{color:#f1cf65}#bz-blatt .relation-handelsabkommen{color:#c296f5}
+/* Systemprofil: Plätze 1–12 als Liste, Nummer öffnet den Platz */
+#bz-blatt .sy-plaetze{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:2px}
+#bz-blatt .sy-platz{display:grid;grid-template-columns:44px minmax(0,1fr);align-items:center;gap:10px;min-height:48px;padding:2px 0;border-bottom:1px solid rgba(150,190,230,.1)}
+#bz-blatt .sy-platz.eigen .sy-nr{--k-rand:rgba(111,211,154,.6);color:var(--bz-gut)}
+#bz-blatt .sy-platz.besetzt .sy-nr{--k-rand:var(--bz-rand2)}
+#bz-blatt .sy-nr{display:grid;place-items:center;width:44px;height:44px;min-width:44px;padding:0;text-align:center;font:600 var(--bz-t)/1 var(--bz-schrift);font-variant-numeric:tabular-nums;color:var(--bz-blau)}
+#bz-blatt span.sy-nr{border:1px dashed var(--bz-rand2);border-radius:4px;color:var(--bz-gold)}
+#bz-blatt .sy-wer{min-width:0;font-size:var(--bz-t);overflow-wrap:anywhere}
+#bz-blatt .sy-wer small{display:block;margin-top:2px;font-size:var(--bz-t2);color:var(--bz-leise)}
+#bz-blatt .sp-fakten{margin-top:4px}
+
+/* Steckbrief kurz: sechs Felder in drei Spalten, Heimatwelt als eigener Knopf */
+#bz-blatt .sp-steckbrief-kurz{grid-template-columns:repeat(3,minmax(0,1fr))}
+#bz-blatt .sp-steckbrief-kurz dd{font-size:var(--bz-t)}
+#bz-blatt .sp-heimat{margin:6px 0 0}
+#bz-blatt .sp-heimat .bz-aktion{width:100%;justify-content:flex-start;--k-rand:rgba(226,189,98,.55)}
+#bz-blatt .sp-heimat p{margin:0}
+/* Systemprofil: zwölf Plätze als Raster (Nummer und Zustand als Wort, nicht nur Farbe) */
+#bz-blatt .sy-raster{list-style:none;margin:6px 0 10px;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+#bz-blatt .sy-raster li{min-width:0}
+#bz-blatt .sy-feld{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:100%;min-height:50px;padding:4px 2px;text-align:center}
+#bz-blatt .sy-feld b{font:700 var(--bz-t-titel)/1.1 var(--bz-schrift);font-variant-numeric:tabular-nums;color:var(--bz-text)}
+#bz-blatt .sy-feld small{font:500 calc(11px * var(--text-scale,1))/1.1 var(--bz-schrift);color:var(--bz-leise);max-width:100%;overflow-wrap:anywhere}
+#bz-blatt .sy-feld i{position:absolute;top:2px;right:4px;font-style:normal;font-size:calc(10px * var(--text-scale,1));color:var(--bz-gold)}
+#bz-blatt .sy-feld.frei{--k-grund:rgba(5,13,24,.6);--k-rand:var(--bz-rand)}
+#bz-blatt .sy-feld.unbekannt{--k-grund:transparent;border-style:dashed}
+#bz-blatt .sy-feld.besetzt{--k-rand:var(--bz-blau)}
+#bz-blatt .sy-feld.besetzt small{color:#c9e8ff}
+#bz-blatt .sy-feld.eigen{--k-rand:rgba(111,211,154,.7)}
+#bz-blatt .sy-feld.eigen small{color:var(--bz-gut)}

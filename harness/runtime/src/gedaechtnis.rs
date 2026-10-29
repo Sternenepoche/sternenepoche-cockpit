@@ -80,10 +80,11 @@ impl Speicher {
             &[&jetzt().to_string(), rolle, request_id, &aktionen.to_string(), &ergebnis.to_string(), &begruendung.chars().take(1500).collect::<String>()])
     }
     pub fn letzte_zuege(&self, rolle: &str, n: usize) -> Result<Vec<Value>, String> {
-        let z = self.db.zeilen("SELECT zeit,aktionen,ergebnis,begruendung FROM zuege WHERE rolle=? ORDER BY id DESC LIMIT CAST(? AS BIGINT)", &[rolle, &n.to_string()])?;
+        // request_id: Beleg für die Pinwand („erledigt“ nur mit einem bestätigten Zug).
+        let z = self.db.zeilen("SELECT zeit,aktionen,ergebnis,begruendung,request_id FROM zuege WHERE rolle=? ORDER BY id DESC LIMIT CAST(? AS BIGINT)", &[rolle, &n.to_string()])?;
         Ok(z.into_iter().map(|r| {
             let lies = |s: &Option<String>| s.as_deref().and_then(|t| serde_json::from_str::<Value>(t).ok()).unwrap_or(Value::Null);
-            json!({"zeit":r[0],"aktionen":lies(&r[1]),"ergebnis":lies(&r[2]),"begruendung":r[3]})
+            json!({"zeit":r[0],"aktionen":lies(&r[1]),"ergebnis":lies(&r[2]),"begruendung":r[3],"request_id":r[4]})
         }).collect())
     }
     pub fn ereignis(&self, art: &str, daten: &Value) -> Result<(), String> {

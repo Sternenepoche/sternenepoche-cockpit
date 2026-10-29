@@ -1,0 +1,232 @@
+/* Funk – Nachrichten- und Berichtszentrale (berichtszentrale.js) und das nicht-modale Blatt für Bericht, Brief, Spieler-,
+   System- und Planetenprofil. Ruhig: Glasflächen mit 1 px hellem Rand und 4 px Radius, Oxanium, Farben nach §5/R8
+   (Auftragszeichen aus auftraege.js, Koordinaten hellblau, Rot = gegen dich). Keine style-Attribute (CSP), keine
+   Daueranimation. Eigene Stile über #briefkasten / #bz-blatt, weil cockpit-look.css alle Knöpfe mit 13 :not() färbt und
+   command-deck.css den Knopfgrund mit !important setzt – nur der Grund wird hier deshalb ebenfalls mit !important gesetzt. */
+body.game-client{--bz-grund:#08121f;--bz-glas:rgba(13,28,46,.92);--bz-glas2:rgba(18,38,60,.95);--bz-rand:rgba(150,190,230,.2);--bz-rand2:rgba(150,190,230,.36);
+ --bz-text:#dbe6f0;--bz-leise:#93a9bd;--bz-blau:#8fd0ff;--bz-gold:#e2bd62;--bz-rot:#ff7a7a;--bz-warn:#f2a43a;--bz-gut:#6fd39a;
+ --bz-schrift:Oxanium,"Segoe UI",system-ui,sans-serif;--bz-t:calc(13px * var(--text-scale,1));--bz-t2:calc(12px * var(--text-scale,1));--bz-t-titel:calc(14px * var(--text-scale,1))}
+@media (max-width:767px),(pointer:coarse){body.game-client{--bz-t:calc(14px * var(--text-scale,1));--bz-t-titel:calc(15px * var(--text-scale,1))}}
+.bz-sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Knöpfe (eine Grundform, Varianten über Variablen) */
+:is(#briefkasten,#bz-blatt,#bericht-sofort) .bz-k{--k-grund:var(--bz-glas);--k-rand:var(--bz-rand2);--k-text:var(--bz-text);
+ background-image:none!important;background-color:var(--k-grund)!important;border:1px solid var(--k-rand);border-radius:4px;color:var(--k-text);
+ box-shadow:none;text-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;font:500 var(--bz-t)/1.3 var(--bz-schrift);letter-spacing:0;
+ min-height:44px;padding:8px 12px;width:auto;max-inline-size:100%;text-align:left;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+ transition:background-color .12s ease,border-color .12s ease,transform .12s ease}
+:is(#briefkasten,#bz-blatt,#bericht-sofort) .bz-k:active:not(:disabled){transform:scale(.98);--k-grund:var(--bz-glas2)}
+:is(#briefkasten,#bz-blatt,#bericht-sofort) .bz-k:focus-visible{outline:2px solid var(--bz-blau);outline-offset:2px}
+:is(#briefkasten,#bz-blatt,#bericht-sofort) .bz-k:disabled{opacity:.6;cursor:wait}
+:is(#briefkasten,#bz-blatt,#bericht-sofort) .bz-k::before,:is(#briefkasten,#bz-blatt,#bericht-sofort) .bz-k::after{display:none}
+@media (hover:hover) and (pointer:fine){:is(#briefkasten,#bz-blatt,#bericht-sofort) .bz-k:hover:not(:disabled){--k-rand:var(--bz-blau);filter:none}}
+:is(#briefkasten,#bz-blatt) .bz-link{background:none!important;background-image:none!important;border:0;box-shadow:none;padding:0;min-height:0;font:inherit;color:var(--bz-blau);text-decoration:underline dotted 1px;text-underline-offset:3px;cursor:pointer;text-align:left;width:auto}
+@media (max-width:767px),(pointer:coarse){:is(#briefkasten,#bz-blatt) .bz-link{display:inline-flex;align-items:center;min-height:32px;padding:4px 0}}
+
+/* ---------- Seite: Kopf kompakt (Titelzeile + eine Steuerleiste) */
+#briefkasten.bz-zentrale{font-family:var(--bz-schrift)}
+#briefkasten.bz-zentrale .comm-heading{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px}
+#briefkasten.bz-zentrale .comm-heading h2{margin:2px 0 0;font:600 calc(20px * var(--text-scale,1))/1.2 var(--bz-schrift);color:var(--bz-text)}
+#briefkasten.bz-zentrale .comm-heading .eyebrow{font-size:calc(11px * var(--text-scale,1));letter-spacing:.14em;color:var(--bz-gold)}
+#briefkasten.bz-zentrale .comm-heading p{margin:4px 0 0;font-size:var(--bz-t2);color:var(--bz-leise);max-width:60ch}
+/* Handy: der Seitentitel steht in der unteren Leiste („Post“, aria-current) – ohne Titelzeile eine Zeile mehr Liste. */
+@media (max-width:767px){#briefkasten.bz-zentrale .comm-heading{display:none}}
+/* Verbündete (nur unter „Briefe“) als schmale Leiste unter der Steuerung, nicht als große Karte darüber */
+#briefkasten.bz-zentrale .ally-picker{margin:0 0 8px;padding:8px 10px;border:1px solid var(--bz-rand);border-radius:4px;background:rgba(9,20,34,.55);box-shadow:none}
+#briefkasten.bz-zentrale .ally-picker .comm-section-heading{display:flex;align-items:baseline;gap:8px;margin:0 0 6px}
+#briefkasten.bz-zentrale .ally-picker .comm-section-heading h3{margin:0;font:600 calc(12px * var(--text-scale,1))/1.3 var(--bz-schrift);letter-spacing:.1em;text-transform:uppercase;color:#c5d4e2}
+#briefkasten.bz-zentrale .ally-picker .comm-section-heading span{font-size:var(--bz-t2);color:var(--bz-leise)}
+#briefkasten.bz-zentrale .ally-list{display:flex;flex-wrap:wrap;gap:6px}
+#briefkasten.bz-zentrale .ally-contact{background-image:none!important;background-color:rgba(13,28,46,.92)!important;border:1px solid var(--bz-rand2)!important;border-radius:4px!important;box-shadow:none!important;min-height:44px;padding:6px 12px!important;width:auto!important;display:inline-flex;align-items:center;gap:8px}
+#briefkasten.bz-zentrale .ally-contact small{display:none}
+#briefkasten.bz-zentrale #mail-list-pane>.comm-section-heading{display:none}
+#briefkasten .bz-kopf{display:flex;flex-direction:column;gap:8px;margin:0 0 6px;contain:inline-size}
+#briefkasten .bz-kopf>[hidden]{display:none!important}
+/* Acht Reiter: Alle · Kampf · Spionage · Scans · Briefe · Reich · Spieler · Systeme (Handy 4 × 2, sonst 8 × 1) */
+#briefkasten .bz-arten{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));border:1px solid var(--bz-rand2);border-radius:4px;overflow:hidden;background:rgba(5,13,24,.6)}
+/* 4 × 2 bis 1023 px: bei 768 und 975 px liefen die acht Namen und Zeichen ineinander (Überlappungsprüfung 25.10.2026) */
+@media (max-width:1023px){#briefkasten .bz-arten{grid-template-columns:repeat(4,minmax(0,1fr))}#briefkasten .bz-reiter:nth-child(n+5){border-top:1px solid var(--bz-rand)}#briefkasten .bz-reiter:nth-child(5){border-left:0}}
+#briefkasten .bz-reiter{position:relative;--k-grund:transparent;border:0;border-radius:0;border-left:1px solid var(--bz-rand);display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:4px 4px;text-align:center;color:var(--bz-leise)}
+#briefkasten .bz-reiter:first-child{border-left:0}
+#briefkasten .bz-reiter-zeichen{position:relative;display:grid;place-items:center;flex:none;width:20px;height:20px}
+#briefkasten .bz-reiter-name{font:600 var(--bz-t2)/1.15 var(--bz-schrift);white-space:nowrap;color:inherit}
+#briefkasten .bz-reiter .bz-zahl{min-width:18px;padding:2px 5px;border-radius:9px;background:var(--bz-blau);color:#03111f;font:700 calc(11px * var(--text-scale,1))/1.1 var(--bz-schrift);text-align:center;font-variant-numeric:tabular-nums}
+#briefkasten .bz-reiter-kampf .bz-zahl{background:#ff8a8d}
+#briefkasten .bz-reiter[aria-pressed="true"]{--k-grund:rgba(143,208,255,.13);color:#fff;box-shadow:inset 0 -2px 0 var(--bz-blau)}
+#briefkasten .bz-reiter-alle .bz-reiter-zeichen{color:#c5d4e2}
+#briefkasten .bz-reiter-kampf .bz-reiter-zeichen{color:#ff5a5f}
+#briefkasten :is(.bz-reiter-spionage,.bz-reiter-scans) .bz-reiter-zeichen{color:#b48cff}
+#briefkasten .bz-reiter-briefe .bz-reiter-zeichen{color:var(--bz-blau)}
+#briefkasten .bz-reiter-reich .bz-reiter-zeichen{color:var(--bz-gold)}
+#briefkasten :is(.bz-reiter-spieler,.bz-reiter-systeme) .bz-reiter-zeichen{color:#c5d4e2}
+/* Handy: Zeichen über dem Namen, Zahl am Zeichen – sonst überdeckt die Zahl den Namen */
+@media (max-width:640px){#briefkasten .bz-reiter{flex-direction:column;gap:3px;min-height:52px;padding:6px 2px 5px}#briefkasten .bz-reiter .bz-zahl{position:absolute;top:3px;left:calc(50% + 4px);font-size:calc(10px * var(--text-scale,1))}}
+#briefkasten .bz-suchreihe{display:flex;gap:6px;align-items:stretch}
+#briefkasten .bz-suchreihe .bz-suche{flex:1;min-width:0}
+#briefkasten .bz-suchreihe .bz-schreiben{flex:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;white-space:nowrap}
+#briefkasten .bz-sortierung{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0 0 8px;border:1px solid var(--bz-rand2);border-radius:4px;overflow:hidden}
+#briefkasten .bz-seg{--k-grund:transparent;border:0;border-radius:0;border-left:1px solid var(--bz-rand);text-align:center;font-weight:600;color:var(--bz-leise)}
+#briefkasten .bz-seg:first-child{border-left:0}
+#briefkasten .bz-seg[aria-pressed="true"]{--k-grund:rgba(143,208,255,.14);color:#fff;box-shadow:inset 0 -2px 0 var(--bz-blau)}
+#briefkasten .bz-filter,#briefkasten .bz-wahl,#briefkasten .bz-unter .comm-tabs,#briefkasten .bz-vorschlag-liste{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;border:0}
+#briefkasten .bz-chip,#briefkasten .bz-unter .comm-tabs button{--k-grund:rgba(9,20,34,.7);display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:6px 10px;font-weight:600;white-space:nowrap}
+#briefkasten .bz-chip[aria-pressed="true"],#briefkasten .bz-chip.aktiv,#briefkasten .bz-unter .comm-tabs button[aria-pressed="true"]{--k-grund:rgba(143,208,255,.16);--k-rand:var(--bz-blau);color:#fff}
+#briefkasten .bz-chip small{font:600 calc(11px * var(--text-scale,1))/1 var(--bz-schrift);color:var(--bz-leise);font-variant-numeric:tabular-nums}
+#briefkasten .bz-gelesen-alle{--k-rand:rgba(143,208,255,.5);color:var(--bz-blau);margin-left:auto}
+/* Unterwahl „Briefe“: ehemalige Ordnerknöpfe des Briefkastens (IDs/Daten bleiben für andere Module erhalten) */
+#briefkasten .bz-unter .comm-tabs{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:0!important;margin:0!important;padding:0!important;border:1px solid var(--bz-rand2)!important;border-radius:4px;overflow:hidden}
+#briefkasten .bz-unter .comm-tabs button{border-width:0 0 0 1px!important;border-radius:0!important;min-width:0;padding:6px 2px!important;font-size:var(--bz-t2)!important;gap:4px}
+#briefkasten .bz-unter .comm-tabs button:first-child{border-left-width:0!important}
+#briefkasten .bz-unter #mail-unread:not(:empty){margin-left:0;padding:1px 5px;border-radius:9px;background:var(--bz-blau);color:#03111f;font-size:calc(11px * var(--text-scale,1))}
+#briefkasten .bz-unter .comm-tabs button{background-image:none!important;background-color:var(--k-grund)!important;border:1px solid var(--bz-rand2)!important;border-radius:4px!important;color:var(--bz-text)!important;box-shadow:none!important;text-shadow:none!important;font:600 var(--bz-t)/1.3 var(--bz-schrift)!important}
+#briefkasten .bz-unter .comm-tabs button[aria-pressed="true"]{background-color:rgba(143,208,255,.16)!important;color:#fff!important;box-shadow:inset 0 -2px 0 var(--bz-blau)!important}
+#briefkasten .bz-unter .comm-tabs [hidden]{display:none!important}
+#briefkasten .bz-suche .mail-search{display:block;margin:0;max-width:none;min-width:0}
+#briefkasten .bz-suche input{width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border:1px solid var(--bz-rand2);border-radius:4px;background:#050d18;color:var(--bz-text);font:400 16px/1.3 var(--bz-schrift)}
+#briefkasten .bz-suche input::placeholder{color:#7f95a8}
+#briefkasten .bz-suche input:focus-visible{outline:2px solid var(--bz-blau);outline-offset:1px}
+#briefkasten .bz-vorschlaege{padding:8px;border:1px solid var(--bz-rand);border-radius:4px;background:rgba(5,13,24,.92)}
+#briefkasten .bz-vorschlag-kopf{margin:0 0 6px;font-size:var(--bz-t2);color:var(--bz-leise)}
+#briefkasten .bz-zaehler{margin:0;font-size:var(--bz-t2);color:var(--bz-leise);font-variant-numeric:tabular-nums}
+#briefkasten .bz-leise,#bz-blatt .bz-leise{color:var(--bz-leise);font-size:var(--bz-t2)}
+
+/* ---------- Chronik: Tage, Zeilen, Bündel */
+#messages.bz-liste-host{display:block;contain:inline-size}
+#briefkasten .bz-tag{margin:0 0 10px}
+#briefkasten .bz-tag-kopf{position:sticky;top:0;z-index:2;display:flex;align-items:baseline;gap:10px;margin:0;padding:8px 2px 6px;background:#0b1624;border-bottom:1px solid var(--bz-rand);font:600 calc(12px * var(--text-scale,1))/1.2 var(--bz-schrift);letter-spacing:.12em;text-transform:uppercase;color:#c5d4e2}
+#briefkasten .bz-tag-kopf small{font-weight:400;letter-spacing:.04em;text-transform:none;color:var(--bz-leise)}
+:is(#briefkasten,#bz-blatt) .bz-liste{list-style:none;margin:0;padding:0;display:grid;gap:0}
+:is(#briefkasten,#bz-blatt) .bz-zeile{margin:0;border-bottom:1px solid rgba(150,190,230,.12);min-width:0}
+:is(#briefkasten,#bz-blatt) .bz-zeile-knopf{--k-grund:transparent;--k-rand:transparent;display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:start;gap:4px 10px;width:100%;min-height:56px;padding:9px 6px 9px 7px;border-radius:0;border-left:3px solid transparent;list-style:none}
+:is(#briefkasten,#bz-blatt) .bz-zeile-knopf::-webkit-details-marker{display:none}
+:is(#briefkasten,#bz-blatt) .bz-zeile.ton-gut>.bz-zeile-knopf,:is(#briefkasten,#bz-blatt) .bz-zeile.ton-gut>details>.bz-zeile-knopf{border-left-color:var(--bz-gut)}
+:is(#briefkasten,#bz-blatt) .bz-zeile.ton-schlecht>.bz-zeile-knopf,:is(#briefkasten,#bz-blatt) .bz-zeile.ton-schlecht>details>.bz-zeile-knopf{border-left-color:var(--bz-rot)}
+:is(#briefkasten,#bz-blatt) .bz-zeile.ton-warn>.bz-zeile-knopf,:is(#briefkasten,#bz-blatt) .bz-zeile.ton-warn>details>.bz-zeile-knopf{border-left-color:var(--bz-warn)}
+:is(#briefkasten,#bz-blatt) .bz-zeile.neu>.bz-zeile-knopf,:is(#briefkasten,#bz-blatt) .bz-zeile.neu>details>.bz-zeile-knopf{--k-grund:rgba(143,208,255,.06)}
+:is(#briefkasten,#bz-blatt) .bz-zeile.versteckt{opacity:.7}
+:is(#briefkasten,#bz-blatt) .bz-zeichen{display:grid;place-items:center;width:32px;height:32px;color:var(--bz-leise)}
+:is(#briefkasten,#bz-blatt) .bz-zeichen .auftrag-badge{gap:0}
+:is(#briefkasten,#bz-blatt) .bz-zeichen-brief,:is(#briefkasten,#bz-blatt) .bz-zeichen-diplo,:is(#briefkasten,#bz-blatt) .bz-zeichen-meldung{width:30px;height:30px;border-radius:50%;border:1px solid var(--bz-rand2);background:rgba(143,208,255,.06)}
+:is(#briefkasten,#bz-blatt) .bz-zeichen-brief{color:var(--bz-blau)}
+:is(#briefkasten,#bz-blatt) .bz-zeichen-brief.aus{color:var(--bz-leise)}
+:is(#briefkasten,#bz-blatt) .bz-zeichen-diplo{color:var(--bz-gold);border-color:rgba(226,189,98,.45)}
+:is(#briefkasten,#bz-blatt) .bz-zeile-text{display:grid;gap:3px;min-width:0}
+:is(#briefkasten,#bz-blatt) .bz-zeile-titel{font:600 var(--bz-t-titel)/1.3 var(--bz-schrift);color:var(--bz-text);overflow-wrap:anywhere}
+:is(#briefkasten,#bz-blatt) .bz-zeile.neu .bz-zeile-titel{color:#fff}
+:is(#briefkasten,#bz-blatt) .bz-zeile-unter{font:400 var(--bz-t2)/1.4 var(--bz-schrift);color:var(--bz-leise);overflow-wrap:anywhere}
+:is(#briefkasten,#bz-blatt) .bz-zeile-unter b{font-weight:600;color:#c9d7e4;font-variant-numeric:tabular-nums}
+:is(#briefkasten,#bz-blatt) .bz-zeile-unter i{font-style:normal;color:#5f7489}
+:is(#briefkasten,#bz-blatt) .bz-vorschau{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;color:#a9bccd;white-space:normal}
+:is(#briefkasten,#bz-blatt) .bz-zeile-zeit{display:flex;flex-direction:column;align-items:flex-end;gap:6px;padding-top:2px;font:500 var(--bz-t2)/1.2 var(--bz-schrift);color:var(--bz-leise);font-variant-numeric:tabular-nums;white-space:nowrap}
+:is(#briefkasten,#bz-blatt) .bz-punkt{width:9px;height:9px;border-radius:50%;background:var(--bz-blau)}
+:is(#briefkasten,#bz-blatt) .bz-merk,:is(#briefkasten,#bz-blatt) .bz-archiv-marke,:is(#briefkasten,#bz-blatt) .bz-anzahl{font-size:calc(11px * var(--text-scale,1));color:var(--bz-gold)}
+:is(#briefkasten,#bz-blatt) .bz-archiv-marke{color:var(--bz-leise)}
+:is(#briefkasten,#bz-blatt) .bz-zeile-titel .bz-anzahl{display:inline-block;margin-left:8px;padding:1px 7px;border:1px solid rgba(226,189,98,.45);border-radius:4px;font:600 calc(11px * var(--text-scale,1))/1.4 var(--bz-schrift);vertical-align:2px;font-variant-numeric:tabular-nums}
+:is(#briefkasten,#bz-blatt) .bz-neu-text{color:var(--bz-blau)!important}
+:is(#briefkasten,#bz-blatt) .bz-klappe{width:8px;height:8px;margin-top:2px;border-right:2px solid var(--bz-leise);border-bottom:2px solid var(--bz-leise);transform:rotate(45deg)}
+:is(#briefkasten,#bz-blatt) details[open]>summary .bz-klappe{transform:rotate(-135deg);margin-top:6px}
+:is(#briefkasten,#bz-blatt) .bz-buendel>details>summary{cursor:pointer}
+:is(#briefkasten,#bz-blatt) .bz-buendel>details[open]>summary{border-bottom:1px dashed var(--bz-rand)}
+:is(#briefkasten,#bz-blatt) .bz-glieder{list-style:none;margin:0 0 4px 18px;padding:0;border-left:1px solid var(--bz-rand)}
+:is(#briefkasten,#bz-blatt) .bz-glieder .bz-zeile:last-child{border-bottom:0}
+:is(#briefkasten,#bz-blatt) .bz-glieder .bz-zeile-knopf{min-height:48px}
+:is(#briefkasten,#bz-blatt) .koord{color:var(--bz-blau);font-variant-numeric:tabular-nums}
+:is(#briefkasten,#bz-blatt) .bz-rot{color:var(--bz-rot)}
+:is(#briefkasten,#bz-blatt) .bz-warn{color:var(--bz-warn)}
+:is(#briefkasten,#bz-blatt) .bz-tf{color:#2fd0c0}
+:is(#briefkasten,#bz-blatt) .bz-mehr{display:flex;justify-content:center;width:100%;margin:10px 0 4px;text-align:center}
+:is(#briefkasten,#bz-blatt) .bz-leer{padding:18px 4px;display:grid;gap:10px;justify-items:start}
+:is(#briefkasten,#bz-blatt) .bz-leer p{margin:0;color:var(--bz-leise);max-width:52ch}
+/* Spieler- und Systemliste */
+:is(#briefkasten,#bz-blatt) .bz-person{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px;border-bottom:1px solid rgba(150,190,230,.12)}
+:is(#briefkasten,#bz-blatt) .bz-person-knopf{--k-grund:transparent;--k-rand:transparent;display:grid;grid-template-columns:36px minmax(0,1fr);align-items:center;gap:10px;width:100%;min-height:60px;padding:8px 6px;border-radius:0;border-left:3px solid transparent}
+:is(#briefkasten,#bz-blatt) .bz-person.bedroht .bz-person-knopf{border-left-color:var(--bz-rot)}
+:is(#briefkasten,#bz-blatt) .bz-avatar{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;border:1px solid var(--bz-rand2);background:#0c1a2b;font:700 calc(14px * var(--text-scale,1))/1 var(--bz-schrift);color:#c9d7e4}
+:is(#briefkasten,#bz-blatt) .bz-avatar.rel-verbuendet{border-color:#63d89a;color:#63d89a}
+:is(#briefkasten,#bz-blatt) .bz-avatar.rel-feindlich{border-color:#ef6b73;color:#ef6b73}
+:is(#briefkasten,#bz-blatt) .bz-avatar.rel-nap{border-color:#f1cf65;color:#f1cf65}
+:is(#briefkasten,#bz-blatt) .bz-avatar-system{border-radius:4px;font-size:calc(12px * var(--text-scale,1));color:var(--bz-blau)}
+:is(#briefkasten,#bz-blatt) .bz-drohung{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:var(--bz-t2);color:var(--bz-leise)}
+:is(#briefkasten,#bz-blatt) .bz-neu-zahl{margin-left:8px;font:600 calc(11px * var(--text-scale,1))/1 var(--bz-schrift);color:var(--bz-blau)}
+:is(#briefkasten,#bz-blatt) .bz-mini{min-height:44px;padding:6px 10px;font-size:var(--bz-t2);color:var(--bz-blau)}
+:is(#briefkasten,#bz-blatt) .bz-knopf{font-weight:600}
+
+/* ---------- Blatt (nicht modal; die untere Leiste bleibt sichtbar und bedienbar) */
+#bz-blatt{position:fixed;inset:0;z-index:58;font-family:var(--bz-schrift);color:var(--bz-text)}
+#bz-blatt[hidden]{display:none}
+#bz-blatt .bz-schleier{position:absolute;inset:0;background:rgba(2,6,12,.62)}
+#bz-blatt .bz-blatt-flaeche{position:absolute;left:0;right:0;bottom:var(--themenleiste-h,0px);display:flex;flex-direction:column;max-height:calc(100dvh - var(--themenleiste-h,0px) - 40px);min-height:min(46dvh,360px);
+ background:var(--bz-grund);border-top:1px solid var(--bz-rand2);border-radius:8px 8px 0 0;box-shadow:0 -14px 36px rgba(0,0,0,.55);contain:inline-size;overflow:hidden}
+#bz-blatt:not([hidden]) .bz-blatt-flaeche{animation:bz-hoch .18s cubic-bezier(.23,1,.32,1)}
+@keyframes bz-hoch{from{transform:translateY(24px);opacity:.4}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){#bz-blatt:not([hidden]) .bz-blatt-flaeche{animation:none}}
+#bz-blatt .bz-blatt-kopf{display:flex;align-items:flex-start;gap:8px;padding:10px 10px 8px 12px;border-bottom:1px solid var(--bz-rand);background:#0a1626}
+#bz-blatt .bz-blatt-titel{flex:1;min-width:0}
+#bz-blatt .bz-augenbraue{margin:0;font:600 calc(11px * var(--text-scale,1))/1.3 var(--bz-schrift);letter-spacing:.12em;text-transform:uppercase;color:var(--bz-gold)}
+#bz-blatt h2{margin:2px 0 0;font:600 calc(18px * var(--text-scale,1))/1.25 var(--bz-schrift);color:#fff;overflow-wrap:anywhere;outline:0}
+#bz-blatt .bz-rund{flex:none;display:grid;place-items:center;width:44px;height:44px;min-width:44px;padding:0;text-align:center;font-size:24px;line-height:1}
+#bz-blatt .bz-rund[hidden]{display:none}
+#bz-blatt .bz-blatt-rumpf{flex:1;overflow:auto;overscroll-behavior:contain;padding:10px 12px 16px;-webkit-overflow-scrolling:touch}
+#bz-blatt .bz-blatt-meta p{margin:0 0 4px;font-size:var(--bz-t2);color:var(--bz-leise);display:flex;flex-wrap:wrap;gap:4px 12px}
+#bz-blatt .bz-blatt-meta:empty{display:none}
+#bz-blatt .bz-blatt-aktionen{margin:8px 0 10px}
+#bz-blatt .bz-blatt-aktionen:empty{display:none}
+:is(#bz-blatt,#briefkasten,#bericht-sofort) .bz-aktionen-reihe{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+:is(#bz-blatt,#briefkasten,#bericht-sofort) .bz-aktion{display:inline-flex;align-items:center;gap:8px;font-weight:600}
+:is(#bz-blatt,#briefkasten,#bericht-sofort) .bz-aktion.haupt{--k-grund:rgba(143,208,255,.16);--k-rand:var(--bz-blau);color:#fff}
+:is(#bz-blatt,#briefkasten,#bericht-sofort) .bz-aktion .auftrag-badge{flex:none}
+#bz-blatt .bz-blatt-fehler{margin:0 0 10px;padding:8px 10px;border:1px solid rgba(255,122,122,.5);border-left:3px solid var(--bz-rot);border-radius:4px;background:rgba(60,14,18,.6);color:#ffd3d3;font-size:var(--bz-t)}
+#bz-blatt .bz-blatt-fehler[hidden]{display:none}
+#bz-blatt .antwortleiste{margin-top:8px}
+/* Dossier im Blatt: Aktionen stehen oben (B3) – die Knopfzeilen am Ende des Dossiers entfallen hier. */
+#bz-blatt #reports{margin:0;padding:0;max-width:none}
+#bz-blatt #reports .rb-aktionen,#bz-blatt #reports .rb-bergen{display:none}
+#bz-blatt .bz-brieftext{white-space:pre-wrap;overflow-wrap:anywhere;font:400 var(--bz-t)/1.6 var(--bz-schrift);padding:10px 12px;border:1px solid var(--bz-rand);border-radius:4px;background:rgba(5,13,24,.7)}
+#bz-blatt .bz-teilnehmer{display:block}
+#bz-blatt .bz-archiv h3{margin:4px 0}
+#bz-blatt .bz-kernliste{margin:6px 0;padding-left:18px}
+/* Systemscan (Berichtsarchiv.systembericht) */
+#bz-blatt .bz-fakten,#bz-blatt .sp-steckbrief{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;margin:8px 0}
+#bz-blatt .bz-fakten>div,#bz-blatt .sp-steckbrief>div{padding:6px 8px;border:1px solid var(--bz-rand);border-radius:4px;background:rgba(9,20,34,.6);min-width:0}
+#bz-blatt .bz-fakten dt,#bz-blatt .sp-steckbrief dt{font-size:calc(11px * var(--text-scale,1));letter-spacing:.06em;text-transform:uppercase;color:var(--bz-leise)}
+#bz-blatt .bz-fakten dd,#bz-blatt .sp-steckbrief dd{margin:2px 0 0;font-weight:600;color:var(--bz-text);overflow-wrap:anywhere}
+#bz-blatt .bz-plaetze{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:4px}
+#bz-blatt .bz-platz-knopf{--k-grund:rgba(9,20,34,.6);display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;width:100%;align-items:baseline}
+#bz-blatt .bz-platz-knopf small{grid-column:2;color:var(--bz-leise);font-size:var(--bz-t2)}
+#bz-blatt .bz-platz.frei span{color:var(--bz-leise)}
+
+/* Andere Ebenen beim offenen Blatt: Meldungen bleiben lesbar über dem Blatt, die Sofortleiste ruht. */
+body.bz-blatt-offen #message.toast{z-index:61}
+body.bz-blatt-offen #bericht-sofort{display:none}
+
+@media (min-width:768px){
+ #bz-blatt .bz-schleier{background:rgba(2,6,12,.38)}
+ #bz-blatt .bz-blatt-flaeche{left:auto;top:64px;right:16px;bottom:16px;width:min(640px,48vw);max-height:none;min-height:0;border:1px solid var(--bz-rand2);border-radius:6px}
+}
+@media (max-height:500px) and (pointer:coarse){#bz-blatt .bz-blatt-flaeche{max-height:calc(100dvh - var(--themenleiste-h,0px) - 8px);min-height:0}}
+
+/* ---------- Blatt: Fuß (Begleitmeldungen, Verwalten), Ton im Kopf, Dossier ohne doppelte Kopfzeile */
+#bz-blatt .bz-blatt-fuss:empty{display:none}
+#bz-blatt .bz-begleit{margin:14px 0 0}
+#bz-blatt .bz-begleit h3{margin:0 0 4px;font:600 calc(12px * var(--text-scale,1))/1.3 var(--bz-schrift);letter-spacing:.1em;text-transform:uppercase;color:#c5d4e2}
+#bz-blatt .bz-verwalten{margin-top:16px;padding-top:12px;border-top:1px solid var(--bz-rand)}
+#bz-blatt .bz-verwalten .bz-aktion{--k-grund:transparent;color:var(--bz-leise);font-weight:500}
+#bz-blatt .bz-geraet{margin:6px 0 0}
+#bz-blatt[data-ton="schlecht"] .bz-blatt-kopf{box-shadow:inset 3px 0 0 var(--bz-rot)}
+#bz-blatt[data-ton="gut"] .bz-blatt-kopf{box-shadow:inset 3px 0 0 var(--bz-gut)}
+#bz-blatt[data-ton="warn"] .bz-blatt-kopf{box-shadow:inset 3px 0 0 var(--bz-warn)}
+/* Ergebnis, Ort und Zeit stehen schon im Kopf des Blatts */
+#bz-blatt[data-art="kampfberichte"] #reports .rb-kampf-kopf{display:none}
+#bz-blatt #reports .report-player-link,#bz-blatt #reports .bs-link{background-image:none!important;background-color:transparent!important;border:0!important;box-shadow:none!important;text-shadow:none!important;padding:0 2px!important;min-height:0;width:auto;font:inherit!important;color:var(--bz-blau)!important;text-decoration:underline dotted 1px;text-underline-offset:3px;border-radius:0!important}
+@media (max-width:767px),(pointer:coarse){#bz-blatt #reports .rb-blatt-ziel,#bz-blatt #reports :is(h3,h4,p,span,li) .report-player-link,#bz-blatt #reports :is(p,span,li,div) .bs-link{display:inline-flex!important;align-items:center;min-height:44px!important}}
+#bz-blatt .bz-blatt-meta .bz-link{color:var(--bz-blau)}
+@media (max-width:767px),(pointer:coarse){#bz-blatt .bz-link,#briefkasten .bz-link{min-height:44px}}
+
+/* Lange Kernmeldungen in der Liste auf drei Zeilen, vollständig im Blatt */
+:is(#briefkasten,#bz-blatt) .bz-zeile:not(.bz-buendel) .bz-zeile-knopf[data-bz-oeffnen^="b:"] .bz-zeile-titel{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden}
+/* Bündelzeile so hoch wie eine Einzelzeile: „n neu“ steht im Text, rechts nur Uhrzeit und Aufklapp-Zeichen */
+:is(#briefkasten,#bz-blatt) .bz-buendel .bz-zeile-zeit .bz-punkt{display:none}
+:is(#briefkasten,#bz-blatt) .bz-buendel .bz-zeile-zeit{gap:10px}
+/* Systemscan im Blatt: Titel steht im Kopf des Blatts */
+#bz-blatt .bz-systembericht>.rb-augenbraue,#bz-blatt .bz-systembericht>h3{display:none}
+#bz-blatt .bz-frei{margin:8px 0 0;font-size:var(--bz-t2);color:var(--bz-leise)}

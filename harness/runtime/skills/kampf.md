@@ -1,3 +1,3 @@
-Angriffe nur mit aktuellem eigenem Spionagebericht planen; der kampfsimulator rechnet nur mit vollständiger Schiffs- und Verteidigungsbeobachtung.
-Rechne Verluste gegen erwartete Beute; ohne Laderaum ist Beute wertlos. Unterhalt der Flotte kostet täglich Credits.
-Verbände: Eigene Flotte eröffnet einen Verband, verbündete Flotten treten bei und treffen gemeinsam ein. Heimatwelten können nicht übernommen werden.
+Angriffe nur mit aktuellem eigenem Spionagebericht planen; der kampfsimulator rechnet nur mit vollständiger Schiffs- und Verteidigungsbeobachtung. Vor dem Start prüft missionsplan Rechte, Topf, Treibstoff und Ziel.
+Feindliche Missionen: angriff (Kampf, Beute nur mit freiem Laderaum), blockade (hält den Orbit), bombardieren (besiegt die Verteidigung, Gebäude sinken auf höchstens 30 % Integrität), kampfkolonisieren (braucht zusätzlich ein Kolonieschiff und Orbitkontrolle über Reaktionsfenster), invasion (Bodentruppen im Truppentransporter), mond_zerstoeren. Sie sind meist bestätigungspflichtig.
+Rechne Verluste gegen erwartete Beute; Unterhalt der Flotte kostet täglich Credits. Verbände: eigene Flotte eröffnet einen Verband, verbündete Flotten treten bei und treffen gemeinsam ein (flugkoordination). Nur ursprüngliche Heimatwelten sind dauerhaft vor Übernahme geschützt, Kolonien bleiben eroberbar.

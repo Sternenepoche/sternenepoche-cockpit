@@ -1,6 +1,6 @@
 [package]
 name = "sternenepoche-cockpit"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2021"
 description = "Sternenepoche Harness Builder und Cockpit: Harness zusammenstellen, lokal bauen, prüfen und spielen"
 publish = false
@@ -25,6 +25,10 @@ zip = { version = "2", default-features = false, features = ["deflate"] }
 image = { version = "0.25", default-features = false, features = ["png"] }
 tiny_http = "0.12"
 sternenepoche-server = { path = "../../crates/server" }
+
+[dev-dependencies]
+# Nur für Tests: Rechte-Matrix und Missionen gegen den Spielkern prüfen (kern ist über den Server ohnehin im Bau).
+kern = { path = "../../crates/kern" }
 
 [build-dependencies]
 sha2 = "0.10"

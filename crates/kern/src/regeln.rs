@@ -315,6 +315,22 @@ impl AgentenRegel {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Regelwerk {
+    #[serde(skip)]
+    pub flottendoktrin: BTreeMap<Einheit,crate::flottenausbau::FlottenDoktrin>,
+    /// Mondgeneration (STERNE13). Wie die Flottendoktrin außerhalb des historischen bincode-Layouts;
+    /// gespeichert in der Snapshot-Hülle, gesetzt nur durch `Welt::monde_aktivieren`.
+    #[serde(skip)]
+    pub monde: Option<std::sync::Arc<crate::monde::MondRegeln>>,
+    /// Ablauf-Version der Welt (`crate::ablauf`): außerhalb des bincode-Layouts, gespiegelt aus `ausbau.ablauf`
+    /// (Snapshot-Erweiterung). 0 = laufende Welten wie bisher, 1 = neue Welten ab 17.10.2026.
+    #[serde(skip)]
+    pub ablauf: u8,
+    /// Dysonsphäre (neue Welten): außerhalb des bincode-Layouts, gespiegelt aus `ausbau.dyson.regeln`.
+    #[serde(skip)]
+    pub dyson: Option<std::sync::Arc<crate::dyson::DysonRegeln>>,
+    /// Technik v1 (`crate::technik`): außerhalb des bincode-Layouts, gespiegelt aus `ausbau.technik`.
+    #[serde(skip)]
+    pub technik: Option<std::sync::Arc<crate::technik::TechnikRegeln>>,
     pub version: String,
     pub welt: WeltRegel,
     pub zonen: BTreeMap<Zone, ZoneRegel>,
@@ -388,7 +404,7 @@ impl Regelwerk {
         Ok(r)
     }
 
-    fn cache_fuellen(&mut self) {
+    pub(crate) fn cache_fuellen(&mut self) {
         let max = self.welt.max_gebaeudestufe;
         let pot_ertrag = (0..=max as u32).map(|n| pot(self.wirtschaft.ertragswachstum, n) as i64).collect();
         let kum = |kosten: &dyn Fn(u8) -> [i64; GUETER], bis: u8| -> Vec<i64> {
@@ -424,11 +440,14 @@ impl Regelwerk {
         }
         for f in Forschung::ALLE {
             if self.version == "0.1.0" && matches!(f, Forschung::Ueberwachungstechnik | Forschung::Abschirmtechnik) { continue; }
+            // Plasmatechnik kommt aus regeln/technik.ron (Welt::technik_aktivieren), nicht aus der Regeldatei.
+            if f == Forschung::Plasmatechnik { continue; }
             if !self.forschung.contains_key(&f) {
                 return Err(format!("Regelwerk: Forschung {f} fehlt"));
             }
         }
         for e in Einheit::ALLE {
+            if e as u8 >= 18 && !self.einheiten.contains_key(&e) {continue;}
             let Some(er) = self.einheiten.get(&e) else {
                 return Err(format!("Regelwerk: Einheit {e} fehlt"));
             };
@@ -468,6 +487,22 @@ impl Regelwerk {
         Ok(())
     }
 
+    /// Display projection only: keep serialized legacy rules and their hash unchanged.
+    pub fn stufen_daten(&self) -> Vec<StufenRegel> {
+        self.stufen.iter().enumerate().map(|(i, s)| {
+            let mut s = s.clone();
+            s.schaltet_frei = self.freischaltungen((i + 2) as u8);
+            s
+        }).collect()
+    }
+
+    pub fn freischaltungen(&self, stufe: u8) -> String {
+        self.gebaeude.iter().filter(|(_, r)| r.ab_stufe == stufe).map(|(g, _)| g.name())
+            .chain(self.forschung.iter().filter(|(_, r)| r.ab_stufe == stufe).map(|(f, _)| f.name()))
+            .chain(self.einheiten.iter().filter(|(_, r)| r.ab_stufe == stufe).map(|(e, _)| e.name()))
+            .collect::<Vec<_>>().join(", ")
+    }
+
     pub fn geb(&self, g: Gebaeude) -> &GebaeudeRegel {
         self.gebaeude.get(&g).unwrap_or_else(|| &self.gebaeude[&Gebaeude::Sensorphalanx])
     }
@@ -475,7 +510,7 @@ impl Regelwerk {
         self.forschung.get(&f).unwrap_or_else(|| &self.forschung[&Forschung::Spionagetechnik])
     }
     pub fn einh(&self, e: Einheit) -> &EinheitRegel {
-        &self.einheiten[&e]
+        self.einheiten.get(&e).unwrap_or_else(||crate::flottenausbau::basis(e))
     }
     pub fn volk(&self, v: Volk) -> &VolkRegel {
         &self.voelker[&v]
@@ -519,11 +554,15 @@ impl Regelwerk {
 
     pub fn kosten_einheit(&self, e: Einheit, volk: Volk) -> [i64; GUETER] {
         let mut a = preis_array(&self.einh(e).kosten);
-        if e == Einheit::Kolonieschiff {
+        if matches!(e,Einheit::Kolonieschiff|Einheit::GrossesKolonieschiff) {
             let f = self.volk(volk).kolonieschiff;
             for g in [Gut::Erz, Gut::Kristall, Gut::Deuterium, Gut::Legierung, Gut::Elektronik] {
                 a[g.idx()] = mal(a[g.idx()], f);
             }
+        }
+        // Eigener Kostenfaktor der Einheit für dieses Volk (kernwerte.volk_einheiten), auf ganze Einheiten gerundet.
+        if let Some(v) = self.volk_einheit(volk, e).filter(|v| v.kosten != 1.0) {
+            for x in a.iter_mut().filter(|x| **x > 0) { *x = (mal(*x, v.kosten) / M).max(1) * M; }
         }
         a
     }
@@ -550,7 +589,8 @@ impl Regelwerk {
 
     pub fn wert_forschung_bis(&self, f: Forschung, stufe: u8) -> i64 {
         if stufe == 0 { return 0; }
-        let v = &self.cache.kum_forschung[f.idx()];
+        // Forschungen außerhalb dieses Regelwerks (z. B. Plasmatechnik ohne Technik v1) zählen nicht.
+        let Some(v) = self.cache.kum_forschung.get(f.idx()) else { return 0 };
         v[(stufe as usize).min(v.len() - 1)]
     }
 

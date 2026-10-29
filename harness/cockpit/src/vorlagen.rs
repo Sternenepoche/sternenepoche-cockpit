@@ -37,7 +37,8 @@ Du denkst in Tagen, nicht in Minuten. Ruhig, sachlich, ohne Hast. Du entscheides
 ## Grenzen
 - Keine Kriegserklärung und keine Verträge ohne Rücksprache mit Diplomat und Feldherr.
 ",
-        skills: &["anpassung", "ausbau", "bauketten", "auswertung"], werkzeuge: &["kosten", "regel", "kolonieplan", "galaxie", "gedaechtnis_suche", "analyse", "inventur", "wissen"],
+        skills: &["anpassung", "ausbau", "bauketten", "auswertung"], werkzeuge: &["kosten", "regel", "kolonieplan", "galaxie", "regelkontext", "ablaufplan", "kostenplan", "wirtschaftsdiagnose",
+            "habitabilitaet", "planet_aufgeben", "gedaechtnis_suche", "analyse", "inventur", "wissen", "planet_detail", "lage_teil"],
         ausloeser: &["aufgabe", "angriff"], rechte: &[], temperatur: 0.3, takt_minuten: 30 },
     Vorlage { name: "Expansionsplaner", rolle: "stratege", kurz: "Kolonien, Felder, Astrophysik zuerst",
         seele: "# Stratege – Expansionsplaner
@@ -58,7 +59,8 @@ Du willst wachsen – aber nur auf festem Boden. Jede neue Kolonie muss sich sel
 ## Grenzen
 - Keine Kolonie ohne Begleitschiff und mitgeführte Baustoffe (Regeln der Kolonisation beachten).
 ",
-        skills: &["anpassung", "navigation", "aufklaerung", "bauketten", "auswertung"], werkzeuge: &["kosten", "flugzeit", "regel", "kolonieplan", "galaxie", "gedaechtnis_suche", "analyse", "inventur", "wissen"],
+        skills: &["anpassung", "navigation", "aufklaerung", "bauketten", "auswertung"], werkzeuge: &["kosten", "flugzeit", "regel", "kolonieplan", "galaxie", "koloniebedarf", "habitabilitaet",
+            "terraformbedarf", "regelkontext", "ablaufplan", "kostenplan", "planet_aufgeben", "gedaechtnis_suche", "analyse", "inventur", "wissen", "planet_detail", "lage_teil"],
         ausloeser: &["aufgabe"], rechte: &[], temperatur: 0.3, takt_minuten: 30 },
     Vorlage { name: "Sparsamer Aufbauer", rolle: "verwalter", kurz: "Versorgung zuerst, nichts steht still",
         seele: "# Verwalter – Sparsamer Aufbauer
@@ -81,7 +83,8 @@ Genau, sparsam, vorausschauend. Ein leerer Lagerplatz ärgert dich weniger als e
 ## Grenzen
 - Kein Abriss, kein Leeren von Bauschleifen und kein Marktgeschäft ohne guten Grund in der Begründung.
 ",
-        skills: &["ausbau", "anpassung", "handel", "bauketten", "auswertung"], werkzeuge: &["kosten", "regel", "gedaechtnis_suche", "analyse", "inventur", "wissen"],
+        skills: &["ausbau", "anpassung", "handel", "bauketten", "auswertung"], werkzeuge: &["kosten", "regel", "kostenplan", "wirtschaftsdiagnose", "marktplan", "soforthandel", "missionsplan",
+            "koloniebedarf", "ablaufplan", "gedaechtnis_suche", "analyse", "inventur", "wissen", "planet_detail", "lage_teil"],
         ausloeser: &["bauschleife_leer", "aufgabe"], rechte: &[("abreissen", "fragen"), ("schleife_leeren", "fragen")], temperatur: 0.2, takt_minuten: 10 },
     Vorlage { name: "Industrieller", rolle: "verwalter", kurz: "Produktionsketten, Legierung, Elektronik, Forschung",
         seele: "# Verwalter – Industrieller
@@ -102,7 +105,8 @@ Du denkst in Produktionsketten: Erz und Kristall werden zu Legierung und Elektro
 ## Grenzen
 - Versorgung (Strom, Nahrung) geht immer vor Industrie.
 ",
-        skills: &["ausbau", "anpassung", "handel", "bauketten", "auswertung"], werkzeuge: &["kosten", "regel", "gedaechtnis_suche", "analyse", "inventur", "wissen"],
+        skills: &["ausbau", "anpassung", "handel", "bauketten", "auswertung"], werkzeuge: &["kosten", "regel", "kostenplan", "wirtschaftsdiagnose", "marktplan", "soforthandel", "missionsplan",
+            "ablaufplan", "regelkontext", "gedaechtnis_suche", "analyse", "inventur", "wissen", "planet_detail", "lage_teil"],
         ausloeser: &["bauschleife_leer", "aufgabe"], rechte: &[("abreissen", "fragen")], temperatur: 0.2, takt_minuten: 10 },
     Vorlage { name: "Verteidiger", rolle: "feldherr", kurz: "Schutz zuerst, Aufklärung, Saven",
         seele: "# Feldherr – Verteidiger
@@ -123,8 +127,10 @@ Vorsichtig und wachsam. Du schützt, was das Reich aufgebaut hat. Ein verlorenes
 ## Grenzen
 - Kein Angriff ohne aktuellen Spionagebericht und ohne Freigabe des Besitzers.
 ",
-        skills: &["verteidigung", "aufklaerung", "navigation", "kampf"], werkzeuge: &["kosten", "flugzeit", "kampfsimulator", "regel", "galaxie", "gedaechtnis_suche", "analyse", "inventur", "wissen"],
-        ausloeser: &["angriff", "aufgabe"], rechte: &[("flotte_senden:angriff", "fragen"), ("flotte_senden:pluenderung", "fragen"), ("flotte_senden:belagerung", "verbieten"), ("raketen_starten", "fragen")],
+        skills: &["verteidigung", "aufklaerung", "navigation", "kampf"], werkzeuge: &["kosten", "flugzeit", "kampfsimulator", "kampfszenario", "regel", "galaxie", "missionsplan", "flugkoordination",
+            "raketensimulator", "gedaechtnis_suche", "analyse", "inventur", "wissen", "planet_detail", "lage_teil"],
+        ausloeser: &["angriff", "aufgabe"], rechte: &[("flotte_senden:angriff", "fragen"), ("flotte_senden:blockade", "verbieten"), ("flotte_senden:invasion", "verbieten"),
+            ("flotte_senden:bombardieren", "verbieten"), ("flotte_senden:kampfkolonisieren", "verbieten"), ("flotte_senden:mond_zerstoeren", "verbieten"), ("raketen_starten", "fragen")],
         temperatur: 0.2, takt_minuten: 15 },
     Vorlage { name: "Raider", rolle: "feldherr", kurz: "gezielte Plünderung nach Aufklärung",
         seele: "# Feldherr – Raider
@@ -134,7 +140,7 @@ Schnell, berechnend, nie leichtsinnig. Du holst Rohstoffe dort, wo sie schlecht 
 
 ## Auftrag
 - Kläre schwach verteidigte Ziele mit Sonden auf und simuliere jeden Angriff vorher.
-- Plündere nur, wenn der Kampfsimulator einen klaren Sieg zeigt und die Ladung den Flug lohnt.
+- Plündere (Mission angriff mit freiem Laderaum) nur, wenn der Kampfsimulator einen klaren Sieg zeigt und die Ladung den Flug lohnt.
 - Bring Beute nach Hause und schütze die eigene Flotte vor Gegenschlägen (saven).
 
 ## Arbeitsweise
@@ -142,10 +148,12 @@ Schnell, berechnend, nie leichtsinnig. Du holst Rohstoffe dort, wo sie schlecht 
 - Stimme dich mit dem Diplomaten ab: keine Angriffe auf Vertragspartner oder Verbündete.
 
 ## Grenzen
-- Kein Angriff ohne aktuellen Spionagebericht. Belagerung und Raketen nur mit Freigabe.
+- Kein Angriff ohne aktuellen Spionagebericht. Blockade, Bombardieren, Invasion und Raketen nur mit Freigabe.
 ",
-        skills: &["kampf", "aufklaerung", "navigation", "verteidigung"], werkzeuge: &["kosten", "flugzeit", "kampfsimulator", "regel", "galaxie", "gedaechtnis_suche", "analyse", "inventur", "wissen"],
-        ausloeser: &["angriff", "aufgabe"], rechte: &[("flotte_senden:angriff", "fragen"), ("flotte_senden:pluenderung", "erlauben"), ("flotte_senden:belagerung", "fragen"), ("raketen_starten", "fragen")],
+        skills: &["kampf", "aufklaerung", "navigation", "verteidigung"], werkzeuge: &["kosten", "flugzeit", "kampfsimulator", "kampfszenario", "regel", "galaxie", "missionsplan", "flugkoordination",
+            "raketensimulator", "wiederaufbau", "gedaechtnis_suche", "analyse", "inventur", "wissen", "planet_detail", "lage_teil"],
+        ausloeser: &["angriff", "aufgabe"], rechte: &[("flotte_senden:angriff", "fragen"), ("flotte_senden:blockade", "fragen"), ("flotte_senden:invasion", "fragen"),
+            ("flotte_senden:bombardieren", "fragen"), ("flotte_senden:kampfkolonisieren", "fragen"), ("flotte_senden:mond_zerstoeren", "fragen"), ("raketen_starten", "fragen")],
         temperatur: 0.25, takt_minuten: 15 },
     Vorlage { name: "Händler", rolle: "diplomat", kurz: "Handel, Verträge, keine Geschenke",
         seele: "# Diplomat – Händler
@@ -166,7 +174,7 @@ Höflich, verlässlich und misstrauisch gegenüber Forderungen. Jede Abmachung m
 ## Grenzen
 - Nichts verschenken ohne Gegenleistung. Verträge kündigen nur mit Freigabe des Besitzers.
 ",
-        skills: &["diplomatie", "handel"], werkzeuge: &["kosten", "regel", "briefarchiv", "galaxie", "gedaechtnis_suche", "analyse", "wissen"],
+        skills: &["diplomatie", "handel"], werkzeuge: &["kosten", "regel", "briefarchiv", "galaxie", "marktplan", "soforthandel", "gedaechtnis_suche", "analyse", "wissen", "lage_teil"],
         ausloeser: &["brief", "aufgabe"], rechte: &[("schenken", "fragen"), ("vertrag_kuendigen", "fragen"), ("allianz_verlassen", "fragen")], temperatur: 0.4, takt_minuten: 20 },
     Vorlage { name: "Bündnisschmied", rolle: "diplomat", kurz: "Allianzen und Nichtangriffspakte",
         seele: "# Diplomat – Bündnisschmied
@@ -187,7 +195,7 @@ Du baust Vertrauen auf und verwandelst Nachbarn in Verbündete. Geduldig, klar, 
 ## Grenzen
 - Keine Geschenke ohne Freigabe; keine Allianz verlassen ohne Freigabe des Besitzers.
 ",
-        skills: &["diplomatie", "handel", "aufklaerung"], werkzeuge: &["kosten", "regel", "briefarchiv", "galaxie", "gedaechtnis_suche", "analyse", "wissen"],
+        skills: &["diplomatie", "handel", "aufklaerung"], werkzeuge: &["kosten", "regel", "briefarchiv", "galaxie", "marktplan", "soforthandel", "gedaechtnis_suche", "analyse", "wissen", "lage_teil"],
         ausloeser: &["brief", "aufgabe", "angriff"], rechte: &[("schenken", "fragen"), ("vertrag_kuendigen", "fragen"), ("allianz_verlassen", "fragen")], temperatur: 0.4, takt_minuten: 20 },
 ];
 
@@ -270,7 +278,7 @@ pub fn modellklasse(w: &mut RollenWahl, klasse: &str) {
         "klein" => {
             w.max_tokens = 1200;
             w.temperatur = w.temperatur.min(0.15);
-            w.werkzeuge.retain(|x| ["kosten", "regel", "analyse", "inventur"].contains(&x.as_str()));
+            w.werkzeuge.retain(|x| ["kosten", "regel", "analyse", "inventur", "planet_detail"].contains(&x.as_str()));
             w.skills.truncate(3);
         }
         "mittel" => { w.max_tokens = 2000; w.temperatur = w.temperatur.clamp(0.15, 0.35); }
@@ -303,6 +311,13 @@ mod tests {
             assert!(v.skills.iter().all(|s| skills.contains(s)), "{}: unbekannter Skill", v.name);
             assert!(v.werkzeuge.iter().all(|s| werkzeuge.contains(s)), "{}: unbekanntes Werkzeug", v.name);
             assert!(v.rechte.iter().all(|(_, r)| ["erlauben", "fragen", "verbieten"].contains(r)));
+            // Nur echte Kennungen (keine erfundenen Missionen wie früher pluenderung/belagerung), passend zur Rolle.
+            for (k, _) in v.rechte {
+                let alle = crate::katalog::alle_kennungen();
+                assert!(alle.iter().any(|x| x == k), "{}: Recht {k} gibt es nicht", v.name);
+                let passt = crate::katalog::GRUPPEN.iter().flat_map(|(g, _)| crate::katalog::kennungen(g)).any(|(x, r)| x == *k && r.contains(&v.rolle));
+                assert!(passt, "{}: {k} gehört nicht zur Rolle {}", v.name, v.rolle);
+            }
         }
         assert_eq!(klasse_aus_name("qwen3:8b"), "klein");
         assert_eq!(klasse_aus_name("qwen3:14b"), "mittel");

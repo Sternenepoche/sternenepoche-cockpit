@@ -37,6 +37,7 @@ pub struct Flottenbericht {
     pub ankunft: SimZeit,
     pub ziel: Koord,
     pub besitzer: Option<SpielerId>,
+    #[serde(with="crate::snapshot_layout::optional_ships")]
     pub schiffe: Option<[i64; SCHIFFE]>,
     pub ladung: Option<[i64; GUETER]>,
     pub abgeschirmt: bool,
@@ -80,11 +81,16 @@ impl Welt {
         sp.name = name;
         sp.volk = volk;
         sp.ki = false;
-        sp.schutz_bis = self.zeit + self.regeln.diplomatie.anfaengerschutz_tage * TAG;
+        sp.schutz_bis = if self.ausbau.industrie_version>0 {self.zeit} else {self.zeit + self.regeln.diplomatie.anfaengerschutz_tage * TAG};
         let planets = sp.planeten.clone();
+        if self.ausbau.version>0 {self.heimat_anpassen(sid);}
         for pid in planets {
             self.planeten[pid as usize].stand = self.zeit;
             self.planeten[pid as usize].gegruendet = self.zeit;
+            if self.ausbau.version>0 {let mut people=crate::ausbau::Personen::default();
+                if let Some(previous)=self.ausbau.personen.get(&pid) {for q in 0..3 {people.gruppen[volk.idx()][q]=previous.gruppen.iter().map(|g|g[q]).sum();}}
+                else {people.gruppen[volk.idx()][0]=self.planeten[pid as usize].bevoelkerung;}
+                self.ausbau.personen.insert(pid,people); }
             self.raten_neu(pid as usize);
         }
         self.punkte_neu();
@@ -124,6 +130,23 @@ impl Welt {
                     guertel,
                 },
             );
+            // Beobachteter Systemzustand bleibt als eigener Bericht erhalten, getrennt von Planetenspionage.
+            // JSON-Nebenkarte erhält die Kompatibilität bestehender Spielstände.
+            let plaetze: Vec<_> = (1..=self.regeln.welt.plaetze_je_system).map(|p| {
+                let k=Koord::neu(f.ziel.sektor,f.ziel.system,p);let mut v=self.planetenwissen(f.besitzer,k);
+                if let Some(t)=self.truemmer.get(&k) {
+                    let mut tf=json!({"erz":t[0]/M,"kristall":t[1]/M});self.truemmer_zusatz(k,&mut tf);v["truemmer"]=tf;
+                } else if self.monde.ueberlebende.iter().any(|(ort,people)|*ort==k&&people.gesamt()>0) {
+                    let mut tf=json!({"erz":0,"kristall":0});self.truemmer_zusatz(k,&mut tf);v["truemmer"]=tf;
+                }
+                v
+            }).collect();
+            self.ausbau.scan_details.insert(format!("system:{}:{fid}", f.besitzer), serde_json::json!({
+                "art":"systemscan", "spieler_id":f.besitzer, "zeit":self.zeit,
+                "ziel":format!("{}:{}:0",f.ziel.sektor,f.ziel.system), "nebel":nebel,
+                "asteroidenguertel":guertel, "bergbau":self.guertelumfang(f.ziel), "plaetze":plaetze, "sonden":1
+            }));
+            self.scanarchiv_begrenzen(f.besitzer, "system:", 120);
             self.vorfall(
                 f.besitzer,
                 "systemaufklaerung",
@@ -132,8 +155,19 @@ impl Welt {
                     f.ziel.sektor, f.ziel.system
                 ),
             );
+            // Ein-Tipp-Erkundung: jetzt die Planetensonden nachschieben (verwaltung.rs).
+            if let Some(auftrag) = self.sammelauftrag(fid) { self.sammelauftrag_fortsetzen(&auftrag, false); }
         }
         self.heimflug(fid);
+    }
+    /// Größenklasse des vorhandenen Rohstoffumfangs; keine erfundene räumliche Ausdehnung.
+    pub(crate) fn guertelumfang(&self,k:Koord)->serde_json::Value {
+        let Some(s)=self.system(k).filter(|s|s.guertel)else{return serde_json::Value::Null;};
+        let r=&self.regeln;let min=milli(r.welt.reichtum_min);let max=milli(r.welt.reichtum_max);
+        let d=if max>min {((s.reich_erz+s.reich_kristall)/2-min)*1000/(max-min)}else{500};
+        json!({"erz_je_stunde":r.flug.abbau_erz_je_stunde*s.reich_erz/1000,
+            "kristall_je_stunde":r.flug.abbau_kristall_je_stunde*s.reich_kristall/1000,
+            "groesse":if d<333{"Klein"}else if d<667{"Mittel"}else{"Groß"},"groesse_basis":"Rohstoffumfang"})
     }
 
     /// Upgrade bonuses are gated by ALL required infrastructure and research.
@@ -204,7 +238,10 @@ impl Welt {
         let mut v = json!({"flotte":fid,"ziel":f.ziel.to_string(),"ankunft":zeittext(f.ankunft),
             "ankunft_sekunden":f.ankunft,"in_min":(f.ankunft-self.zeit)/MINUTE,
             "von":null,"schiffe":null,"schiffstypen":null,"schiffe_spanne":null,
-            "mission":"feindlicher_anflug","sichtstufe":0});
+            "mission":"feindlicher_anflug","sichtstufe":0,
+            // Herkunft ist ab der Erfassung bekannt (Kurs zurückverfolgt), unabhängig von der Sensorstärke – Karl 22.10.2026:
+            // „wenn mich jemand angreift, muss ich die Koordinaten des Planeten sehen, von dem er mich angreift“.
+            "start":f.start_koord.to_string(),"start_mond":self.monde.flottenstart.contains_key(&fid)});
         if !self.aufklaerungsregeln() {
             v["von"] = json!(self.spieler[f.besitzer as usize].name);
             v["schiffe"] = json!(f.schiffe.iter().sum::<i64>());
@@ -243,6 +280,17 @@ impl Welt {
         // Active reports remain historical. Never silently refresh their contents from live state.
         if let Some(b) = self.aufklaerung.flottenberichte.get(&(sid, fid)) {
             v["sondenbericht"] = self.flottenbericht_sicht(b);
+        }
+        // Flottensonde: frühester eigener Start mit Sonde und ob sie den Anflug vor seiner Ankunft erreicht – dieselbe Prüfung
+        // wie flotten_spionage (Funktionsprüfung 25.10.2026: der Knopf scheiterte erst nach dem Tipp, die Sonde braucht ≥ 20 min).
+        let mut sonde = [0; SCHIFFE];
+        sonde[Einheit::Spionagesonde.idx()] = 1;
+        let beste = self.spieler[sid as usize].planeten.iter().map(|p| *p as usize)
+            .filter(|p| self.planeten[*p].einheiten[Einheit::Spionagesonde.idx()] > 0)
+            .filter_map(|p| self.flugplan(sid, p, f.ziel, &sonde, 1000).ok().map(|plan| (self.zeit + plan.dauer, p)))
+            .min();
+        if let Some((an, p)) = beste {
+            v["sonde"] = json!({"start": self.planeten[p].koord.to_string(), "ankunft": an, "rechtzeitig": an < f.ankunft});
         }
         Some(v)
     }
@@ -325,6 +373,11 @@ impl Welt {
             return;
         };
         if !self.sichtbare_angriffe(p.besitzer).contains(&target_id) {
+            self.vorfall(
+                p.besitzer,
+                "flottenaufklaerung",
+                format!("Anflug {target_id} auf {} ist nicht mehr als Angriff erkennbar; Sonde kehrt ohne Bericht zurück", p.ziel),
+            );
             self.heimflug(probe);
             return;
         }
@@ -376,11 +429,10 @@ impl Welt {
             p.besitzer,
             "flottenaufklaerung",
             if success {
-                "Flottenbericht eingetroffen"
+                format!("Flottenbericht über Anflug {target_id} auf {} eingetroffen (Ankunft {})", f.ziel, zeittext(f.ankunft))
             } else {
-                "Flottenbericht durch Abschirmung verdeckt"
-            }
-            .into(),
+                format!("Flottenbericht über Anflug {target_id} auf {} durch Abschirmung verdeckt", f.ziel)
+            },
         );
         self.wecke(
             p.besitzer,
@@ -388,15 +440,25 @@ impl Welt {
             "Flottenbericht eingetroffen",
             true,
         );
-        self.vorfall(
-            f.besitzer,
-            "flottenaufklaerung",
-            "Eine Sonde hat die Flotte untersucht".into(),
-        );
         let mut rng = strom(self.startwert, KANAL_SPIONAGE, self.spionage_nr);
         self.spionage_nr += 1;
         let risk = if success { 100 } else { 500 };
-        if zufall(&mut rng, 1000) < risk {
+        let verloren = zufall(&mut rng, 1000) < risk;
+        self.vorfall(
+            f.besitzer,
+            "flottenaufklaerung",
+            format!(
+                "Eine Sonde hat deine Flotte {target_id} im Anflug auf {} untersucht{}",
+                f.ziel,
+                if verloren { "; die Sonde wurde abgeschossen" } else { "" }
+            ),
+        );
+        if verloren {
+            self.vorfall(
+                p.besitzer,
+                "flottenaufklaerung",
+                format!("Sonde beim Anflug {target_id} verloren (Risiko {} %)", risk / 10),
+            );
             self.flotten.remove(&probe);
         } else {
             self.heimflug(probe);

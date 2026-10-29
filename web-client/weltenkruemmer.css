@@ -1,0 +1,13 @@
+/* Weltenkrümmer-3D-Dialog und Werftbild (weltenkruemmer.js) */
+.weltenkruemmer-dialog{width:min(960px,96vw);max-height:96vh;padding:0;border:1px solid #2c3d55;border-radius:10px;background:#02050b;color:#e6edf6}
+.weltenkruemmer-dialog::backdrop{background:#000a}.wk-kopf{display:flex;justify-content:space-between;align-items:center;padding:8px 12px}.wk-kopf h2{margin:0;font-size:16px}
+.wk-buehne{position:relative;aspect-ratio:16/10;max-height:68vh;width:100%}.wk-buehne canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.wk-phase{position:absolute;left:12px;top:10px;font:600 13px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#cfe3ff;text-shadow:0 0 8px #000}
+.wk-leiste{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;padding:8px 12px}.wk-leiste button{font:inherit;padding:4px 8px}.wk-ansichten{display:inline-flex;gap:4px;flex-wrap:wrap}
+.wk-hinweis{margin:0;padding:0 12px 10px;font-size:12px;color:#8fa0b5}
+.wk-bilder{display:flex;gap:6px;overflow-x:auto;padding:0 12px 12px}.wk-bilder figure{margin:0;flex:0 0 auto;text-align:center;font-size:11px;color:#9fb0c6}.wk-bilder img{width:96px;height:96px;object-fit:cover;border-radius:6px;border:1px solid #23334a;cursor:zoom-in;display:block}
+.wk-bilder figure.wk-werft img{width:170px}.wk-gross{position:absolute;inset:0;background:#000e;display:grid;place-items:center;z-index:5}.wk-gross[hidden]{display:none}.wk-gross img{max-width:94%;max-height:90%;border-radius:8px}.wk-gross button{position:absolute;right:14px;top:10px}
+.weltenkruemmer-dialog{position:relative}
+.wk-nurbild{width:100vw;height:100vh;max-width:none;max-height:none;margin:0;border:0;border-radius:0}.wk-nurbild .wk-kopf,.wk-nurbild .wk-leiste,.wk-nurbild .wk-hinweis,.wk-nurbild .wk-bilder,.wk-nurbild .wk-phase{display:none}.wk-nurbild .wk-buehne{aspect-ratio:auto;height:100vh;max-height:none}
+.mond-werftbild{margin:8px 0 0}.mond-werftbild img{width:100%;border-radius:6px;cursor:zoom-in}.mond-werftbild figcaption{font-size:11px;color:#9fb0c6}
+.wk-vitrine .wk-buehne canvas{cursor:grab}.wk-vitrine .wk-phase{display:block;left:50%;transform:translateX(-50%);top:auto;bottom:18px;font-size:12px;opacity:.75}

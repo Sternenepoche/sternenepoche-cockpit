@@ -353,7 +353,11 @@ impl Flotte {
                         if !error.is_empty() {context["voriger_fehler"] = json!(error);}
                         let schema = post("/api/context", json!({"rolle":r,"schema":true}), token)?;
                         let compact = compact_schema(&schema["schema"]["properties"]["aktionen"]);
-                        let output_schema = json!({"type":"object","properties":{"aktionen":compact,"begruendung":{"type":"string","maxLength":400}},"required":["aktionen","begruendung"],"additionalProperties":false});
+                        // Flugaufträge verweisen seit dem Agentenzugang (26.10.2026) auf $defs.flug: die Definitionen
+                        // gehören mit ins Ausgabeschema, sonst hängen die Verweise.
+                        let defs = compact_schema(&schema["schema"]["$defs"]);
+                        let mut output_schema = json!({"type":"object","properties":{"aktionen":compact,"begruendung":{"type":"string","maxLength":400}},"required":["aktionen","begruendung"],"additionalProperties":false});
+                        if defs.is_object() { output_schema["$defs"] = defs.clone(); }
                         let example_planet = context["planeten"][0]["koord"].as_str().unwrap_or("");
                         let role_hint = match r {
                             "verwalter" => format!("planeten.baubar enthält legale Bauoptionen mit Kosten. Beispiel nur für deinen tatsächlichen Planeten: {}. Wähle nur bezahlbare Optionen aus deiner aktuellen Sicht.",json!({"typ":"bauen","planet":example_planet,"gebaeude":"solarkraftwerk"})),
@@ -362,7 +366,9 @@ impl Flotte {
                             _ => "Plane anhand der sichtbaren Lage und nutze nur Aktionen dieser Rolle aus dem Schema. Erfinde keine Ziele, Ressourcen, Schiffe oder Spieler.".into(),
                         };
                         let hint = if p.anbieter == "eigen" {
-                            format!("Aktionsschema: {compact}")
+                            // Im Prompt reicht „Name → Menge“ statt 35 Schiffs- und 10 Güterfelder je Aktion; das
+                            // Kontextbudget bleibt der Lage (Feldherr: 31,7 KB Schema gegen 32k-Kontext).
+                            format!("Aktionsschema: {}", json!({"aktionen":hinweis_schema(&compact),"$defs":hinweis_schema(&defs)}))
                         } else {
                             "Halte das vorgegebene Ausgabeschema ein. Nachrichten enthalten kanal, an, betreff, text und antwort_auf. Erfinde keine Spieler oder Ziele.".into()
                         };
@@ -508,6 +514,22 @@ fn compact_schema(v: &Value) -> Value {
                 .collect(),
         ),
         Value::Array(a) => json!(a.iter().map(compact_schema).collect::<Vec<_>>()),
+        _ => v.clone(),
+    }
+}
+/// Schema für den Prompt-Hinweis: Mengenobjekte mit vielen gleichartigen Feldern (Schiffe, Güter) als „Name → Menge“.
+fn hinweis_schema(v: &Value) -> Value {
+    match v {
+        Value::Object(o) => {
+            if let Some(p) = o.get("properties").and_then(Value::as_object) {
+                let typ = p.values().next().and_then(|x| x["type"].as_str()).unwrap_or("");
+                if p.len() > 12 && (typ == "integer" || typ == "number") && p.values().all(|x| x["type"] == typ) {
+                    return json!({"type":"object","additionalProperties":{"type":typ,"minimum":0},"namen":"wie in der Lage (einheiten_kosten bzw. bestand)"});
+                }
+            }
+            Value::Object(o.iter().map(|(k, v)| (k.clone(), hinweis_schema(v))).collect())
+        }
+        Value::Array(a) => json!(a.iter().map(hinweis_schema).collect::<Vec<_>>()),
         _ => v.clone(),
     }
 }

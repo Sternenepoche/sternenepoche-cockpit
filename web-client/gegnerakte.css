@@ -1,0 +1,63 @@
+/* Sofortleiste neuer Berichte (gegnerakte.js) – die frühere Akte ist das Spielerprofil im Funk-Blatt (spielerprofil.css).
+   Keine style-Attribute (CSP), nur Klassen; Knöpfe über #bericht-sofort, weil cockpit-look.css alle Knöpfe färbt. */
+/* Spielername in der Galaxietabelle als Knopf zum Profil */
+button.gt-name[data-akte]{background:none;border:0;padding:0;min-height:0;font:inherit;color:inherit;cursor:pointer;text-decoration:underline dotted 1px;text-underline-offset:3px}
+/* Sofortmeldung: Ergebnis eines neuen Kampf-/Spionageberichts mit direkter Reaktion (B3), ohne Umweg über die Post */
+.ga-sofort{position:fixed;left:8px;right:8px;bottom:calc(var(--themenleiste-h,74px) + 12px + env(safe-area-inset-bottom,0px));z-index:57;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;max-width:680px;margin:0 auto;padding:10px 12px;border-radius:4px;border:1px solid rgba(150,190,230,.36);border-left:3px solid #8fd0ff;background:#08121ff5;box-shadow:0 10px 30px #000a;color:#dbe6f0;font-family:Oxanium,"Segoe UI",system-ui,sans-serif;contain:inline-size}
+.ga-sofort[hidden]{display:none}
+.ga-sofort.ga-gut{border-left-color:#6fd39a}.ga-sofort.ga-schlecht{border-left-color:#ff7a7a}
+.ga-sofort .ga-sofort-text{min-width:0;flex:1 1 220px}.ga-sofort b{display:block;font-size:calc(14px * var(--text-scale,1));color:#fff;overflow-wrap:anywhere}.ga-sofort span{display:block;font-size:calc(12px * var(--text-scale,1));color:#b7c8d8;overflow-wrap:anywhere}
+.ga-sofort .ga-knoepfe{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+#bericht-sofort button{background-image:none!important;background-color:rgba(13,28,46,.92)!important;border:1px solid rgba(150,190,230,.36);border-radius:4px;box-shadow:none;text-shadow:none;color:#dbe6f0;min-height:44px;padding:6px 12px;font:600 calc(12px * var(--text-scale,1))/1.3 Oxanium,"Segoe UI",system-ui,sans-serif;display:inline-flex;align-items:center;gap:6px;width:auto}
+#bericht-sofort button.ga-zu{position:absolute;top:4px;right:4px;width:44px;min-width:44px;justify-content:center;padding:0;font-size:22px;border-color:transparent}
+.ga-sofort .ga-sofort-text{padding-right:40px}
+#bericht-sofort button.ga-weitere{min-height:32px;margin-top:4px;padding:2px 0;border:0;background-color:transparent!important;color:#8fd0ff;text-decoration:underline dotted 1px;text-underline-offset:3px}
+@media (min-width:768px){.ga-sofort{bottom:16px}}
+/* Technik & Schaden im Kampfbericht (mobile035.js rbTechnik) */
+.rb-tabellenrahmen{max-width:100%;overflow-x:auto}
+.rb-techniktabelle,.rb-schaden{width:100%;table-layout:fixed;border-collapse:collapse;margin:6px 0 12px;font-size:12px;font-variant-numeric:tabular-nums}
+.rb-techniktabelle th,.rb-techniktabelle td,.rb-schaden th,.rb-schaden td{padding:6px 4px;border-bottom:1px solid #8cc3c626;text-align:left;vertical-align:top;overflow-wrap:normal;word-break:normal;hyphens:manual}
+.rb-techniktabelle th:first-child,.rb-schaden th:first-child{width:30%}
+#report-reader .rb-techniktabelle thead th,#report-reader .rb-schaden thead th,.rb-techniktabelle thead th,.rb-schaden thead th{font-size:10px;letter-spacing:.04em;overflow-wrap:normal;word-break:normal;hyphens:auto}
+#report-reader .rb-techniktabelle tbody th,#report-reader .rb-schaden tbody th,.rb-techniktabelle tbody th,.rb-schaden tbody th{text-transform:none;letter-spacing:0;font-size:12px;font-weight:600;color:#dfe8e6}
+.rb-techniktabelle td small,.rb-techniktabelle th small,.rb-schaden td small{display:block;font-size:10px;color:#a8c5ca;text-transform:none;letter-spacing:0}
+.rb-techniktabelle tr.rb-angreifer th{color:#f1a4a4}.rb-techniktabelle tr.rb-verteidiger th{color:#9fd3e6}
+.rb-heimat{margin-top:4px}
+/* Wirkung der nächsten Ausbaustufe am Bauen-Knopf (management.js ausbauWirkungHtml) */
+.aw-wirkung{display:flex;flex-direction:column;gap:3px;margin:8px 0;padding:8px 10px;border-radius:8px;border:1px solid #e6c97a44;background:#1a160866;font-size:12px;color:#dfe8e6}
+.aw-wirkung b{color:#ecddad;font-variant-numeric:tabular-nums}.aw-wirkung small{color:#a8c5ca;font-size:11px}
+.aw-wirkung .aw-titel{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#cbb784}
+.aw-wirkung.minus{border-color:#e0707088;background:#2a0f0f66}.aw-wirkung.minus .aw-bilanz b{color:#f1a4a4}
+.aw-kachel{display:inline-block;margin-right:6px;font-size:11px;font-weight:600;color:#ecddad;white-space:nowrap}.aw-kachel.minus{color:#f1a4a4}
+/* Kostenzeile auf den Bau-Kacheln (bauseite.js kachelUnten): Rohstoffe der nächsten Stufe bzw. je Stück, Fehlendes rot, Strom */
+body.game-client .bs-kachel-kosten{display:flex;flex-wrap:wrap;align-items:center;gap:2px 7px;min-height:18px;font-size:11px;line-height:1.2}
+body.game-client[data-rahmen] .bs-kachel-kosten .bs-gut{gap:2px}
+body.game-client[data-rahmen] .bs-kachel .bs-kachel-kosten .bs-gut img,body.game-client .bs-kachel .bs-kachel-kosten .bs-gut img{width:14px!important;height:14px!important;min-width:0;max-width:14px;aspect-ratio:auto;flex:0 0 14px;position:static;border-radius:2px;object-fit:cover;margin:0;padding:0}
+body.game-client .bs-kachel-kosten .bs-gut b{font-weight:600;color:#dfe8e6}
+body.game-client[data-rahmen] .bs-kachel-kosten .bs-gut.knapp b{color:#f1a4a4}
+body.game-client .bs-kachel-kosten .aw-kachel{margin-right:0}
+/* Bauanzeige auf der Kachel (bauseite.js): statt grüner Streifen wird das Motiv von unten nach oben von grau zu farbig,
+   --progress kommt aus tickJobs (data-job am Bild) und gleitet per Übergang; Fertigstellung leuchtet kurz auf. */
+body.game-client[data-rahmen] .bs-kachel.baut::after{display:none}
+body.game-client[data-rahmen] .bs-kachel.baut .bs-fuss{background:#0d1a2b}
+body.game-client[data-rahmen] .bs-kachel .bs-bild{position:relative}
+body.game-client[data-rahmen] .bs-kachel.baut .bs-bild img:not(.bs-farbe){filter:grayscale(1) brightness(.7)}
+body.game-client[data-rahmen] .bs-kachel .bs-bild img.bs-farbe{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;filter:none;clip-path:inset(calc((1 - var(--progress,0)) * 100%) 0 0 0);transition:clip-path .25s linear;will-change:clip-path}
+@keyframes bs-fertig{0%{filter:brightness(1.8) saturate(1.5)}100%{filter:none}}
+@keyframes bs-fertig-rand{0%{box-shadow:0 0 0 2px #ecddad,0 0 22px #ecddadaa}100%{box-shadow:0 0 0 0 transparent}}
+body.game-client[data-rahmen] .bs-kachel.fertig .bs-bild img{animation:bs-fertig .9s ease-out}
+body.game-client[data-rahmen] .bs-kachel.fertig{animation:bs-fertig-rand 1.2s ease-out}
+@media(prefers-reduced-motion:reduce){body.game-client[data-rahmen] .bs-kachel .bs-bild img.bs-farbe{transition:none}body.game-client[data-rahmen] .bs-kachel.fertig,body.game-client[data-rahmen] .bs-kachel.fertig .bs-bild img{animation:none}}
+/* Große grüne Restzeit mitten auf dem grauen Kachelbild (bauseite.js .bs-uhr, Text aus tickJobs .job-uhr/.job-zustand) */
+body.game-client[data-rahmen] .bs-kachel .bs-bild .bs-uhr{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;pointer-events:none;text-shadow:0 1px 2px #000,0 0 10px #000c}
+body.game-client[data-rahmen] .bs-kachel .bs-uhr b{font-size:clamp(15px,5.4vw,24px);font-weight:700;color:#5ef08a;font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1}
+body.game-client[data-rahmen] .bs-kachel .bs-uhr small{font-size:10px;color:#e6eeec;line-height:1.1;text-align:center;padding:0 4px}
+/* Wartender Auftrag = 0 %: Motiv grau, kleiner Hinweis im Bild */
+body.game-client[data-rahmen] .bs-kachel.wartet .bs-bild img{filter:grayscale(1) brightness(.6)}
+body.game-client[data-rahmen] .bs-kachel .bs-uhr .bs-parallel{font-size:11px;font-weight:700;color:#5ef08a}
+/* „Nach oben“ als kleiner runder Pfeil: der breite Knopf verdeckte Aufstieg-, Bau- und Meldungsknöpfe (Karl 22.10.2026) */
+body.game-client #back-to-top,body.game-client[data-rahmen][data-playing="true"] #back-to-top{width:44px!important;max-width:44px!important;min-width:44px;height:44px;min-height:44px;padding:0!important;border-radius:50%;font-size:0!important;line-height:44px;text-align:center;opacity:.85}
+body.game-client #back-to-top::before{content:'↑';font-size:20px;line-height:44px}
+/* Aufstiegsknopf war in der Android-WebView dunkel auf dunkel (Hintergrund aus var() in der Kurzschreibweise von lage.css
+   command-deck.css setzt für alle Knöpfe mit (0,4,2) !important einen dunklen Grund, Schrift #04120a blieb) – feste Farben, Spezifität (0,5,2), nur für den aktiven Knopf (Karl 22.10.2026) */
+body.game-client button.lage-aufstieg-knopf.lage-aufstieg-knopf.lage-aufstieg-knopf:not(:disabled){background-color:#3fae5f!important;background-image:none!important;color:#04120a!important;border:0!important}

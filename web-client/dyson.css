@@ -1,0 +1,63 @@
+/* Dysonsphäre: Allianz-Reiter „Großprojekt“, Galaxie-Zeile, Blitz an Anschlüssen, Sonnenansicht (dyson.js).
+   Nur Klassen (Server-CSP style-src 'self'); Farben aus rahmen.css (--r-*), Motive nie beschnitten (object-fit: contain). */
+#grossprojekt{min-width:0;max-width:100%}
+#grossprojekt .dy-kopf{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:8px 0 12px}
+#grossprojekt .dy-banner{margin:0;border:1px solid var(--r-rand,rgba(150,190,230,.2));border-radius:var(--r-radius,4px);background:#030813;display:flex;flex-direction:column;overflow:hidden}
+#grossprojekt .dy-banner img{display:block;width:100%;aspect-ratio:1280/768;object-fit:contain;background:#030813}
+#grossprojekt .dy-banner figcaption{padding:6px 10px;color:var(--r-gold,#e2bd62);font-size:13px;border-top:1px solid var(--r-rand,rgba(150,190,230,.2))}
+.dy-szene{position:relative;min-height:240px;aspect-ratio:16/10;border:1px solid var(--r-rand,rgba(150,190,230,.2));border-radius:var(--r-radius,4px);background:#030813;overflow:hidden}
+.dy-szene .dy-leinwand{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.dy-szene.dy-ohne-webgl::after{content:"3D ist in diesem Browser nicht verfügbar – siehe Projektbild.";position:absolute;inset:auto 0 0;padding:8px;color:var(--r-leise,#8ea4b8);font-size:12px;text-align:center}
+.dy-szene-gross{width:min(92vw,960px);aspect-ratio:16/10;min-height:0}
+#grossprojekt .dy-block{border:1px solid var(--r-rand,rgba(150,190,230,.2));border-radius:var(--r-radius,4px);background:var(--r-glas,rgba(9,20,34,.86));padding:10px 12px;margin:0 0 10px}
+#grossprojekt .dy-block h3{margin:0 0 8px;font-size:15px;color:var(--r-gold,#e2bd62)}
+#grossprojekt .dy-detail{background:linear-gradient(110deg,#0f2338f2,#091626f2)}
+#grossprojekt .dy-status{margin:0 0 6px;font-size:14px}
+#grossprojekt .dy-phasen{display:flex;flex-wrap:wrap;gap:4px 14px;list-style:none;margin:6px 0 10px;padding:0;color:var(--r-leise,#8ea4b8);font-size:12px}
+#grossprojekt .dy-phasen li.an{color:var(--r-gold,#e2bd62)}
+.dy-balken{width:100%;height:10px;appearance:none;-webkit-appearance:none;border:1px solid var(--r-rand,rgba(150,190,230,.2));border-radius:3px;background:#0b1626;overflow:hidden;vertical-align:middle}
+.dy-balken::-webkit-progress-bar{background:#0b1626}
+.dy-balken::-webkit-progress-value{background:linear-gradient(90deg,#9b6a1a,#e2bd62)}
+.dy-balken::-moz-progress-bar{background:linear-gradient(90deg,#9b6a1a,#e2bd62)}
+.dy-balken.voll::-webkit-progress-value{background:var(--r-gruen2,#56d27c)}
+.dy-balken.voll::-moz-progress-bar{background:var(--r-gruen2,#56d27c)}
+#grossprojekt .dy-bedingungen,#grossprojekt .dy-wirkung{margin:0;padding-left:0;list-style:none;display:grid;gap:4px}
+#grossprojekt .dy-wirkung{padding-left:18px;list-style:disc}
+#grossprojekt .dy-bedingungen li.ok{color:var(--r-gruen2,#56d27c)}
+#grossprojekt .dy-bedingungen li.fehlt{color:var(--r-rot,#ff6464)}
+#grossprojekt .dy-bedingungen b{color:var(--r-text,#dbe6f0);font-weight:600}
+#grossprojekt .dy-tabelle-rahmen{max-height:420px;overflow:auto}
+#grossprojekt .dy-tabelle{width:100%;border-collapse:collapse;font-size:12px}
+#grossprojekt .dy-tabelle th{position:sticky;top:0;background:#0c1a2b;z-index:1}
+#grossprojekt .dy-tabelle th,#grossprojekt .dy-tabelle td{padding:4px 6px;border-bottom:1px solid var(--r-rand,rgba(150,190,230,.2));text-align:left;vertical-align:top}
+#grossprojekt .dy-tabelle td small{display:block;color:var(--r-leise,#8ea4b8)}
+#grossprojekt .dy-tabelle tr.eigen td:first-child b{color:var(--r-gruen2,#56d27c)}
+#grossprojekt .dy-summe{margin:0 0 6px;color:var(--r-leise,#8ea4b8)}
+#grossprojekt .dy-form{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:end}
+#grossprojekt .dy-form label{display:grid;gap:3px;font-size:12px;min-width:120px}
+#grossprojekt .dy-form input,#grossprojekt .dy-form select{min-width:0;width:100%}
+#grossprojekt .dy-hinweis,.dy-dialog .dy-hinweis{color:var(--r-leise,#8ea4b8);font-size:12px;margin:8px 0 0}
+#grossprojekt .dy-gruen{background:var(--r-gruen,#3fae5f);color:#04120a;border:0;border-radius:var(--r-radius,4px);padding:7px 14px;font-weight:700;cursor:pointer}
+#grossprojekt .dy-gruen:disabled{opacity:.45;cursor:not-allowed}
+#grossprojekt .dy-rot{background:transparent;color:var(--r-rot,#ff6464);border:1px solid var(--r-rot,#ff6464);border-radius:var(--r-radius,4px);padding:6px 12px;margin-left:8px;cursor:pointer}
+#grossprojekt .dy-ok{color:var(--r-gruen2,#56d27c)}
+#grossprojekt .dy-warn{color:var(--r-orange,#f2a43a)}
+#grossprojekt .dy-slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+#grossprojekt .dy-slot{display:grid;gap:4px;border:1px solid var(--r-rand,rgba(150,190,230,.2));border-radius:var(--r-radius,4px);padding:8px}
+#grossprojekt .dy-slot small{color:var(--r-leise,#8ea4b8)}
+.dy-blitz,.planet-blitz{color:#ffd24a;font-size:12px;margin-left:3px;text-shadow:0 0 4px #ffb000}
+.planet-bild .planet-blitz{position:absolute;left:-2px;bottom:-2px}
+.gt-dyson td{color:var(--r-gold,#e2bd62);text-align:center}
+.gt-dyson-knopf{background:transparent;border:1px solid var(--r-gold,#e2bd62);color:var(--r-gold,#e2bd62);border-radius:var(--r-radius,4px);padding:2px 8px;cursor:pointer}
+.gt-dyson-symbol{font-size:14px}
+.dy-dialog{max-width:96vw;border:1px solid var(--r-rand2,rgba(150,190,230,.34));border-radius:var(--r-radius,4px);background:#060c18;color:var(--r-text,#dbe6f0);padding:10px}
+.dy-dialog::backdrop{background:rgba(2,6,14,.75)}
+.dy-dialog-kopf{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
+.dy-dialog-kopf h3{margin:0;font-size:15px;color:var(--r-gold,#e2bd62)}
+.dy-zu{background:transparent;border:1px solid var(--r-rand,rgba(150,190,230,.2));color:inherit;border-radius:var(--r-radius,4px);padding:2px 8px;cursor:pointer}
+@media (max-width:767px){
+ #grossprojekt .dy-kopf{grid-template-columns:minmax(0,1fr)}
+ .dy-szene{min-height:200px}
+ #grossprojekt .dy-tabelle{font-size:11px}
+ #grossprojekt .dy-form label{min-width:0;flex:1 1 40%}
+}

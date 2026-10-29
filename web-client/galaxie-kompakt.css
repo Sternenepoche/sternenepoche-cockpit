@@ -1,0 +1,291 @@
+/* Galaxie: Systemkonsole, Systemtabelle (Desktop), Platzliste (Handy) und Infokarte.
+   Missionsfarben und Zeichen kommen aus Auftraege (--auftrag), kein zusätzlicher Farbschlüssel.
+   Handy (< 768 px, Befund H9 24.10.2026): keine seitliche Scrollpflicht, Kopf außerhalb jedes Scrollbereichs,
+   Tippziele ≥ 44 px, Schrift ≥ 11 px (Plaketten) bzw. ≥ 12 px (Beschriftung). */
+
+/* ---------- Systemkonsole ---------- */
+body.game-client[data-rahmen] #galaxie-tabelle .gt-console{
+ box-sizing:border-box;display:grid;gap:10px;width:100%;min-width:0;padding:12px;margin:0 0 8px;
+ border:1px solid #36506a;border-radius:14px;background:radial-gradient(ellipse at 100% 0,#46326329,transparent 65%),linear-gradient(150deg,#142a3d,#0c192b);
+ box-shadow:inset 0 1px 0 #ffffff08;
+}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-console button{
+ box-sizing:border-box;margin:0;min-width:0;min-height:36px;padding:6px 10px;border:1px solid #385268!important;border-radius:9px!important;
+ background:#102236!important;background-image:none!important;box-shadow:none!important;color:#c7d9e7!important;line-height:1.1!important;font-size:12px!important;letter-spacing:0!important;
+ text-shadow:none!important;white-space:nowrap!important;word-break:normal!important;overflow-wrap:normal!important;transition:background-color 140ms ease-out,transform 140ms ease-out;
+}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-console button:active{transform:scale(.97);background-color:#27435a!important}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-console button:focus-visible{outline:2px solid #a3d4f5;outline-offset:3px}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-console button:disabled{opacity:.45}
+.gt-console-top{display:flex;align-items:center;gap:8px;min-width:0}.gt-systemtitel{display:grid;gap:2px;margin-right:auto;text-align:left}.gt-systemtitel small{font-size:11px;letter-spacing:.16em;font-weight:600;color:#85a6be}.gt-systemtitel b{font-size:24px;line-height:1;font-weight:600;font-variant-numeric:tabular-nums;color:#edf5fc}.gt-systemtitel i{font-style:normal;color:#6686a1;padding:0 4px}.gt-sensorstatus{display:grid;gap:3px;font-size:12px;color:#b49ac8;text-align:right;margin-right:5px}.gt-sensorstatus.bereit{color:#9edbc9}.gt-sensorstatus small{font-size:11px;color:#829eb4}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-console button.gt-systemtitel{display:grid!important;margin-right:auto;padding:4px 8px!important;background:transparent!important;border-color:transparent!important;white-space:normal!important}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-console .gt-iconbutton{width:36px;height:36px;padding:8px;display:grid;place-items:center;background:transparent!important;border-color:#38526888!important;font-size:12px!important;font-weight:700}.gt-iconbutton svg{width:18px;height:18px}.gt-refresh:disabled svg{opacity:.4}
+.gt-navigation{display:grid;grid-template-columns:1fr 1fr 36px;align-items:end;gap:8px}.gt-navfeld{display:grid;gap:5px;min-width:0;margin:0!important}.gt-navfeld>span:first-child{font-size:12px!important;color:#89a7bc!important;font-weight:500!important}.gt-navinput{display:flex;align-items:center;border:1px solid #2e4861;border-radius:9px;background:#091625;overflow:hidden}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-console .gt-navinput button{flex:0 0 30px;min-height:34px;width:30px;padding:0;border:0!important;background:transparent!important;border-radius:0!important;font-size:22px!important;font-weight:400;color:#8eb4d2!important}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-console input{box-sizing:border-box;min-height:34px!important;min-width:0;margin:0;padding:2px 3px!important;appearance:textfield;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;background-image:none!important;text-align:center;font-size:16px!important;font-weight:600;color:#e7f1fb!important;font-variant-numeric:tabular-nums}
+.gt-console input::-webkit-inner-spin-button,.gt-console input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.gt-navinput input{width:100%;flex:1 1 0}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-console .gt-anzeigen{height:36px;width:36px;padding:0;color:#9cd0ee!important;background:#203f58!important;font-size:22px!important;font-weight:400}
+.gt-direkt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-console .gt-mission{display:flex;align-items:center;justify-content:center;gap:7px;min-height:48px;padding:7px 6px;border-color:color-mix(in srgb,var(--auftrag,#799bb8) 50%,#1c2d40)!important;background:color-mix(in srgb,var(--auftrag,#799bb8) 10%,#0c192b)!important;color:var(--auftrag,#a9c6dd)!important}
+.gt-mission>svg{width:22px;height:22px;flex:none}.gt-mission>span{display:grid;gap:4px;min-width:0;overflow-wrap:anywhere}.gt-mission b{font-size:12px;color:#dae9f3;font-weight:600;line-height:1.1}.gt-mission small{font-size:11px;line-height:1;color:#8ba6bd}.gt-archiv{--auftrag:#86aac9}
+.gt-bestandszeile{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;min-width:0;color:#89a7bc;font-size:12px;border-top:1px solid #36506a80;padding-top:8px}.gt-sondenvorgabe{display:flex!important;flex-direction:row!important;align-items:center!important;gap:6px;margin:0!important;min-width:0;color:#b9a3da;font-size:12px}.gt-sondenvorgabe svg{width:17px;height:17px;flex:none;color:var(--auftrag)}.gt-sondenvorgabe>span{white-space:nowrap!important}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-console .gt-sondenvorgabe input{width:40px;min-height:28px!important;border:1px solid #705493!important;border-radius:6px!important;background:#1d1a32!important;color:#d2b8ff!important;font-size:14px!important}
+.gt-mini-bestand{display:flex;align-items:center;gap:4px;white-space:nowrap}.gt-mini-bestand svg{width:14px;height:14px;color:var(--auftrag,#8ca4bd)}.gt-mini-bestand b{color:#c1d3e4;font-size:12px}.gt-slots{margin-left:auto;white-space:nowrap}.gt-slots b{color:#c1d3e4;font-weight:600}
+.gt-optionen{border-top:1px solid #36506a55;padding-top:0}.gt-optionen>summary{display:flex;align-items:center;justify-content:space-between;list-style:none;min-height:24px;padding:0;font-size:12px;color:#8ca8c0;cursor:pointer}.gt-optionen>summary::-webkit-details-marker{display:none}.gt-optionen[open]>summary>span{transform:rotate(180deg)}.gt-options-innen{display:grid;gap:8px;padding:6px 0}.gt-options-innen p{font-size:12px!important;color:#8da9be;line-height:1.5;margin:0}.gt-options-innen .gt-filter{display:flex;flex-wrap:wrap;gap:6px}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-console .gt-optionen{margin:0!important;padding:0!important;background:transparent!important;box-shadow:none!important;border:0!important;border-top:1px solid #36506a55!important;border-radius:0!important}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-console .gt-optionen>summary{min-height:28px!important;padding:0!important;font-size:12px!important;line-height:1.2!important}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-options-innen .gt-filter button{width:auto!important;padding:6px 12px!important;min-height:32px!important;font-size:12px!important;flex:0 1 auto}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-options-innen .gt-filter button[aria-pressed=true]{border-color:#b48cff!important;color:#d9c8ff!important;background:#47306155!important}
+/* Zweispaltig erst ab 1100 px: bei 900–1024 px liefen Auftragsknöpfe und Systemtitel ineinander (Karl 25.10.2026, Foto) */
+@media(min-width:1100px){.gt-console{grid-template-columns:1fr 1fr;align-items:center}.gt-console-top{grid-column:1}.gt-navigation{grid-column:2;grid-row:1}.gt-direkt{grid-column:1}.gt-bestandszeile{grid-column:2;grid-row:2;border-top:0;padding-top:0}.gt-optionen{grid-column:1/-1}}
+
+/* ---------- Desktop-Tabelle (§4) ---------- */
+/* Nur die Tabelle scrollt, falls sie breiter wird – Kopf und Fuß stehen still (vorher scrollte der ganze Systembereich). */
+body.game-client[data-rahmen] #galaxie-tabelle .gt-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-tabelle{width:100%}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-tabelle caption{font-size:12px;padding:5px 4px}.gt-tabelle th{white-space:nowrap!important}.gt-tabelle .gt-aktion{gap:5px}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-planetname{min-width:150px}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-planetname .gt-eignung,body.game-client[data-rahmen] #galaxie-tabelle .gt-tf-text{display:block;margin-top:2px;font-size:12px;white-space:normal}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-tabelle .gt-tf-text{color:#f2c48a}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-spieler small{font-size:12px}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-aktiv-plakette{font-size:11px;line-height:15px}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-tabelle .gt-name{display:inline;min-height:0;margin:0;padding:0!important;width:auto!important;font:inherit;font-weight:600;color:inherit!important;text-decoration:underline dotted 1px;text-underline-offset:3px;background:none!important;background-image:none!important;border:0!important;box-shadow:none!important;backdrop-filter:none;-webkit-backdrop-filter:none}
+body.game-client[data-rahmen] #galaxie-tabelle tr.gt-gewaehlt{outline:1px solid var(--r-blau,#8fd0ff);outline-offset:-1px}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-planet-info{padding:0!important;border:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;display:grid;place-items:center;width:38px;height:38px;min-height:0;border-radius:50%!important}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-planet-info img{width:34px!important;height:34px!important;object-fit:contain!important}
+/* Sonderzeilen: Gürtel umbricht statt abzuschneiden (vorher 877 px breit bei 337 px Anzeige). */
+body.game-client[data-rahmen] #galaxie-tabelle .gt-guertel td{background:linear-gradient(90deg,#303029,#14283b)!important;border-top:1px solid #786448!important;border-bottom:1px solid #786448!important;padding:12px!important;white-space:normal}
+.gt-guertel-inhalt{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;min-width:0}.gt-sonder-symbol{font-size:20px;color:#f3cd8c;flex:none}.gt-sonder-text{display:grid;gap:3px;flex:1 1 200px;min-width:0}.gt-sonder-text strong{color:#f3cd8c;font-size:14px}.gt-sonder-text small{color:#bdd0dd;font-size:12px;line-height:1.4;white-space:normal}
+
+/* ---------- Beschriftete Aktionsknöpfe (Liste „⋯“, Infokarte, Gürtel, Trümmer) ---------- */
+body.game-client #galaxie-tabelle .gt-aktionsknopf,body.game-client #gt-planetkarte .gt-aktionsknopf{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;min-width:44px;margin:0;padding:0 12px!important;width:auto!important;
+ border:1px solid color-mix(in srgb,var(--auftrag,#8fb6d4) 45%,#22364a)!important;border-radius:10px!important;background:color-mix(in srgb,var(--auftrag,#8fb6d4) 10%,#0b1828)!important;background-image:none!important;
+ box-shadow:none!important;text-shadow:none!important;color:var(--auftrag,#8fb6d4)!important;font:600 calc(13px * var(--text-scale,1))/1.15 var(--r-schrift)!important;letter-spacing:0!important;white-space:normal!important;text-align:left;
+ -webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:transform 120ms ease-out,background-color 120ms ease-out}
+body.game-client #galaxie-tabelle .gt-aktionsknopf span,body.game-client #gt-planetkarte .gt-aktionsknopf span{color:#e4eef7}
+body.game-client #galaxie-tabelle .gt-aktionsknopf svg,body.game-client #gt-planetkarte .gt-aktionsknopf svg{flex:none;width:16px;height:16px}
+body.game-client #galaxie-tabelle .gt-aktionsknopf:active,body.game-client #gt-planetkarte .gt-aktionsknopf:active{transform:scale(.97);background-color:color-mix(in srgb,var(--auftrag,#8fb6d4) 22%,#0b1828)!important}
+body.game-client #gt-planetkarte .gt-aktionsknopf.gt-primaer{background:color-mix(in srgb,var(--auftrag,#8fb6d4) 24%,#0b1828)!important;border-color:color-mix(in srgb,var(--auftrag,#8fb6d4) 70%,#22364a)!important}
+body.game-client #galaxie-tabelle .gt-aktionsknopf[aria-busy=true],body.game-client #galaxie-tabelle .gt-hauptaktion[aria-busy=true],body.game-client #gt-planetkarte .gt-aktionsknopf[aria-busy=true]{opacity:.6}
+
+/* ---------- Aktionszeichen: EIN Satz für Tabelle, Liste, „⋯“ und Infokarte (Karl 24.10.: „alle farbig!“) ----------
+   Gleich großer Knopf (Desktop 34 px, Handy 44 px), abgerundetes Quadrat, 1 px Rand und getönte Fläche in der Farbe der
+   Aktion, Linienzeichnung 24×24 mit Strich 2. Aufträge: Farbe der Auftragsgruppe (auftraege.js/R8, --auftrag aus
+   .auftrag-<gruppe>); Nachricht und Kontakt hellblau, Phalanx violett, Auswählen grün, Übriges neutral hell.
+   Gesperrt: gedämpft und gestrichelt, Tipp nennt den Grund. */
+.gt-farbe-kontakt{--auftrag:#8fd0ff}.gt-farbe-phalanx{--auftrag:#b48cff}.gt-farbe-eigen{--auftrag:#56d27c}.gt-farbe-neutral{--auftrag:#c9d7e3}
+body.game-client #galaxie-tabelle .gt-akt,body.game-client #gt-planetkarte .gt-akt{
+ color:var(--auftrag,#c9d7e3)!important;border:1px solid color-mix(in srgb,var(--auftrag,#c9d7e3) 48%,#1d2c3d)!important;
+ background:color-mix(in srgb,var(--auftrag,#c9d7e3) 11%,#0b1726)!important;background-image:none!important;box-shadow:none!important;text-shadow:none!important;
+ -webkit-backdrop-filter:none!important;backdrop-filter:none!important;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:transform 120ms ease-out,background-color 120ms ease-out}
+body.game-client #galaxie-tabelle .gt-akt svg,body.game-client #gt-planetkarte .gt-akt svg{flex:none;color:var(--auftrag,#c9d7e3)}
+body.game-client #galaxie-tabelle .gt-akt.gt-primaer,body.game-client #gt-planetkarte .gt-akt.gt-primaer{background:color-mix(in srgb,var(--auftrag,#c9d7e3) 24%,#0b1726)!important;border-color:color-mix(in srgb,var(--auftrag,#c9d7e3) 75%,#1d2c3d)!important}
+body.game-client #galaxie-tabelle .gt-akt[aria-disabled=true],body.game-client #gt-planetkarte .gt-akt[aria-disabled=true]{opacity:.6;border-style:dashed!important;background:transparent!important}
+body.game-client #galaxie-tabelle .gt-akt:active,body.game-client #gt-planetkarte .gt-akt:active{transform:scale(.95)}
+@media (hover:hover) and (pointer:fine){body.game-client #galaxie-tabelle .gt-akt:not([aria-disabled=true]):hover,body.game-client #gt-planetkarte .gt-akt:not([aria-disabled=true]):hover{background:color-mix(in srgb,var(--auftrag,#c9d7e3) 22%,#0b1726)!important}}
+/* Zeichenknopf der Desktop-Aktionsspalte */
+body.game-client[data-rahmen] #galaxie-tabelle .gt-aktion{display:flex;flex-wrap:wrap;gap:4px;min-width:0}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-akt-symbol{display:inline-grid;place-items:center;box-sizing:border-box;width:34px!important;min-width:34px;height:34px!important;min-height:34px!important;margin:0;padding:0!important;border-radius:9px!important}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-akt-symbol svg{width:18px;height:18px}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-legende .gt-legende-akt{width:26px!important;min-width:26px;height:26px!important;min-height:26px!important;border-radius:7px!important;vertical-align:middle}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-legende .gt-legende-akt svg{width:15px;height:15px}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-name-unter{display:block;margin-top:1px;font-size:12px;color:var(--r-leise,#8ea4b8);font-weight:400}
+/* Beschriftete Knöpfe: Grund unter dem Wort */
+body.game-client #galaxie-tabelle .gt-aktionsknopf>span,body.game-client #gt-planetkarte .gt-aktionsknopf>span{display:grid;gap:1px;min-width:0}
+body.game-client #galaxie-tabelle .gt-aktionsknopf small,body.game-client #gt-planetkarte .gt-aktionsknopf small{font:500 calc(11px * var(--text-scale,1))/1.2 var(--r-schrift);color:var(--r-leise,#8ea4b8);white-space:normal}
+@media (max-width:767px),(pointer:coarse){
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-tabelle .gt-akt-symbol{width:44px!important;min-width:44px;height:44px!important;min-height:44px!important}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-tabelle .gt-akt-symbol svg{width:20px;height:20px}
+}
+
+/* ---------- Handy: Platzliste statt breiter Tabelle ---------- */
+@media (max-width:767px){
+ /* rahmen.css machte #galaxie-tabelle zum waagrechten Scrollbereich – Kopf und Gürtel wanderten mit. */
+ body.game-client[data-rahmen] #karte #galaxie-tabelle{overflow-x:visible!important;overflow:visible;max-width:100%;contain:inline-size}
+ body.game-client[data-rahmen] #karte[data-ansicht="tabelle"]{padding:8px 6px!important}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-console{padding:10px;gap:9px}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-console button,body.game-client[data-rahmen] #galaxie-tabelle .gt-console .gt-optionen>summary{min-height:44px!important}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-console .gt-iconbutton{width:44px;height:44px}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-navigation{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+ /* Übernahme sichtbar statt nur beim Verlassen des Felds (Funktionsprüfung 25.10.2026): eigene Zeile über beide Spalten. */
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-console .gt-anzeigen{display:flex;align-items:center;justify-content:center;gap:6px;grid-column:1/-1;width:100%;height:44px;font-size:18px!important}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-console .gt-anzeigen::after{content:'System anzeigen';font-size:14px;font-weight:600}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-console .gt-navinput button{flex:0 0 44px;width:44px;min-height:44px!important}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-console .gt-navinput input{min-height:44px!important}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-console .gt-sondenvorgabe input{width:52px;min-height:44px!important}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-options-innen .gt-filter button{min-height:44px!important}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-console .gt-mission{gap:5px;padding:6px 4px}
+ .gt-mission>svg{width:20px;height:20px}
+
+ /* Spalten wie in der Tabelle (Karl 24.10.: „wo ist der Platz für Mond und Trümmerfeld?“): EINE Vorlage für Kopfzeile und
+    Einträge, damit Planet, Name, Mond, TF und Aktion in jeder Zeile senkrecht untereinander stehen. Gleiche Ränder und
+    Innenabstände in Kopf und Eintrag (links 3 px Zonenrand, rechts 1 px). */
+ body.game-client[data-rahmen] #galaxie-tabelle{--gt-spalten:44px minmax(0,1fr) 44px 44px 64px;--gt-luecke:4px;--gt-innen:4px}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-liste-kopf{margin:2px 4px 6px;font-size:12px;line-height:1.4;color:var(--r-leise,#8ea4b8)}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-liste-spalten{position:sticky;top:0;z-index:2;box-sizing:border-box;display:grid;grid-template-columns:var(--gt-spalten);column-gap:var(--gt-luecke);
+  align-items:end;margin:0 0 5px;padding:6px var(--gt-innen) 5px;border:1px solid transparent;border-left-width:3px;border-bottom-color:rgba(150,190,230,.2);border-radius:0;background:#08121f;
+  font:600 calc(11px * var(--text-scale,1))/1.2 var(--r-schrift);letter-spacing:.06em;text-transform:uppercase;color:#8aa3b8}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-liste-spalten>span{min-width:0;text-align:center;white-space:nowrap;overflow-wrap:normal!important}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-liste-spalten>span:nth-child(2){text-align:left}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-liste{list-style:none;margin:0;padding:0;display:grid;gap:5px;min-width:0}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-eintrag{--zone:#3a4b5c;position:relative;box-sizing:border-box;display:grid;min-width:0;margin:0;
+  grid-template-columns:var(--gt-spalten);grid-template-areas:"bild titel mond tf haupt" "bild marken marken marken mehr" "weitere weitere weitere weitere weitere";
+  column-gap:var(--gt-luecke);row-gap:4px;align-items:center;padding:5px var(--gt-innen) 6px;border:1px solid var(--r-rand,rgba(150,190,230,.2));border-left:3px solid var(--zone);border-radius:10px;
+  background:rgba(9,20,34,.86);font-family:var(--r-schrift);-webkit-tap-highlight-color:transparent;transition:opacity 140ms ease-out}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-eintrag.gt-zone-glut{--zone:#ff7a45}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-eintrag.gt-zone-leben{--zone:#4cd17a}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-eintrag.gt-zone-frost{--zone:#6cc6ff}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-eintrag.gt-aktiv{background:linear-gradient(90deg,rgba(23,58,42,.7),rgba(9,20,34,.86) 60%)}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-eintrag.gt-gewaehlt{border-color:var(--r-blau,#8fd0ff);border-left-color:var(--zone)}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-eintrag.gt-gedimmt{opacity:.42}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-eintrag .gt-planet-info{grid-area:bild;align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:44px;height:auto;min-height:48px;border-radius:10px!important}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-eintrag .gt-planet-info img{width:32px!important;height:32px!important;border-radius:50%;object-fit:contain}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-eintrag .gt-unbekannt{width:28px;height:28px}
+ .gt-platznr{font:700 calc(12px * var(--text-scale,1))/1 var(--r-schrift);color:#d6e3ef;font-variant-numeric:tabular-nums}
+ .gt-zone-wort{font:600 calc(11px * var(--text-scale,1))/1 var(--r-schrift);color:var(--zone)}
+ /* Name/Spieler: umbrechen statt abschneiden, nie unter die Mondspalte laufen */
+ .gt-eintrag .gt-titel{grid-area:titel;align-self:center;display:grid;gap:1px;min-width:0}
+ .gt-eintrag .gt-titel,.gt-eintrag .gt-titel *{white-space:normal!important;overflow-wrap:anywhere!important}
+ .gt-eintrag .gt-titel-name{font:600 calc(15px * var(--text-scale,1))/1.25 var(--r-schrift);color:var(--r-text,#dbe6f0);min-width:0}
+ .gt-eintrag .gt-titel small{font:400 calc(12px * var(--text-scale,1))/1.3 var(--r-schrift);color:var(--r-leise,#8ea4b8)}
+ /* rahmen.css macht .gt-spieler zu inline-flex – hier umbrechender Flex, damit der Status als Ganzes in die nächste Zeile rutscht */
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-eintrag .gt-titel .gt-spieler{display:flex;flex-wrap:wrap;align-items:center;column-gap:4px;row-gap:0;min-width:0}
+ /* Status (n, i, u …) bleibt ein Block hinter dem Namen und rutscht als Ganzes in die nächste Zeile */
+ .gt-eintrag .gt-titel .gt-status{display:inline-block;white-space:nowrap!important;overflow-wrap:normal!important}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-eintrag .gt-name{display:inline;min-height:0;padding:0;margin:0;font:inherit;font-weight:600;color:inherit;text-decoration:underline dotted 1px;text-underline-offset:3px;background:none!important;background-image:none!important;border:0!important;box-shadow:none!important}
+ /* Spielername als Ziel ≥ 44 px Höhe (echte Kastenhöhe, nichts ragt über die Unterzeile) */
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-eintrag .gt-titel .gt-name{display:inline-flex;align-items:center;max-width:100%;min-height:44px;vertical-align:middle;text-align:left}
+ /* Die 44-px-Tippfläche des Namens ragte über die Unterzeile, und Chrome lenkt Tipps auf nicht antippbare Flächen zum
+    nächsten Knopf um (Nachprüfung 25.10.2026: Unterzeile öffnete das Spielerprofil). Die Unterzeile ist darum selbst ein Knopf
+    zur Infokarte, liegt über der Namensfläche und sieht aus wie Text. */
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-eintrag .gt-unterzeile{position:relative;z-index:1;display:block;width:100%;min-height:0!important;margin:0!important;padding:0!important;border:0!important;background:none!important;box-shadow:none!important;text-align:left;font:400 calc(12px * var(--text-scale,1))/1.3 var(--r-schrift)!important;color:var(--r-leise,#8ea4b8)!important;text-transform:none!important;letter-spacing:normal!important;cursor:pointer}
+ /* Mond- und TF-Spalte: 44-px-Tippfläche, Bild 32 px, leer ein ruhiger Strich */
+ .gt-eintrag .gt-mondspalte{grid-area:mond}.gt-eintrag .gt-tfspalte{grid-area:tf}
+ .gt-eintrag .gt-mondspalte,.gt-eintrag .gt-tfspalte{justify-self:center;align-self:center}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-zellknopf{position:relative;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:44px!important;min-width:44px;height:44px;min-height:44px;margin:0;padding:0!important;
+  border:1px solid transparent!important;border-radius:10px!important;background:transparent!important;background-image:none!important;box-shadow:none!important;text-shadow:none!important;color:var(--r-text,#dbe6f0)!important;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:transform 120ms ease-out}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-zellknopf:active{transform:scale(.94);background:rgba(255,255,255,.06)!important}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-mondspalte .mond-bild,body.game-client[data-rahmen] #galaxie-tabelle .gt-mondspalte .mond-kugel{width:32px!important;height:32px!important;border-radius:50%;object-fit:contain;display:block}
+ .gt-zell-warn{position:absolute;top:0;right:0;font:700 calc(11px * var(--text-scale,1))/1 var(--r-schrift);color:var(--r-rot,#ff6464)}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-tfspalte.gt-zellknopf{border-color:rgba(242,164,58,.35)!important;background:rgba(242,164,58,.07)!important}
+ .gt-tfspalte .gt-tf-symbol{color:var(--r-orange,#f2a43a);font-size:15px;line-height:1}
+ .gt-tf-menge{font:600 calc(11px * var(--text-scale,1))/1.05 var(--r-schrift);color:#f2c48a;font-variant-numeric:tabular-nums;text-align:center;white-space:normal;letter-spacing:-.01em}
+ .gt-tf-oben{display:flex;align-items:center;gap:3px}
+ .gt-tf-leute{min-width:16px;height:16px;padding:0 3px;box-sizing:border-box;border-radius:8px;background:#1f6f68;color:#e9fffb;font:700 calc(11px * var(--text-scale,1))/16px var(--r-schrift);text-align:center}
+ .gt-zelle-leer{display:grid;place-items:center;width:44px;height:44px;color:rgba(142,164,184,.5);font:400 16px/1 var(--r-schrift)}
+ /* Aktionsspalte: Hauptaktion über „⋯“, beide füllen die 64-px-Spalte */
+ .gt-eintrag .gt-haupt{grid-area:haupt;display:flex;min-width:0}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-hauptaktion{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:100%!important;min-width:0;max-width:none;min-height:44px;margin:0;padding:3px 2px!important;
+  border:1px solid color-mix(in srgb,var(--auftrag,#8fb6d4) 55%,#22364a)!important;border-radius:10px!important;background:color-mix(in srgb,var(--auftrag,#8fb6d4) 14%,#0b1828)!important;background-image:none!important;box-shadow:none!important;text-shadow:none!important;
+  color:var(--auftrag,#8fb6d4)!important;font:600 calc(11px * var(--text-scale,1))/1.05 var(--r-schrift)!important;letter-spacing:0!important;white-space:normal!important;text-align:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:transform 120ms ease-out}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-hauptaktion span{color:#e6eff8;overflow-wrap:normal!important;-webkit-hyphens:manual;hyphens:manual}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-hauptaktion svg{width:16px;height:16px;flex:none}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-hauptaktion:active{transform:scale(.96)}
+ .gt-aktiv-marke{display:grid;place-items:center;width:100%;min-height:44px;box-sizing:border-box;font:600 calc(11px * var(--text-scale,1))/1 var(--r-schrift);color:var(--r-gruen2,#56d27c);border:1px solid rgba(86,210,124,.35);border-radius:10px}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-mehr{grid-area:mehr;width:100%!important;min-width:44px;height:44px;min-height:44px;margin:0;padding:0!important;display:grid;place-items:center;border:1px solid var(--r-rand,rgba(150,190,230,.2))!important;border-radius:10px!important;
+  background:transparent!important;background-image:none!important;box-shadow:none!important;color:#b9cddd!important;font:700 20px/1 var(--r-schrift)!important;letter-spacing:0!important;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-mehr[aria-expanded=true]{border-color:var(--r-blau,#8fd0ff)!important;color:#fff!important;background:rgba(143,208,255,.1)!important}
+ .gt-eintrag .gt-marken{grid-area:marken;align-self:center;display:flex;flex-wrap:wrap;align-items:center;gap:4px 5px;min-width:0}
+ .gt-marke,.gt-eintrag .gt-eignung{display:inline-flex;align-items:center;gap:4px;min-height:20px;padding:1px 6px;border-radius:6px;border:1px solid rgba(150,190,230,.16);background:rgba(255,255,255,.035);color:#b9cad9;font:500 calc(12px * var(--text-scale,1))/1.3 var(--r-schrift);white-space:normal;margin:0}
+ .gt-eintrag .gt-eignung.gt-eig-gut{color:#8fe0b0}.gt-eintrag .gt-eignung.gt-eig-mittel{color:#e8c97c}.gt-eintrag .gt-eignung.gt-eig-schwach{color:#f2a383}.gt-eintrag .gt-eignung.gt-eig-null{color:#e07a8a}
+ .gt-marke-zone{color:var(--zone);border-color:color-mix(in srgb,var(--zone) 40%,transparent)}
+ .gt-marke-warn{color:var(--r-rot,#ff6464);border-color:rgba(255,100,100,.4)}
+ .gt-marke-aktiv{color:#f3d365}
+ .gt-weitere{grid-area:weitere;display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;padding-top:8px;border-top:1px dashed rgba(150,190,230,.2)}
+ .gt-weitere .g3-vernichten{margin:0!important}
+ /* Sonderzeilen als eigene Einträge */
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-sonder{box-sizing:border-box;display:block;min-width:0;padding:10px;border-radius:10px;border:1px solid var(--r-rand,rgba(150,190,230,.2));background:rgba(9,20,34,.86);font-size:calc(13px * var(--text-scale,1));line-height:1.45}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-sonder.gt-guertel{background:linear-gradient(90deg,#30302966,#14283b);border-color:#786448}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-sonder.gt-loch{color:#d6a8ff;border-color:rgba(214,168,255,.35)}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-sonder.gt-dyson{color:var(--r-gold,#e2bd62);border-color:rgba(226,189,98,.4)}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-sonder button{min-height:44px}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-fuss{flex-wrap:wrap;font-size:12px;padding:8px 4px}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-legende summary{min-height:44px;display:flex;align-items:center}
+ body.game-client[data-rahmen] #galaxie-tabelle .gt-legende dl{grid-template-columns:minmax(0,max-content) minmax(0,1fr);font-size:12px}
+}
+@media (max-width:767px) and (prefers-reduced-motion:reduce){.gt-eintrag,.gt-hauptaktion{transition:none!important}}
+
+/* ---------- Infokarte (nicht-modales Blatt; Handy: über der unteren Leiste, Desktop: rechts) ---------- */
+#gt-planetkarte[hidden]{display:none!important}
+body.game-client #gt-planetkarte{position:fixed;z-index:58;right:16px;top:72px;box-sizing:border-box;display:flex;flex-direction:column;width:min(440px,calc(100vw - 32px));max-height:calc(100vh - 96px);margin:0;padding:0;
+ border:1px solid rgba(150,190,230,.3);border-radius:14px;background:linear-gradient(180deg,#0e1d31,#08121f);box-shadow:0 18px 48px rgba(0,0,0,.6);color:var(--r-text,#dbe6f0);font-family:var(--r-schrift);
+ font-size:calc(13px * var(--text-scale,1));line-height:1.45;animation:gt-karte-ein .2s ease-out}
+#gt-planetkarte .gt-karte-innen{overflow:auto;overscroll-behavior:contain;padding:14px 16px 18px;min-height:0}
+#gt-planetkarte .gt-karte-kopf{display:grid;grid-template-columns:56px minmax(0,1fr) 44px;gap:12px;align-items:center;margin:0 0 12px;padding:0 0 12px 10px;border-left:3px solid var(--zone,#3a4b5c);border-bottom:1px solid rgba(150,190,230,.16)}
+#gt-planetkarte .gt-zone-glut{--zone:#ff7a45}#gt-planetkarte .gt-zone-leben{--zone:#4cd17a}#gt-planetkarte .gt-zone-frost{--zone:#6cc6ff}
+#gt-planetkarte .gt-karte-bild{display:grid;place-items:center;width:56px;height:56px}
+#gt-planetkarte .gt-karte-bild img{width:56px;height:56px;object-fit:contain;border-radius:50%}
+#gt-planetkarte .gt-karte-bild .gt-unbekannt{display:block;width:44px;height:44px;border-radius:50%;border:1px dashed #6d8197;background:radial-gradient(circle at 35% 35%,#2a3b4e,#0d1724)}
+#gt-planetkarte .gt-karte-titel{min-width:0}
+#gt-planetkarte .gt-karte-titel small{display:block;font:600 calc(11px * var(--text-scale,1))/1.2 var(--r-schrift);letter-spacing:.12em;color:var(--zone,#8ea4b8)}
+#gt-planetkarte h2{margin:3px 0 2px;padding:0;border:0;font:600 calc(19px * var(--text-scale,1))/1.2 var(--r-schrift);color:#f0f5fa;outline:none}
+#gt-planetkarte .gt-karte-titel p{margin:0;font-size:calc(13px * var(--text-scale,1));color:var(--r-leise,#8ea4b8)}
+body.game-client #gt-planetkarte .gt-karte-zu{width:44px!important;height:44px;min-height:44px;margin:0;padding:0!important;display:grid;place-items:center;border:1px solid rgba(150,190,230,.25)!important;border-radius:10px!important;background:transparent!important;background-image:none!important;box-shadow:none!important;color:#c9d8e6!important;font:600 18px/1 var(--r-schrift)!important}
+#gt-planetkarte .gt-karte-aktionen{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px;margin:0 0 12px}
+body.game-client #gt-planetkarte .gt-karte-aktionen .gt-aktionsknopf{flex-direction:column;justify-content:center;gap:4px;min-height:54px;padding:5px 4px!important;text-align:center;font-size:calc(12px * var(--text-scale,1))!important}
+body.game-client #gt-planetkarte .gt-karte-aktionen .gt-aktionsknopf svg{width:20px;height:20px}
+#gt-planetkarte .gt-karte-fakten{display:grid;gap:0;margin:0}
+#gt-planetkarte .gt-karte-fakten>div{display:grid;grid-template-columns:112px minmax(0,1fr);gap:10px;padding:7px 0;border-bottom:1px solid rgba(150,190,230,.1)}
+#gt-planetkarte .gt-karte-fakten dt{margin:0;font:500 calc(12px * var(--text-scale,1))/1.4 var(--r-schrift);color:var(--r-leise,#8ea4b8)}
+#gt-planetkarte .gt-karte-fakten dd{margin:0;min-width:0;font:500 calc(13px * var(--text-scale,1))/1.45 var(--r-schrift);color:#e3ecf4;overflow-wrap:break-word;font-variant-numeric:tabular-nums}
+#gt-planetkarte .gt-karte-fakten dd small{display:block;margin-top:1px;font-size:calc(12px * var(--text-scale,1));color:var(--r-leise,#8ea4b8)}
+#gt-planetkarte .gt-karte-fakten .gt-spieler+small{display:inline}
+#gt-planetkarte .gt-karte-fakten .map-observation{display:block;font-size:calc(12px * var(--text-scale,1));color:var(--r-leise,#8ea4b8)}
+#gt-planetkarte .gt-gefahr dd,#gt-planetkarte .gt-warn{color:var(--r-rot,#ff6464)}
+#gt-planetkarte .gt-leise{color:var(--r-leise,#8ea4b8)}
+#gt-planetkarte .gt-karte-chip{display:block;margin-top:6px}
+body.game-client #gt-planetkarte .gt-name{display:inline;min-height:0;margin:0;padding:0!important;font:inherit;font-weight:600;color:inherit!important;text-decoration:underline dotted 1px;text-underline-offset:3px;background:none!important;background-image:none!important;border:0!important;box-shadow:none!important;width:auto!important}
+#gt-planetkarte .gt-rel-eigen{color:var(--r-gruen2,#56d27c)}#gt-planetkarte .gt-rel-verbuendet{color:#48d0b0}#gt-planetkarte .gt-rel-nap{color:#f3d365}#gt-planetkarte .gt-rel-feindlich,#gt-planetkarte .gt-rel-fremde_allianz{color:var(--r-rot,#ff6464)}
+#gt-planetkarte .gt-status abbr{text-decoration:none;color:#c9d6e2}
+#gt-planetkarte .gt-karte-klima{margin:14px 0 0}
+#gt-planetkarte .gt-karte-klima h3{margin:0 0 6px;font:600 calc(12px * var(--text-scale,1))/1.3 var(--r-schrift);letter-spacing:.1em;text-transform:uppercase;color:var(--r-leise,#8ea4b8)}
+#gt-planetkarte .gt-karte-klima ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+#gt-planetkarte .gt-karte-klima li{display:grid;gap:2px;padding:7px 10px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(150,190,230,.1)}
+#gt-planetkarte .gt-karte-klima li b{font:600 calc(13px * var(--text-scale,1))/1.3 var(--r-schrift);color:#e8eff6}
+#gt-planetkarte .gt-karte-klima li b small{font-weight:500;color:var(--r-gold,#e2bd62);margin-left:6px}
+#gt-planetkarte .gt-karte-klima li span{font-size:calc(13px * var(--text-scale,1));color:#bcd0df}
+#gt-planetkarte .gt-karte-klima li.gt-eigenes-volk{border-color:rgba(226,189,98,.35)}
+#gt-planetkarte .gt-karte-klima li.gt-unbewohnbar span{color:#f0a3ab}
+#gt-planetkarte .gt-karte-klima p{margin:8px 0 0;font-size:calc(12px * var(--text-scale,1))}
+@media (max-width:767px){
+ body.game-client #gt-planetkarte{left:0;right:0;top:auto;bottom:var(--themenleiste-h,74px);width:auto;max-height:min(74vh,calc(100vh - var(--themenleiste-h,74px) - 40px));border-radius:18px 18px 0 0;border-bottom:0;box-shadow:0 -16px 40px rgba(0,0,0,.6);font-size:calc(15px * var(--text-scale,1))}
+ #gt-planetkarte .gt-karte-innen{padding:12px 14px 16px}
+ #gt-planetkarte .gt-karte-fakten>div{grid-template-columns:96px minmax(0,1fr);gap:8px}
+ #gt-planetkarte .gt-karte-fakten dd{font-size:calc(14px * var(--text-scale,1))}
+ #gt-planetkarte .gt-karte-klima li span{font-size:calc(14px * var(--text-scale,1))}
+}
+@keyframes gt-karte-ein{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#gt-planetkarte{animation:none!important}#gt-planetkarte .gt-aktionsknopf,.gt-console *{transition:none!important}}
+
+/* ---------- Invasion v2 und gestrandete Flotten (Karl 24.10.2026) ----------
+   „Verwüstet“ als Status in Zeile, Liste, Infokarte und 3D-System; gestrandete Flotten mit eigenem Zeichen (Schiffsumriss mit
+   Anker) an der Stelle des Trümmerfelds, beide sichtbar: eigene grün, fremde rot; die Zahl ist die Schiffszahl. */
+.gt-farbe-feind{--auftrag:#ff6464}
+.gt-orbit{display:inline-flex;align-items:center;gap:2px;line-height:1;font:700 calc(11px * var(--text-scale,1))/1 var(--r-schrift,Oxanium,sans-serif);font-variant-numeric:tabular-nums}
+.gt-orbit svg{flex:none}
+.gt-orbit-fremd{color:#ff7a7a}.gt-orbit-eigen{color:#6fe39a}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-orbitzelle.gt-zellknopf{border-color:rgba(255,100,100,.45)!important;background:rgba(255,100,100,.08)!important}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-orbitzelle .gt-tf-oben{flex-direction:column;gap:1px}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-orbitzelle .gt-tf-menge{display:flex;align-items:center;gap:1px;font-size:calc(10px * var(--text-scale,1))}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-orbitzelle .gt-tf-symbol{font-size:11px}
+body.game-client[data-rahmen] .gt-tfzelle{white-space:normal}
+body.game-client[data-rahmen] .gt-orbitknopf{display:inline-flex!important;align-items:center;justify-content:center;min-height:24px!important;min-width:26px;margin:0 0 2px!important;padding:0 3px!important;border-radius:12px!important;border:1px solid rgba(255,100,100,.55)!important;--button-art:none;--button-wash:rgba(255,100,100,.1);box-shadow:none!important}
+body.game-client[data-rahmen] .gt-tabelle .gt-orbit-text{display:block;margin-top:2px;font-size:12px;color:#ffb0b0;white-space:normal}
+.gt-verwuestet-marke{display:inline-block;margin:3px 0 0;padding:1px 8px;border-radius:999px;border:1px solid rgba(255,100,100,.6);background:rgba(255,100,100,.14);color:#ffb0b0;font:700 calc(11px * var(--text-scale,1))/16px var(--r-schrift,Oxanium,sans-serif);letter-spacing:.08em;text-transform:uppercase}
+.gt-invasion-marke{border-color:rgba(255,157,60,.6);background:rgba(255,157,60,.14);color:#ffd2a3}
+body.game-client[data-rahmen] #galaxie-tabelle tr.gt-verwuestet td{background:rgba(255,100,100,.05)}
+body.game-client[data-rahmen] #galaxie-tabelle .gt-eintrag.gt-verwuestet{box-shadow:inset 3px 0 0 rgba(255,100,100,.7)}
+.gt-marke-verwuestet{color:#ffb0b0;border-color:rgba(255,100,100,.5);background:rgba(255,100,100,.1)}
+.gt-marke-orbit-fremd{color:#ff9a9a;border-color:rgba(255,100,100,.4)}
+.gt-marke-orbit-eigen{color:#9df0b9;border-color:rgba(86,210,124,.45)}
+#gt-planetkarte .gt-orbit-zeile{display:flex;align-items:center;gap:6px;margin:2px 0}
+#gt-planetkarte .gt-orbit-zeile .gt-orbit b{display:none}
+/* 3D-System (galaxy.js): Marke unter der Platznummer */
+.space-label .space-verwuestet{display:block;margin-top:1px;padding:0 5px;border-radius:999px;border:1px solid rgba(255,100,100,.65);background:rgba(40,8,10,.85);color:#ffb0b0;font:700 10px/14px Oxanium,sans-serif;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.space-label .space-gestrandet{display:inline-flex;align-items:center;gap:2px;margin-left:3px;color:#ff7a7a;font:700 10px/1 Oxanium,sans-serif;font-variant-numeric:tabular-nums}
+.space-label .space-gestrandet.eigen{color:#6fe39a}
+.space-label .space-gestrandet svg{width:13px;height:13px}
+/* 768–1099: Legende neben dem Knopf nur 240 px breit – Zeichen und Erklärung untereinander (Überlappungsprüfung 26.10.2026) */
+@media (min-width:768px) and (max-width:1099px){body.game-client[data-rahmen] #galaxie-tabelle .gt-legende dl{grid-template-columns:minmax(0,1fr)}body.game-client[data-rahmen] #galaxie-tabelle .gt-legende dt{text-align:left}body.game-client[data-rahmen] #galaxie-tabelle .gt-legende dd{margin-bottom:6px}}

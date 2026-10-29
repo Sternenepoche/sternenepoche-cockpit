@@ -64,9 +64,9 @@ pub fn auswahl(app: &App) -> Value {
     let mut rechte = serde_json::Map::new();
     for (r, _, _) in ROLLEN {
         let mut m = serde_json::Map::new();
-        for (typ, _, rollen) in AKTIONEN {
-            if !rollen.contains(&r) { continue; }
-            if typ == "flotte_senden" { for x in MISSIONEN { let k = format!("flotte_senden:{x}"); m.insert(k.clone(), json!(a.recht(r, &k))); } } else { m.insert(typ.into(), json!(a.recht(r, typ))); }
+        // Je Bereich die Kennungen, die diese Rolle laut Spielkern nutzt (Missionen nur, wenn die Rolle sie fliegen darf).
+        for (g, _) in GRUPPEN {
+            for (k, rollen) in katalog::kennungen(g) { if rollen.contains(&r) { m.insert(k.clone(), json!(a.recht(r, &k))); } }
         }
         rechte.insert(r.into(), Value::Object(m));
     }
@@ -274,6 +274,7 @@ pub fn befehl(app: &mut App, v: &Value) -> Result<(), String> {
             if v["neu_laden"] == true { app.browser_adresse(false); }
         }
         "browser_extern" => app.browser_adresse(true),
+        "spiel_navigieren" => app.browser.navigieren(&text(v,"seite"))?,
         "beenden" => {if app.lokal_busy || app.lokal_speichert || app.lokal_steuert {return Err("Speicherung zuerst abwarten".into());}app.beenden=true;},
         "regeln_lesen" => crate::oeffnen::browser(&format!("{}/harness-regeln.html", app.auswahl.server.trim_end_matches('/'))),
         "oeffnen" => {

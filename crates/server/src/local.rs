@@ -110,7 +110,8 @@ pub fn qr_svg(text: &str) -> Option<String> {
 struct Job {
     method: Method,
     path: String,
-    role: Option<String>,
+    /// Volle Abfragezeile (Harness: kompakt, planet, teile, typ, name, umfang).
+    query: String,
     raw: String,
     body: Value,
     peer: IpAddr,
@@ -132,10 +133,19 @@ pub struct LocalSession {
 }
 #[derive(serde::Serialize,serde::Deserialize)]
 #[serde(deny_unknown_fields)]
-struct LocalView { tab:String, planet:String, galaxy:LocalGalaxyView, scroll:u32 }
+struct LocalView { tab:String, planet:String, galaxy:LocalGalaxyView, scroll:u32, #[serde(default,skip_serializing_if="Option::is_none")] display:Option<LocalDisplay>, #[serde(default,skip_serializing_if="Vec::is_empty")] pins:Vec<String> }
 #[derive(serde::Serialize,serde::Deserialize)]
 #[serde(deny_unknown_fields)]
-struct LocalGalaxyView { stage:String, sektor:u8, system:u8 }
+struct LocalDisplay { size:String, ambience:bool }
+#[derive(serde::Serialize,serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LocalGalaxyView { stage:String, sektor:u8, system:u8, #[serde(default,skip_serializing_if="Option::is_none")] camera:Option<LocalCamera> }
+#[derive(serde::Serialize,serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LocalCamera { yaw:f64, pitch:f64, distance:f64, focus:LocalFocus }
+#[derive(serde::Serialize,serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LocalFocus { x:f64,y:f64,z:f64 }
 impl LocalSession {
     /// Opens (or creates) the local world under `root`. A new world gets a fresh random
     /// galaxy; an existing one continues exactly where it was saved.
@@ -160,7 +170,15 @@ impl LocalSession {
         })?;
         // A hash is held by the workers; the plaintext is never written to the world or advertised.
         let hash = Arc::new(password_hash(password)?);
-        let mut game = Game::open_world(root, OsRng.next_u64(), Some(bots))?;
+        // Bei etwa jedem 200. Startwert passen die Startsysteme nicht in die Sektoren („… passen nicht in einen
+        // Sektor“) – dann einen anderen Startwert nehmen statt „Neue Partie“ scheitern zu lassen (19.10.2026).
+        let mut versuch = 0;
+        let mut game = loop {
+            match Game::open_world(root, OsRng.next_u64(), Some(bots)) {
+                Err(e) if versuch < 8 && e.contains("passen nicht in einen Sektor") => versuch += 1,
+                ergebnis => break ergebnis?,
+            }
+        };
         game.local_host = host;
         game.db.execute_batch("CREATE TABLE IF NOT EXISTS local_viewprefs(account INTEGER PRIMARY KEY REFERENCES accounts(id),state TEXT NOT NULL)").map_err(|e|e.to_string())?;
         if game.runtime.bots.len() != bots as usize {
@@ -173,7 +191,9 @@ impl LocalSession {
         let bind: SocketAddr = if host {
             (Ipv4Addr::UNSPECIFIED, port).into()
         } else {
-            (Ipv4Addr::LOCALHOST, 0).into()
+            // Android supplies a stable port so an automatic restart keeps the WebView
+            // origin and session. Callers supplying zero still receive an unused port.
+            (Ipv4Addr::LOCALHOST, port).into()
         };
         let server = Arc::new(listener(bind).map_err(|e| {
             if host {
@@ -276,6 +296,10 @@ impl Drop for LocalSession {
 fn listener(addr: SocketAddr) -> Result<Server, String> {
     let s = Socket::new(Domain::for_address(addr), Type::STREAM, Some(Protocol::TCP))
         .map_err(|e| e.to_string())?;
+    // Android/Linux can retain closed HTTP connections in TIME_WAIT. A saved
+    // local world must be able to resume immediately on its configured port.
+    #[cfg(unix)]
+    s.set_reuse_address(true).map_err(|e| e.to_string())?;
     s.set_read_timeout(Some(IO_DEADLINE)).map_err(|e| e.to_string())?;
     s.set_write_timeout(Some(IO_DEADLINE)).map_err(|e| e.to_string())?;
     s.bind(&addr.into()).map_err(|e| e.to_string())?;
@@ -386,10 +410,6 @@ fn handle(
     let url = req.url().to_string();
     let (path, query) = url.split_once('?').unwrap_or((url.as_str(), ""));
     let path = path.to_string();
-    let role = query
-        .split('&')
-        .find_map(|p| p.strip_prefix("rolle="))
-        .map(str::to_string);
     if req.method() == &Method::Get && !path.starts_with("/api/") {
         if path == "/config.js" {
             return answer(
@@ -398,6 +418,13 @@ fn handle(
                 format!("window.STERNENEPOCHE={{api:location.origin,version:{API_VERSION},local:true}};").into_bytes(),
                 "text/javascript; charset=utf-8",
             );
+        }
+        if path == "/beschreibungen.json" {
+            return answer(req, 200, crate::beschreibungen::json(), "application/json; charset=utf-8");
+        }
+        #[cfg(debug_assertions)]
+        if let Some((b, mime)) = dev_asset(&path) {
+            return answer(req, 200, b, mime);
         }
         return match client_asset(&path) {
             Some((b, mime)) => answer(req, 200, b.to_vec(), mime),
@@ -464,7 +491,7 @@ fn handle(
     let job = Job {
         method,
         path,
-        role,
+        query: query.to_string(),
         raw,
         body,
         peer: peer.ip(),
@@ -493,19 +520,21 @@ fn run(mut game: Game, rx: mpsc::Receiver<Job>, stop: Arc<AtomicBool>) {
     let mut next = last + TICK;
     let mut rest = 0.0f64;
     while !stop.load(Ordering::Relaxed) {
-        let wait = next
+        let faellig = next.min(ereignis_frist(&game, last, rest));
+        let wait = faellig
             .saturating_duration_since(Instant::now())
             .min(Duration::from_millis(200));
         match rx.recv_timeout(wait) {
             Ok(job) => {
-                let result = game.local_job(&job);
+                let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| game.local_job(&job)))
+                    .unwrap_or_else(|_| Err(err(503,"Anfrage wurde zurückgesetzt; die Welt bleibt erreichbar")));
                 let _ = job.reply.send(result);
             }
             Err(mpsc::RecvTimeoutError::Timeout) => {}
             Err(mpsc::RecvTimeoutError::Disconnected) => break,
         }
         let now = Instant::now();
-        if now < next {
+        if now < next.min(ereignis_frist(&game, last, rest)) {
             continue;
         }
         let elapsed = now.duration_since(last).as_secs_f64();
@@ -513,17 +542,22 @@ fn run(mut game: Game, rx: mpsc::Receiver<Job>, stop: Arc<AtomicBool>) {
         next = now + TICK;
         if game.runtime.paused || game.world.beendet() {
             rest = 0.0;
+            game.local_tick_at = None;
             continue;
         }
         let seconds;
         (seconds, rest) = time_step(rest, elapsed, game.runtime.tempo, game.world.regeln.fenster());
+        game.local_tick_at = Some((now, rest));
         if seconds == 0 {
             continue;
         }
         let measured = Instant::now();
-        match game.advance(seconds) {
-            Ok(_) => game.local_error = None,
-            Err((_, e)) => game.local_error = Some(e),
+        // Eine Panik im Takt beendete bisher den einzigen Spiel-Thread: danach beantwortete die App keine Anfrage mehr
+        // (Karl 27.10.2026: Softlock bis zum Neustart). Die Transaktion rollt selbst zurück; der Takt läuft weiter.
+        match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| game.advance(seconds))) {
+            Ok(Ok(_)) => game.local_error = None,
+            Ok(Err((_, e))) => game.local_error = Some(e),
+            Err(_) => game.local_error = Some("Spielzeit wurde nach einem internen Fehler sicher zurückgesetzt".into()),
         }
         game.local_tick_times
             .push(measured.elapsed().as_secs_f64() * 1000.0);
@@ -535,14 +569,30 @@ fn run(mut game: Game, rx: mpsc::Receiver<Job>, stop: Arc<AtomicBool>) {
         eprintln!("Lokaler Spielstand: letzter Checkpoint fehlgeschlagen: {e}");
     }
 }
+/// Wall-clock deadline of the next scheduled game event (build finished, arrival …): the local tick wakes up then instead
+/// of up to 5 s later, so timers do not sit at „00:00:00 · Abschluss wird übernommen“ (Karl 22.10.2026). At least 500 ms apart (phone CPU).
+fn ereignis_frist(game: &Game, last: Instant, rest: f64) -> Instant {
+    if game.runtime.paused || game.world.beendet() {
+        return last + TICK;
+    }
+    match game.world.ereignisse.peek() {
+        Some(e) => {
+            let spiel = (e.zeit - game.world.zeit) as f64 - rest;
+            last + Duration::from_secs_f64((spiel / game.runtime.tempo.max(1) as f64).max(0.5))
+        }
+        None => last + TICK,
+    }
+}
 /// Game seconds due after `elapsed` wall seconds at `tempo`. The kernel advances in whole
 /// decision windows; the remainder carries over, so 1× really is real time (previously each
 /// 5-second tick jumped a full 30-second window: 6× instead of 1×). Longer gaps (sleep,
 /// debugger) count as two ticks at most: no unattended catch-up.
-fn time_step(rest: f64, elapsed: f64, tempo: u32, window: i64) -> (u32, f64) {
-    let window = window.max(1) as f64;
-    let rest = rest + elapsed.clamp(0.0, TICK.as_secs_f64() * 2.0) * tempo as f64;
-    let seconds = ((rest / window).floor() * window).min(3600.0);
+fn time_step(rest: f64, elapsed: f64, tempo: u32, _window: i64) -> (u32, f64) {
+    // Whole game seconds (the kernel stops exactly at window borders); a gap beyond one
+    // minute is treated as suspension, not as unattended catch-up.
+    let elapsed = if elapsed > 60.0 { TICK.as_secs_f64() * 2.0 } else { elapsed.max(0.0) };
+    let rest = rest + elapsed * tempo as f64;
+    let seconds = rest.floor().min(3600.0);
     (seconds as u32, rest - seconds)
 }
 impl Game {
@@ -551,12 +601,12 @@ impl Game {
         if job.join {
             return self.local_join(&job.body, owner);
         }
-        self.local_route(
+        self.local_route_q(
             &job.method,
             &job.path,
             &job.raw,
             &job.body,
-            job.role.as_deref(),
+            &job.query,
             owner,
         )
     }
@@ -610,7 +660,7 @@ impl Game {
         // The cockpit and its agents take a seat at once. The browser asks for
         // `platz_waehlen` and lets the player choose mode and people in the claim dialog.
         if a.sid.is_none() && body["platz_waehlen"] != true {
-            self.claim(&a, &json!({"mode":body["mode"].as_str().unwrap_or("gemischt"),"volk":body["volk"].as_str().unwrap_or("veyari")}))?;
+            self.claim(&a, &json!({"mode":body["mode"].as_str().unwrap_or("gemischt"),"volk":body["volk"].as_str().unwrap_or("veyari"),"anfaengerschutz":body["anfaengerschutz"].as_bool().unwrap_or(false)}))?;
         }
         let a = self.account_by_name(&name).ok_or_else(|| err(503, "Konto nicht lesbar"))?;
         let mut auth = auth;
@@ -624,12 +674,13 @@ impl Game {
         let free = self.world.aufklaerung.inaktive_spieler.len();
         json!({"local":true,"host":host,"world_id":self.runtime.world_id,"sekunden":self.world.zeit,
             "bots":self.runtime.bots.len(),"sektoren":self.world.regeln.welt.sektoren,"systeme":self.world.regeln.welt.systeme_je_sektor,
-            "tempo":self.runtime.tempo,"paused":self.runtime.paused,"beendet":self.world.beendet(),
+            "tempo":self.runtime.tempo,"paused":self.runtime.paused,"beendet":self.world.beendet(),"opferschutz":self.runtime.opferschutz,
             "plaetze":self.runtime.seat_capacity,"freigabe":self.runtime.admission_limit,
             "belegt":(self.runtime.seat_capacity as usize).saturating_sub(free),"wartende":self.runtime.waitlist.len(),
             "tick_ms":self.local_tick_times.last(),"tick_p95_ms":samples.get(samples.len().saturating_sub(1)*95/100),"tick_samples":samples.len(),
             "fehler":self.storage_error.as_ref().or(self.local_error.as_ref())})
     }
+    #[cfg(test)]
     fn local_route(
         &mut self,
         method: &Method,
@@ -639,6 +690,18 @@ impl Game {
         role: Option<&str>,
         owner: bool,
     ) -> Reply {
+        let query = role.map(|r| format!("rolle={r}")).unwrap_or_default();
+        self.local_route_q(method, path, raw, body, &query, owner)
+    }
+    fn local_route_q(
+        &mut self,
+        method: &Method,
+        path: &str,
+        raw: &str,
+        body: &Value,
+        query: &str,
+        owner: bool,
+    ) -> Reply {
         let host = self.local_host;
         if method == &Method::Get {
             match path {
@@ -646,7 +709,7 @@ impl Game {
                 "/api/lobby" | "/api/health" => return Ok(self.lobby()),
                 "/api/rules" => {
                     return Ok(
-                        json!({"api_version":API_VERSION,"schema":kern::aktion::antwortschema(Rolle::Alle),"volk":Volk::ALLE.into_iter().map(|v|v.name()).collect::<Vec<_>>(),"catalog":public_catalog::catalog(&self.world.regeln),"text":format!("{}\n{}\n{}",kern::regeltext::regeltext(&self.world.regeln,Rolle::Alle),kern::kolonisation::REGELTEXT_V2,kern::ausscheiden::REGELTEXT),"harness_regeln":crate::harness::REGELN_VERSION}),
+                        json!({"api_version":API_VERSION,"schema":self.world.antwortschema(Rolle::Alle),"volk":Volk::ALLE.into_iter().map(|v|v.name()).collect::<Vec<_>>(),"catalog":public_catalog::catalog(&self.world.regeln),"text":format!("{}\n{}\n{}",kern::regeltext::regeltext(&self.world.regeln,Rolle::Alle),kern::kolonisation::REGELTEXT_V2,kern::ausscheiden::REGELTEXT),"harness_regeln":crate::harness::REGELN_VERSION}),
                     )
                 }
                 "/api/registration/status" => return Ok(json!({"enabled":false,"local":true})),
@@ -659,25 +722,8 @@ impl Game {
         }
         if path.starts_with("/api/harness/v1/") && !path.starts_with("/api/harness/v1/schluessel") {
             let (a, s) = self.harness_authenticate(raw)?;
-            return match (method, path) {
-                (&Method::Get, "/api/harness/v1/ich") => Ok(self.harness_ich(&a, &s)),
-                (&Method::Get, "/api/harness/v1/schema") => {
-                    self.harness_schema(&s, role).map(|mut v| {
-                        v["katalog"] = public_catalog::catalog(&self.world.regeln);
-                        v
-                    })
-                }
-                (&Method::Get, "/api/harness/v1/lage") => self.harness_lage(&a, &s, role),
-                (&Method::Post, "/api/harness/v1/werkzeug") => self.harness_werkzeug(&a, body),
-                (&Method::Post, "/api/harness/v1/freigabe") => self.harness_freigabe(&a, &s, body),
-                (&Method::Post, "/api/harness/v1/handeln") => self.harness_handeln(&a, &s, body),
-                (&Method::Post, "/api/harness/v1/bericht") => self.harness_bericht(&a, &s, body),
-                (&Method::Post, "/api/harness/v1/mcp") => {
-                    mcp::bearbeiten(self, &a, &s, body, public_catalog::catalog)
-                        .ok_or_else(|| err(400, "Keine MCP-Antwort"))
-                }
-                _ => Err(err(404, "Harness-Endpunkt unbekannt")),
-            };
+            // Dieselbe Weiche wie der Online-Server (harness.rs).
+            return self.harness_route(method == &Method::Get, path, query, &a, &s, body);
         }
         let a = self.authenticate(raw)?;
         match (method, path) {
@@ -708,8 +754,11 @@ impl Game {
             (&Method::Get, "/api/view") => self.view(&a, Rolle::Alle),
             (&Method::Get, "/api/workspace") => self.workspace(&a),
             (&Method::Post, "/api/workspace") => self.save_workspace(&a, body),
+            (&Method::Post, "/api/workspace/rat") => self.rat_pinwand_besitzer(&a, body),
             (&Method::Post, "/api/claim") => self.claim(&a, body),
             (&Method::Post, "/api/tool") => self.tool(&a, body),
+            (&Method::Post, "/api/inbox/read") => self.inbox_read(&a,body),
+            (&Method::Post, "/api/akte/notiz") => self.gegner_notiz(&a,body),
             (&Method::Post, "/api/context") => {
                 let role = body["rolle"]
                     .as_str()
@@ -717,9 +766,9 @@ impl Game {
                     .filter(|r| *r != Rolle::Alle)
                     .ok_or_else(|| err(400, "Regierungsrolle auswählen"))?;
                 if body["schema"] == true {
-                    Ok(json!({"schema":kern::aktion::antwortschema(role)}))
+                    Ok(json!({"schema":self.world.antwortschema(role)}))
                 } else {
-                    self.view(&a,role).map(|view|json!({"view":view,"schema":kern::aktion::antwortschema(role),"text":kern::regeltext::regeltext(&self.world.regeln,role)}))
+                    self.view(&a,role).map(|view|json!({"view":view,"schema":self.world.antwortschema(role),"text":self.regeltext_fuer(role)}))
                 }
             }
             (&Method::Post, "/api/waitlist/leave") => self.leave_waitlist(&a, body),
@@ -743,6 +792,11 @@ impl Game {
                 self.transaction(|g| {
                     if let Some(p) = body["paused"].as_bool() {
                         g.runtime.paused = p;
+                    }
+                    // Opferschutz der Räuberbots auch in der lokalen/WLAN-Welt einstellbar (nur der Host; wie
+                    // `settings.opferschutz` des Online-Servers, siehe `opferschutz_lesen`).
+                    if let Some(o) = body.get("opferschutz") {
+                        g.runtime.opferschutz = crate::opferschutz_lesen(o, g.runtime.opferschutz).map_err(|e| err(400, &e))?;
                     }
                     if let Some(t) = body["tempo"]
                         .as_u64()
@@ -784,11 +838,15 @@ impl Game {
             self.world_matches(v)?;
             let state: LocalView = serde_json::from_value(v["state"].clone()).map_err(|_|err(400,"Ungültige Spielansicht"))?;
             let (sectors,systems)=dimensions(self.runtime.bots.len() as u16).map_err(|e|err(400,&e))?;
-            if !["reich","gebaeude","kolonie","forschen","werft","verteidigung","flotten","karte","kolonien","kampf","aktionen","briefkasten","allianzbereich","allianzpost","berichte","imperium","freischaltungen","agent","pinwaende","profil","regeln"].contains(&state.tab.as_str())
+            // Nur die Form prüfen: Die Reiter kommen aus der Oberfläche (rahmen.js); eine feste Liste veraltete mit jeder
+            // UI-Änderung und lehnte z. B. „versorgung“/„truppen“ ab (APK 0.4.0).
+            if state.tab.is_empty() || state.tab.len()>32 || !state.tab.bytes().all(|b|b.is_ascii_lowercase()||b.is_ascii_digit()||b==b'-')
                 || state.planet.len()>24 || !state.planet.bytes().all(|b|b.is_ascii_digit()||b==b':')
                 || !["galaxy","sector","system"].contains(&state.galaxy.stage.as_str())
                 || !(1..=sectors).contains(&state.galaxy.sektor) || !(1..=systems).contains(&state.galaxy.system)
-                || state.scroll>100000 {
+                || state.pins.len()>2 || state.pins.iter().any(|k| k.len()>24 || !k.bytes().all(|b|b.is_ascii_digit()||b==b':'))
+                || state.galaxy.camera.as_ref().is_some_and(|c|![c.yaw,c.pitch,c.distance,c.focus.x,c.focus.y,c.focus.z].iter().all(|v|v.is_finite()&&v.abs()<=1_000_000.)||c.distance<1.)
+                || state.scroll>100000 || state.display.as_ref().is_some_and(|d| !["normal","large","largest"].contains(&d.size.as_str())) {
                 return Err(err(400,"Spielansicht außerhalb der lokalen Welt"));
             }
             // These account-private preferences do not mutate the simulation. One small
@@ -813,6 +871,33 @@ impl Game {
             .map_err(|_| err(503, "Spielerliste nicht lesbar"))?;
         Ok(json!({"spieler":rows}))
     }
+}
+
+/// Nur Debug-Bauten (Handy-Prüfschleife, tools/ui_abnahme/handy_pruefen.py): Ist STERN_WEB_DEV auf den Projektordner
+/// gesetzt, kommen bekannte Web-Client-Dateien direkt von der Platte, dazu die Handy-Ebene der Android-App unter
+/// /__mobil/ (wie HauptActivity.mobilDatei). Release-Bauten (APK, Server) enthalten diesen Weg nicht.
+#[cfg(debug_assertions)]
+pub fn dev_asset(path: &str) -> Option<(Vec<u8>, &'static str)> {
+    let root = std::path::PathBuf::from(std::env::var_os("STERN_WEB_DEV")?);
+    if let Some(name) = path.strip_prefix("/__mobil/") {
+        if name.is_empty() || !name.bytes().all(|b| b.is_ascii_alphanumeric() || b"_-.".contains(&b)) || name.contains("..") {
+            return None;
+        }
+        let mime = match name.rsplit('.').next() {
+            Some("js") => "text/javascript; charset=utf-8",
+            Some("css") => "text/css; charset=utf-8",
+            Some("svg") => "image/svg+xml",
+            Some("png") => "image/png",
+            _ => return None,
+        };
+        return std::fs::read(root.join("android/app/assets/mobil").join(name)).ok().map(|b| (b, mime));
+    }
+    let (_, mime) = client_asset(path)?; // nur Pfade, die auch eingebettet ausgeliefert werden
+    let rel = if path == "/" { "index.html" } else { path.trim_start_matches('/') };
+    if rel.contains("..") || rel.contains('\\') {
+        return None;
+    }
+    std::fs::read(root.join("web-client").join(rel)).ok().map(|b| (b, mime))
 }
 
 pub fn client_asset(path: &str) -> Option<(&'static [u8], &'static str)> {
@@ -874,19 +959,28 @@ mod tests {
     fn http(url: &str, method: &str, path: &str, body: Value, auth: &str) -> (u16, Value) {
         let addr = url.trim_start_matches("http://");
         let mut s = std::net::TcpStream::connect(addr).unwrap();
-        s.set_read_timeout(Some(Duration::from_secs(10))).unwrap();
+        // 60 s: unter voller Last des Abschlusstests dauerte eine Antwort länger als 10 s; read_to_string meldete den
+        // abgebrochenen Lesevorgang dann irreführend als „kein gültiges UTF-8“ (27.10.2026).
+        s.set_read_timeout(Some(Duration::from_secs(60))).unwrap();
+        let begonnen = std::time::Instant::now();
         let bytes = if method == "GET" {
             String::new()
         } else {
             body.to_string()
         };
         write!(s,"{method} {path} HTTP/1.1\r\nHost: {addr}\r\nAuthorization: Bearer {auth}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{bytes}",bytes.len()).unwrap();
-        let mut response = String::new();
-        s.read_to_string(&mut response).unwrap();
+        let mut roh = Vec::new();
+        if let Err(e) = s.read_to_end(&mut roh) {
+            panic!("{method} {path}: Antwort nach {:.1} s abgebrochen ({:?}: {e}), {} Bytes gelesen", begonnen.elapsed().as_secs_f64(), e.kind(), roh.len());
+        }
+        let response = String::from_utf8(roh).unwrap_or_else(|e| panic!("{method} {path}: Antwort ist kein UTF-8: {e}"));
         let (headers, data) = response.split_once("\r\n\r\n").unwrap();
+        let data=if headers.to_ascii_lowercase().contains("transfer-encoding: chunked") {
+            let mut rest=data;let mut decoded=String::new();loop {let (size,body)=rest.split_once("\r\n").unwrap();let n=usize::from_str_radix(size.split(';').next().unwrap(),16).unwrap();if n==0{break;}decoded.push_str(&body[..n]);rest=&body[n+2..];}decoded
+        }else{data.to_owned()};
         (
             headers.split_whitespace().nth(1).unwrap().parse().unwrap(),
-            serde_json::from_str(data).unwrap(),
+            serde_json::from_str(&data).unwrap(),
         )
     }
     #[test]
@@ -975,13 +1069,21 @@ mod tests {
         assert_eq!(otherme["spieler"], 31);
         let (_, view) = http(url, "GET", "/api/view", json!({}), t);
         assert!(view["planeten"].is_array());
+        // Bot-Schonzeit ist in neuen Welten standardmäßig aus (Karl 23.10.2026: „Bot-Schonzeit in neuen Welten ganz aus“) und
+        // lässt sich einschalten; dann ist der Mensch Mitspieler unter Schonzeit (Fairnessregeln, Karl 22.10.2026).
+        assert_eq!(view["bot_schutz"]["aktiv"], false, "{}", view["bot_schutz"]);
+        assert_eq!(http(url, "POST", "/api/local/control", json!({"opferschutz": true}), t).0, 200);
+        let (_, view) = http(url, "GET", "/api/view", json!({}), t);
+        assert_eq!(view["bot_schutz"]["mitspieler"], true, "{}", view["bot_schutz"]);
+        assert_eq!(view["bot_schutz"]["geschuetzt"], true, "{}", view["bot_schutz"]);
+        assert!(view["bot_schutz"]["text"].as_str().unwrap().starts_with("Schonzeit vor Bots"));
         let cmd = json!({"world_id":me["world_id"],"request_id":"brief-1","aktionen":[{"typ":"brief_senden","kanal":"privat","an":target,"betreff":"Handel","text":"Ich möchte Erz handeln. Wie geht das?","antwort_auf":null}]});
         let (code, r) = http(url, "POST", "/api/command", cmd.clone(), t);
         assert_eq!(code, 200, "{r}");
         assert_eq!(r["ergebnisse"][0]["ok"], true, "{r}");
         let (_, v1) = http(url, "GET", "/api/view", json!({}), t);
         assert!(
-            v1.to_string().contains("Ware, Menge und Gegenleistung"),
+            v1.to_string().contains("Handel & Markt"),
             "reply missing"
         );
         assert_eq!(http(url, "POST", "/api/command", cmd, t).0, 200);
@@ -1051,7 +1153,7 @@ mod tests {
         assert_eq!(code,200,"{s}");
         let t=s["token"].as_str().unwrap();
         let (_,info)=http(&local.url,"GET","/api/local/info",json!({}),"");
-        let state=json!({"tab":"karte","planet":"1:1:1","galaxy":{"stage":"system","sektor":2,"system":80},"scroll":123});
+        let state=json!({"tab":"karte","planet":"1:1:1","galaxy":{"stage":"system","sektor":2,"system":80,"camera":{"yaw":1.5,"pitch":0.4,"distance":320.,"focus":{"x":12.,"y":0.,"z":-8.}}},"scroll":123});
         let payload=json!({"world_id":info["world_id"],"state":state});
         assert_eq!(http(&local.url,"POST","/api/local/viewprefs",payload.clone(),"").0,401);
         assert_eq!(http(&local.url,"POST","/api/local/viewprefs",payload.clone(),t).0,200);
@@ -1061,11 +1163,22 @@ mod tests {
         assert_eq!(http(&local.url,"POST","/api/local/viewprefs",invalid,t).0,400);
         let mut secret=payload.clone();secret["state"]["password"]=json!("no-credentials");
         assert_eq!(http(&local.url,"POST","/api/local/viewprefs",secret,t).0,400);
+        // Neue Reiter der Oberfläche (rahmen.js) brauchen keine Serverliste; nur die Form wird geprüft.
+        for tab in ["versorgung","truppen","core-planner"] {let mut neu=payload.clone();neu["state"]["tab"]=json!(tab);assert_eq!(http(&local.url,"POST","/api/local/viewprefs",neu,t).0,200,"{tab}");}
+        let mut boese=payload.clone();boese["state"]["tab"]=json!("<script>");
+        assert_eq!(http(&local.url,"POST","/api/local/viewprefs",boese,t).0,400);
+        assert_eq!(http(&local.url,"POST","/api/local/viewprefs",payload.clone(),t).0,200);
         let (_,other)=http(&local.url,"POST","/api/local/join",json!({"name":"Mitspieler","password":pass}),"");
         assert!(http(&local.url,"GET","/api/local/viewprefs",json!({}),other["token"].as_str().unwrap()).1["state"].is_null());
         assert_eq!(http(&local.url,"POST","/api/local/control",json!({"paused":true,"speichern":true}),t).0,200);
         let (_,paused)=http(&local.url,"GET","/api/local/info",json!({}),"");
         assert_eq!(paused["paused"],true);
+        // Opferschutz der Räuberbots: aus (Standard seit 23.10.2026), vom Host einschaltbar; nur gültige Werte.
+        assert_eq!(paused["opferschutz"]["aktiv"],false);
+        assert_eq!(http(&local.url,"POST","/api/local/control",json!({"opferschutz":{"pause_stunden":0}}),t).0,400);
+        assert_eq!(http(&local.url,"POST","/api/local/control",json!({"opferschutz":false}),t).0,200);
+        assert_eq!(http(&local.url,"GET","/api/local/info",json!({}),"").1["opferschutz"]["aktiv"],false);
+        assert_eq!(http(&local.url,"POST","/api/local/control",json!({"opferschutz":true}),t).0,200);
         drop(local);
         assert_eq!(saved_host_player(&root).unwrap().as_deref(),Some("Entdecker"));
         let resumed=LocalSession::start(&root,0,false,0,pass).unwrap();
@@ -1148,33 +1261,13 @@ mod tests {
             )
             .unwrap();
         assert_eq!(v["ergebnisse"][0]["ok"], true, "{v}");
-        let replies = g
-            .world
-            .nachrichten
-            .iter()
-            .filter(|n| n.von == 0 && n.text.contains("Ware, Menge und Preis"))
-            .count();
-        assert_eq!(
-            replies, 1,
-            "messages={:?}; log={:?}; ki={}",
-            g.world.nachrichten, g.world.logpuffer, g.world.spieler[0].ki
-        );
+        let root_id=g.world.kommunikation.briefe.values().find(|b|b.kanal=="allianz"&&g.world.nachrichten[b.id as usize-1].von==sid&&g.world.nachrichten[b.id as usize-1].text=="Wie handeln wir Erz?").unwrap().id;
+        let replies=|g:&Game|g.world.kommunikation.briefe.values().filter(|b|b.antwort_auf==Some(root_id)&&b.kanal=="allianz"&&g.world.nachrichten[b.id as usize-1].von==0).count();
+        assert_eq!(replies(&g),1,"The player's actual chat turn must receive exactly one linked answer");
         for _ in 0..3 {
-            lauf::bots::reagieren(&mut g.world, 0, Bottyp::Oekonom);
-            lauf::bots::allianz_reagieren(
-                &mut g.world,
-                0,
-                &g.runtime.bots.keys().copied().collect(),
-            );
+            lauf::bots::reagieren_mit(&mut g.world,0,Bottyp::Oekonom,&g.runtime.bots.keys().copied().collect());
         }
-        assert_eq!(
-            g.world
-                .nachrichten
-                .iter()
-                .filter(|n| n.von == 0 && n.text.contains("Ware, Menge und Preis"))
-                .count(),
-            replies
-        );
+        assert_eq!(replies(&g),1,"Repeated controller ticks must not duplicate answers");
         let seller = g.world.spieler[0].heimat as usize;
         let buyer = g.world.spieler[sid as usize].heimat as usize;
         g.world.planeten[seller].gebaeude[Gebaeude::Markt.idx()] = 1;
@@ -1335,7 +1428,7 @@ mod tests {
 
     #[test]
     fn tempo_is_real_time_and_never_catches_up() {
-        // 1×: nothing after 5 s, exactly one 30-second window after 30 s of wall time.
+        // 1×: every five-second tick advances five game seconds; no visible 30-second jumps.
         let (mut rest, mut total) = (0.0, 0);
         for _ in 0..6 {
             let (s, r) = time_step(rest, 5.0, 1, 30);
@@ -1343,8 +1436,8 @@ mod tests {
             rest = r;
         }
         assert_eq!((total, rest), (30, 0.0));
-        assert_eq!(time_step(0.0, 5.0, 1, 30).0, 0);
-        assert_eq!(time_step(0.0, 5.0, 10, 30), (30, 20.0));
+        assert_eq!(time_step(0.0, 5.0, 1, 30).0, 5);
+        assert_eq!(time_step(0.0, 5.0, 10, 30), (50, 0.0));
         assert_eq!(time_step(0.0, 5.0, 30, 30).0, 150);
         assert_eq!(time_step(0.0, 5.0, 60, 30).0, 300);
         // A suspended laptop counts as two ticks at most.
@@ -1384,12 +1477,11 @@ mod tests {
         assert!(!reply.automatisch, "a real answer, not the 1-hour receipt");
         assert!(g.world.nachrichten[reply.id as usize - 1]
             .text
-            .contains("Ware, Menge und Gegenleistung"));
+            .contains("Handel & Markt"));
     }
 
-    /// Pure time steps commit archives but checkpoint at a bounded rate. After a crash the
-    /// world resumes from the checkpoint, the archive tail is removed, and the replay is
-    /// identical to a run that checkpointed every step.
+    /// Local ticks are durable even without graceful shutdown; confirmed progress and
+    /// archive rows resume exactly once after a process crash.
     #[test]
     fn throttled_checkpoints_recover_identically_after_a_crash() {
         let (crash, reference) = (root(), root());
@@ -1410,18 +1502,12 @@ mod tests {
         assert!(tail > 0, "bots acted");
         drop(a); // crash: no final checkpoint
         let mut a = Game::open_world(&crash, 712, Some(30)).unwrap();
-        assert_eq!(a.world.zeit, start);
-        assert_eq!(
-            count(&a, "SELECT count(*) FROM game_actions WHERE world_id=?1 AND simulation_seconds>0"),
-            0
-        );
+        assert_eq!(a.world.zeit, start+30*3600);
+        assert_eq!(a.world.hash(), b.world.hash());
         assert_eq!(
             count(&a, "SELECT count(*) FROM communication_events WHERE world_id=?1"),
             a.world.kommunikation.ereignisse_gesamt()
         );
-        for _ in 0..30 {
-            a.advance(3600).unwrap();
-        }
         assert_eq!(a.world.hash(), b.world.hash());
         for sql in [
             "SELECT count(*) FROM game_actions WHERE world_id=?1",
@@ -1487,11 +1573,11 @@ mod tests {
 
     /// Live-path soak: the real transaction path of a local round (`advance` with throttled
     /// checkpoints, archive and retention), one game hour per transaction. Reports per game
-    /// day: checkpoint bytes, events and letters in memory, transaction times. Explicit:
+    /// day: checkpoint bytes, events and letters in memory, transaction times. Runs in every
+    /// release test run (Karl 18.10.2026: no ignored tests); larger runs explicitly:
     /// `STERNENEPOCHE_SOAK_BOTS=400 STERNENEPOCHE_SOAK_DAYS=120 cargo test --release -p
-    /// sternenepoche-server live_path_soak -- --ignored --nocapture`
+    /// sternenepoche-server live_path_soak -- --nocapture`
     #[test]
-    #[ignore = "long soak; run explicitly in release mode"]
     fn live_path_soak() {
         let env = |k: &str, d: u64| {
             std::env::var(k)
@@ -1655,7 +1741,7 @@ mod tests {
                     }
                 }
                 for f in Forschung::ALLE {
-                    if g.world.regeln.forsch(f).ab_stufe <= level {
+                    if g.world.regeln.forschung.get(&f).is_some_and(|fr| fr.ab_stufe <= level) {
                         g.world.spieler[sid].forschung[f.idx()] = 3;
                     }
                 }
@@ -1691,7 +1777,6 @@ mod tests {
 
     /// Real engine/event queue; accelerated decision windows, no fabricated end state.
     #[test]
-    #[ignore = "365-day stress run; run explicitly in release mode"]
     fn annual_host_two_guests_and_pure_agent() {
         let bots = std::env::var("STERNENEPOCHE_SOAK_BOTS")
             .ok()
@@ -1866,16 +1951,25 @@ mod tests {
         )
         .unwrap();
         println!("ANNUAL_FINAL {report}");
+        drop(restored);
+        // The finished year is the fixture of the mature-year check: run it on a marked COPY,
+        // so the annual world itself stays exactly as the year ended.
+        let copy = self::root();
+        std::fs::create_dir_all(&copy).unwrap();
+        for f in std::fs::read_dir(&root).unwrap().flatten() {
+            if f.file_type().unwrap().is_file() {
+                std::fs::copy(f.path(), copy.join(f.file_name())).unwrap();
+            }
+        }
+        std::fs::write(copy.join("annual-copy.marker"), b"copy of annual_host_two_guests_and_pure_agent").unwrap();
+        mature_year_uses_production_transactions_and_restores(&copy, bots);
     }
 
-    /// Run explicitly on marked COPIES of annual fixtures, never on production data.
-    #[test]
-    #[ignore = "Requires a marked copy of a completed 365-day fixture"]
-    fn mature_year_uses_production_transactions_and_restores() {
-        let root = PathBuf::from(std::env::var("STERNENEPOCHE_YEAR_COPY").unwrap());
+    /// Runs only on marked COPIES of annual fixtures, never on production data; called by the
+    /// annual test right after its year ends.
+    fn mature_year_uses_production_transactions_and_restores(root: &std::path::Path, bots: u16) {
         assert!(root.join("annual-copy.marker").is_file());
-        let bots: u16 = std::env::var("STERNENEPOCHE_SOAK_BOTS").unwrap().parse().unwrap();
-        let mut g = Game::open_world(&root, 712, Some(bots)).unwrap();
+        let mut g = Game::open_world(root, 712, Some(bots)).unwrap();
         assert_eq!(g.world.zeit, 365 * TAG);
         assert!(g.admin_status()["invariant_errors"].as_array().unwrap().is_empty());
         let archived = count(&g,"SELECT count(*) FROM communication_events WHERE world_id=?1");
